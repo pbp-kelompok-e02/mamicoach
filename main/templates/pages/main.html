@@ -1,0 +1,19 @@
+
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}MamiCoach{% endblock %}
+
+{% block content %}
+<div class="w-full h-screen flex flex-col gap-4 justify-center items-center bg-white">
+    <h1 class="text-xl font-quicksand font-bold text-center mt-10">
+        Saatnya pilih olahraga yang kamu suka, dari coach yang kamu percaya.
+    </h1>
+    <div class="flex justify-center items-center gap-4">
+        <img src="{% static 'images/logo.png' %}" alt="MamiCoach Logo" class="w-32  ">
+        <h1 class="text-8xl font-quicksand font-bold text-primary text-center pb-4">mamicoach</h1>
+    </div>
+    <h1 class="text-xl font-quicksand font-bold text-center px-6 py-4 rounded-2xl text-white bg-primary">COMING SOON</h1>
+</div>
+{% endblock %}
