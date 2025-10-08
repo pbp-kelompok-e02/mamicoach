@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-VENV_DIR="venv"
+VENV_DIR="env"
 REQ_FILE="requirements.txt"
 
 # Create venv if it doesn't exist
@@ -37,6 +37,8 @@ fi
 
 # Run Django if manage.py exists
 if [ -f "manage.py" ]; then
+  echo "Preparing to run Django server..."
+  python manage.py migrate
   echo "🚀 Running Django server..."
   python manage.py runserver
 else

@@ -47,6 +47,8 @@ if exist "%REQ_FILE%" (
 
 :: Run Django server if manage.py exists
 if exist "manage.py" (
+    echo Preparing to run Django server...
+    python manage.py migrate
     echo Running Django server...
     python manage.py runserver
 ) else (
