@@ -8,6 +8,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 class Coach(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='coach_profile')
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.00'))
+    image_url = models.URLField(blank=True, null=True)
     certification_links = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
