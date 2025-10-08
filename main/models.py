@@ -12,6 +12,7 @@ class Coach(models.Model):
     certification_links = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    courses: models.Manager
 
     def __str__(self):
         return f"Coach: {self.user.username}"
@@ -44,9 +45,15 @@ class Category(models.Model):
         verbose_name_plural = "Categories"
 
 
+class ModeChoices(models.TextChoices):
+    ONLINE = 'online', 'Online'
+    OFFLINE = 'offline', 'Offline'
+
+
 class Course(models.Model):
     coach = models.ForeignKey(Coach, on_delete=models.CASCADE, related_name='courses')
     title = models.CharField(max_length=255)
+    mode = models.CharField(max_length=10, choices=ModeChoices.choices, default=ModeChoices.OFFLINE)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='courses')
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.00'))
     description = models.TextField()
@@ -56,6 +63,7 @@ class Course(models.Model):
     thumbnail_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    reviews: models.Manager
 
     def __str__(self):
         return self.title
@@ -74,10 +82,12 @@ class Course(models.Model):
 
 
 class BookingStatus(models.TextChoices):
-    PENDING = 'pending', 'Pending'
-    CONFIRMED = 'confirmed', 'Confirmed'
-    COMPLETED = 'completed', 'Completed'
-    CANCELLED = 'cancelled', 'Cancelled'
+    PENDING = 'pending', 'Pending'        # Booking created, waiting for user to pay
+    PAID = 'paid', 'Paid'                 # Payment successful, funds held by app (escrow)
+    CONFIRMED = 'confirmed', 'Confirmed'  # Coach has accepted
+    COMPLETED = 'completed', 'Completed'  # Session done, pending fund release
+    RELEASED = 'released', 'Released'     # Funds released to coach
+    CANCELLED = 'cancelled', 'Cancelled'     # Booking canceled (by coach or system), fund will be refunded
 
 
 class Booking(models.Model):
@@ -124,14 +134,14 @@ class Review(models.Model):
 class ChatSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chat_sessions')
     coach = models.ForeignKey(Coach, on_delete=models.CASCADE, related_name='chat_sessions')
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='chat_session', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     messages = models.JSONField(default=list, blank=True)
 
     class Meta:
-        unique_together = ('user', 'coach')
         indexes = [models.Index(fields=['user']), models.Index(fields=['coach'])]
         ordering = ['-updated_at']
 
     def __str__(self):
-        return f"ChatSession between {self.user.username} and {self.coach.user.username}"
+        return f"ChatSession between {self.user.username} and {self.coach.user.username} {'for booking ' + str(self.booking.pk) if self.booking else ''}"
