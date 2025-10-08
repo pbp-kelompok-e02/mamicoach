@@ -35,7 +35,7 @@ class Coach(models.Model):
 
 class Course(models.Model):
     coach = models.ForeignKey(Coach, on_delete=models.CASCADE, related_name='courses')
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=255)
     description = models.TextField()
     price = models.PositiveIntegerField()
     location = models.CharField(max_length=255)

@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 
 import os
+try:
+    import dj_database_url  # type: ignore
+except Exception:  # pragma: no cover - optional dependency during dev
+    dj_database_url = None
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,6 +33,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-n-asrwt9=fz@@+*_ru@8g*v_5hws!zu52!8*a%j#^xeky+pwj4"
 
 PRODUCTION = os.getenv("PRODUCTION", "False").lower() == "true"
+SCHEMA = os.getenv("SCHEMA", "public")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -84,17 +89,55 @@ WSGI_APPLICATION = "mami_coach.wsgi.application"
 
 if PRODUCTION:
     # Production: gunakan PostgreSQL dengan kredensial dari environment variables
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DB_NAME"),
-            "USER": os.getenv("DB_USER"),
-            "PASSWORD": os.getenv("DB_PASSWORD"),
-            "HOST": os.getenv("DB_HOST"),
-            "PORT": os.getenv("DB_PORT"),
-            "OPTIONS": {"options": f"-c search_path={os.getenv('SCHEMA', 'public')}"},
+    # Tambahkan dukungan SSL (Neon membutuhkan SSL). Default sslmode=require.
+    # Penting: JANGAN kirimkan 'options' search_path di startup packet (Neon pooler tidak mendukung)
+    db_options: dict[str, str] = {}
+
+    # SSL settings (compatible dengan Neon). Dapat dioverride via env.
+    sslmode = os.getenv("DB_SSLMODE", "require")  # Neon umumnya membutuhkan 'require'
+    if sslmode:
+        db_options["sslmode"] = sslmode
+
+    # Opsi tambahan bila dibutuhkan (opsional): path sertifikat
+    for env_key, opt_key in [
+        ("DB_SSLROOTCERT", "sslrootcert"),
+        ("DB_SSLCERT", "sslcert"),
+        ("DB_SSLKEY", "sslkey"),
+    ]:
+        val = os.getenv(env_key)
+        if val:
+            db_options[opt_key] = val
+
+    # Prefer DATABASE_URL when provided (e.g., from Neon dashboard)
+    database_url = os.getenv("DATABASE_URL")
+    if database_url and dj_database_url is not None:
+        db_cfg = dj_database_url.parse(
+            database_url,
+            conn_max_age=int(os.getenv("DB_CONN_MAX_AGE", "0")),
+            ssl_require=os.getenv("DB_SSL_REQUIRE", "true").lower() == "true",
+        )
+
+        # Merge search_path and any explicit SSL overrides into OPTIONS
+        merged_options = {**db_cfg.get("OPTIONS", {}), **db_options}
+        # Apply explicit SSL files if provided
+        for k in ("sslrootcert", "sslcert", "sslkey"):
+            if k in db_options:
+                merged_options[k] = db_options[k]
+        db_cfg["OPTIONS"] = merged_options
+
+        DATABASES = {"default": db_cfg}
+    else:
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": os.getenv("DB_NAME"),
+                "USER": os.getenv("DB_USER"),
+                "PASSWORD": os.getenv("DB_PASSWORD"),
+                "HOST": os.getenv("DB_HOST"),
+                "PORT": os.getenv("DB_PORT"),
+                "OPTIONS": db_options,
+            }
         }
-    }
 else:
     # Development: gunakan SQLite
     DATABASES = {
@@ -153,3 +196,18 @@ else:
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Set PostgreSQL search_path after each new connection (avoid startup 'options' not supported by Neon pooler)
+if PRODUCTION:
+    from django.db.backends.signals import connection_created  # type: ignore
+    from django.dispatch import receiver  # type: ignore
+
+    @receiver(connection_created)
+    def set_postgres_search_path(sender, connection, **kwargs):  # pragma: no cover
+        try:
+            if connection.vendor == "postgresql" and SCHEMA:
+                with connection.cursor() as cursor:
+                    cursor.execute(f"SET search_path TO {SCHEMA}")
+        except Exception:
+            # Don't crash the app if setting search_path fails; log if needed
+            pass
