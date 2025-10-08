@@ -41,7 +41,11 @@ Pengguna dapat menemukan pelatih berkualitas, membeli kelas, dan berinteraksi la
 
 
 ## Sumber Data
-TBA
+> - ClassPass Jabodetabek
+> - Superprof ID
+> - CoachUp Indonesia
+
+All data source are curated, obtained, and modified manually to fit data needs for this project. 
 
 ## Link Deployment & Design
 - [Link Deployment](https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id/)
