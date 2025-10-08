@@ -7,6 +7,7 @@
 > - Vincent Valentino Oei (2406353225)
 > - Vincentius Filbert Amadeo (2406351711)
 
+
 ### Table of Contents
 * [Anggota Kelompok](#MamiCoach)
 * [Deskripsi Aplikasi](#Deskripsi-Aplikasi)
@@ -17,7 +18,8 @@
 * [Peran Pengguna](#Peran-Pengguna)
 * [Link Deployment dan Design](#Link-Deployment--Design)
 
-### Deskripsi Aplikasi
+
+## Deskripsi Aplikasi
 $${\color{green}\textbf{Mami}}\textbf{Coach}$$ adalah platform yang menghubungkan pelatih profesional dengan pengguna yang ingin belajar langsung dari ahlinya. Kami memfasilitasi jual beli kelas online dengan sistem rating, review, dan verifikasi pelatih untuk memastikan kredibilitas. 
 
 Pengguna dapat menemukan pelatih berkualitas, membeli kelas, dan berinteraksi langsung, sementara pelatih dapat membangun reputasi, mengelola murid, dan mengembangkan bisnisnya. MamiCoach menciptakan ekosistem belajar yang transparan, terpercaya, dan berorientasi pada hasil nyata.
@@ -55,20 +57,15 @@ Jika OS anda UNIX based, seperti linux, jalankan:
 | List Coaches| Page untuk menampilkan coach yang terdaftar | - |
 
 
-### ERD
+## ERD
 ![ERD](./assets/erd.svg)
+[ERD Link](https://dbdiagram.io/d/68e6390fd2b621e422d55017)
 
 
 ## Sumber Data
-> - ClassPass Jabodetabek
-> - Superprof ID
-> - CoachUp Indonesia
-
+[Superprof.id](https://www.superprof.co.id/)
 All data source are curated, obtained, and modified manually to fit data needs for this project. 
 
-## Link Deployment & Design
-- [Link Deployment](https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id/)
-- [Link Figma](https://www.figma.com/design/Ysa8K8heNxQcG8eyjdRAXD/TK-PBP-E02?node-id=0-1&t=q5cEKERHtkHz8QlB-1)
 
 ## Peran Pengguna
 
@@ -93,3 +90,6 @@ Peran ini untuk para profesional atau ahli di bidangnya yang ingin membagikan il
 - **Membangun Reputasi:** Menerima rating dan review dari murid, yang akan membangun kredibilitas dan reputasi mereka di platform.
 
 
+## Link Deployment & Design
+- [Link Deployment](https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id/)
+- [Link Figma](https://www.figma.com/design/Ysa8K8heNxQcG8eyjdRAXD/TK-PBP-E02?node-id=0-1&t=q5cEKERHtkHz8QlB-1)
