@@ -1,4 +1,5 @@
 from decimal import Decimal
+from enum import unique
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Avg
@@ -12,7 +13,7 @@ class Coach(models.Model):
     certification_links = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    courses: models.Manager
+    courses: models.Manager['Course']
 
     def __str__(self):
         return f"Coach: {self.user.username}"
@@ -63,7 +64,7 @@ class Course(models.Model):
     thumbnail_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    reviews: models.Manager
+    reviews: models.Manager['Review']
 
     def __str__(self):
         return self.title
@@ -140,6 +141,7 @@ class ChatSession(models.Model):
     messages = models.JSONField(default=list, blank=True)
 
     class Meta:
+        unique_together = ('user', 'coach', 'booking')
         indexes = [models.Index(fields=['user']), models.Index(fields=['coach'])]
         ordering = ['-updated_at']
 
