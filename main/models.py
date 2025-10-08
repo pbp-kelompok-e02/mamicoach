@@ -34,9 +34,22 @@ class Coach(models.Model):
         ordering = ['-rating']
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    thumbnailUrl = models.URLField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Categories"
+
+
 class Course(models.Model):
     coach = models.ForeignKey(Coach, on_delete=models.CASCADE, related_name='courses')
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=255)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='courses')
     description = models.TextField()
     price = models.PositiveIntegerField()
     location = models.CharField(max_length=255)
@@ -63,7 +76,7 @@ class BookingStatus(models.TextChoices):
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='bookings')
-    status = models.CharField(max_length=20, choices=BookingStatus.choices, default=BookingStatus.PENDING)
+    status = models.CharField(max_length=50, choices=BookingStatus.choices, default=BookingStatus.PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
