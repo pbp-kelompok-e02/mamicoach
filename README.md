@@ -9,14 +9,18 @@
 
 
 ### Table of Contents
-* [Anggota Kelompok](#MamiCoach)
-* [Deskripsi Aplikasi](#Deskripsi-Aplikasi)
-* [Penggunaan](#Penggunaan)
-* [Daftar Modul](#Daftar-Modul)
-* [ERD](#ERD)
-* [Sumber Data](#Sumber-Data)
-* [Peran Pengguna](#Peran-Pengguna)
-* [Link Deployment dan Design](#Link-Deployment--Design)
+- [MamiCoach](#mamicoach)
+    - [Table of Contents](#table-of-contents)
+  - [Deskripsi Aplikasi](#deskripsi-aplikasi)
+  - [Penggunaan](#penggunaan)
+  - [Daftar Modul](#daftar-modul)
+  - [ERD](#erd)
+  - [Sumber Data](#sumber-data)
+  - [Peran Pengguna](#peran-pengguna)
+    - [1. Pengguna (User)](#1-pengguna-user)
+    - [2. Pelatih (Coach)](#2-pelatih-coach)
+    - [3. Admin](#3-admin)
+  - [Link Deployment \& Design](#link-deployment--design)
 
 
 ## Deskripsi Aplikasi
@@ -42,29 +46,31 @@ Jika OS anda UNIX based, seperti linux, jalankan:
 
 
 ## Daftar Modul
+| **Module Name** | **Description of Features** | **Delegated Unit** |
+| -- | -- | -- |
+| Authentication & User Management | Semua hal terkait akun, login, role, dan akses.<br><br>**Fitur:**<br>- Registrasi User & Coach<br>- Login / Logout (menggunakan Django Auth)<br>- Role-based access control (User, Coach, Admin)<br>- Verifikasi akun Coach oleh Admin<br>- Profile page (edit data pribadi, hanya terlihat oleh user login)<br>- Template: `register.html`, `login.html`, `profile.html`<br>- AJAX untuk validasi username/email<br>- Model:<br>  - `User` (extend `AbstractUser`)<br>  - `CoachProfile` (OneToOne → User)<br>  - `AdminVerification` | Natan Harum Panogu Silalahi [2406496170] |
+| Class & Coach Management | Manajemen kelas dan profil coach.<br><br>**Fitur:**<br>- Coach membuat, mengedit, dan menghapus kelas.<br>- Tampilkan daftar semua kelas + filter (olahraga, harga, level).<br>- Detail halaman kelas (coach, deskripsi, harga, rating).<br>- Upload sertifikasi (untuk verifikasi coach).<br>- Admin memverifikasi sertifikat → beri badge *Verified Coach*.<br>- Template: `class_list.html`, `class_detail.html`, `coach_list.html`<br>- AJAX filter kelas per kategori olahraga.<br>- Model:<br>  - `SportClass`<br>  - `Certification`<br>  - `VerifiedCoachBadge` | Kevin Cornellius Widjaja [2406428781] |
+| Booking & Schedule | Proses booking kelas, pemilihan jadwal, dan status.<br><br>**Fitur:**<br>- Form booking (pilih kelas, tanggal, jam).<br>- Filter kelas berdasarkan hari & coach.<br>- Dashboard user: daftar booking (Pending, Confirmed, Done).<br>- Dashboard coach: daftar sesi masuk.<br>- AJAX update status (coach → Confirmed/Done/Canceled).<br>- Model:<br>  - `Booking` (`user`, `coach`, `class`, `date`, `status`)<br>  - `ScheduleSlot` (slot waktu yang ditawarkan coach) | Galih Nur Rizqy [2406343224] |
+| Payment System | Simulasi atau integrasi gateway (Xendit sandbox).<br><br>**Fitur:**<br>- Generate invoice (via Xendit API atau dummy page).<br>- Status pembayaran (`Pending`, `Paid`).<br>- Webhook handler (jika pakai sandbox).<br>- Tampilan riwayat transaksi user.<br>- Template: `payment_page.html`, `payment_success.html`<br>- AJAX update status payment otomatis setelah webhook.<br>- Model:<br>  - `Payment` (booking_id, amount, status, method, timestamp)<br>- Admin page untuk konfirmasi pembayaran ke coach dan refund ke user | Vincentius Filbert Amadeo [2406351711] |
+| Chat & Review | Interaksi & feedback user terhadap coach.<br><br>**Fitur:**<br>- Real-time chat sederhana (AJAX polling).<br>- Chat hanya terbuka jika user sudah booking kelas.<br>- Setelah kelas selesai → form review (rating + komentar).<br>- Tampilkan review di halaman kelas dan profil coach.<br>- Template: `chat.html`, `review_form.html`, `reviews_section.html`<br>- Model:<br>  - `ChatMessage`<br>  - `Review` (rating, komentar, user, class, coach) | Vincent Valentino Oei [2406353225] |
 
-| Nama Modul | Deskripsi Singkat Modul | Penanggungjawab |
-|-|-|-|
-| Register dan Login | Membuat page register dan login untuk coach dan user biasa dengan mengextend user yang telah tersedia | - |
-| Coach | Mencakup sistem sign up coach serta upload data yang diperlukan | - |
-| Courses Batch | Mencakup index page dari kelas (menampilkan semua kelas, rekomendasi dan juga filter) | - |
-| Courses Details | Details page dari kelas, serta edit dan delete page untuk kelas yang ada. | - |
-| Booking | Mencakup fitur booking kelas, terinisiasi dari user biasa | - |
-| Review | Mencakup pembuatan review | - |
-| Chat | Mencakup fitur chat yang persistent antar pengguna dan coach terkait kelas tertentu | - |
-| Homepage | Tampilan awal ketika user membuka website, mencakup hero, featured classes, featured coaches, dan testimonies | - |
-| Layouting | Layout dari aplikasi secara keseluruhan, mencakup navbar dan footer | - |
-| List Coaches| Page untuk menampilkan coach yang terdaftar | - |
 
 
 ## ERD
 ![ERD](./assets/erd.svg)
 [ERD Link](https://dbdiagram.io/d/68e6390fd2b621e422d55017)
-
+> [!Note]
+> Subject to Change
 
 ## Sumber Data
 [Superprof.id](https://www.superprof.co.id/)
-All data source are curated, obtained, and modified manually to fit data needs for this project. 
+
+Data yang telah discrape:
+- [Coaches](./dataset/main_coach.csv)
+- [Courses](./dataset/main_course.csv)
+
+> [!Note]
+> Semua sumber data dikurasi, diperoleh, dan dimodifikasi secara manual untuk menyesuaikan kebutuhan data dalam proyek ini.
 
 
 ## Peran Pengguna
@@ -88,6 +94,15 @@ Peran ini untuk para profesional atau ahli di bidangnya yang ingin membagikan il
 - **Membuat & Mengelola Kelas:** Dapat membuat, mengedit, dan mempublikasikan kelas online, termasuk menentukan kurikulum, harga, dan jadwal.
 - **Mengelola Murid:** Dapat melihat daftar murid yang terdaftar di kelasnya, berinteraksi, dan memantau kemajuan mereka.
 - **Membangun Reputasi:** Menerima rating dan review dari murid, yang akan membangun kredibilitas dan reputasi mereka di platform.
+
+
+### 3. Admin
+Peran ini untuk pengelola platform yang bertanggung jawab menjaga kualitas, keamanan, dan operasional MamiCoach. Berdasarkan pembagian modul, Admin memiliki akses dan tugas spesifik untuk memastikan platform berjalan lancar.
+
+**Deskripsi & Hak Akses:**
+- **Verifikasi Pelatih:** Meninjau pendaftaran pelatih baru, memverifikasi sertifikat yang diunggah, dan memberikan status "Verified Coach" untuk menjaga kredibilitas platform.
+- **Manajemen Pembayaran:** Mengelola alur keuangan, termasuk mengonfirmasi pembayaran dari pengguna dan meneruskan pembayaran (*payout*) kepada pelatih.
+- **Manajemen Pengembalian Dana (Refund):** Memproses dan menyetujui permintaan pengembalian dana dari pengguna sesuai dengan kebijakan yang berlaku.
 
 
 ## Link Deployment & Design
