@@ -30,7 +30,7 @@ Pengguna dapat menemukan pelatih berkualitas, membeli kelas, dan berinteraksi la
 |-|-|-|
 | Register dan Login | Membuat page register dan login untuk coach dan user biasa dengan mengextend user yang telah tersedia | - |
 | Coach | Mencakup sistem sign up coach serta upload data yang diperlukan | - |
-| Courses Batch | Mencakup index page dari kelas (menampilkan semua kelas dan juga filter) | - |
+| Courses Batch | Mencakup index page dari kelas (menampilkan semua kelas, rekomendasi dan juga filter) | - |
 | Courses Details | Details page dari kelas, serta edit dan delete page untuk kelas yang ada. | - |
 | Booking | Mencakup fitur booking kelas, terinisiasi dari user biasa | - |
 | Review | Mencakup pembuatan review | - |
@@ -73,16 +73,4 @@ Peran ini untuk para profesional atau ahli di bidangnya yang ingin membagikan il
 - **Mengelola Murid:** Dapat melihat daftar murid yang terdaftar di kelasnya, berinteraksi, dan memantau kemajuan mereka.
 - **Membangun Reputasi:** Menerima rating dan review dari murid, yang akan membangun kredibilitas dan reputasi mereka di platform.
 
----
 
-### 3. Administrator
-> [!Note]
-> **Melalui Django Admin**
-
-Peran internal untuk tim Mamicoach yang bertugas mengelola dan memastikan platform berjalan lancar.
-
-**Deskripsi & Hak Akses:**
-- **Verifikasi Pelatih:** Melakukan proses verifikasi dan persetujuan untuk pelatih baru yang mendaftar.
-- **Manajemen Konten:** Dapat mengelola (menyetujui, menolak, atau menghapus) kelas dan ulasan yang tidak sesuai dengan standar komunitas.
-- **Manajemen Pengguna:** Memiliki akses untuk mengelola akun Pengguna dan Pelatih, termasuk menangani laporan atau sengketa.
-- **Pengelolaan Platform:** Mengatur kategori, fitur, dan aspek teknis lainnya dari platform Mamicoach.
