@@ -49,10 +49,7 @@ class Category(models.Model):
 class Course(models.Model):
     coach = models.ForeignKey(Coach, on_delete=models.CASCADE, related_name='courses')
     title = models.CharField(max_length=255)
-<<<<<<< HEAD
-=======
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='courses')
->>>>>>> refs/remotes/origin/master
     description = models.TextField()
     price = models.PositiveIntegerField()
     location = models.CharField(max_length=255)
