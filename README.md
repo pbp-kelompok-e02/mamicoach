@@ -9,14 +9,18 @@
 
 
 ### Table of Contents
-* [Anggota Kelompok](#MamiCoach)
-* [Deskripsi Aplikasi](#Deskripsi-Aplikasi)
-* [Penggunaan](#Penggunaan)
-* [Daftar Modul](#Daftar-Modul)
-* [ERD](#ERD)
-* [Sumber Data](#Sumber-Data)
-* [Peran Pengguna](#Peran-Pengguna)
-* [Link Deployment dan Design](#Link-Deployment--Design)
+- [MamiCoach](#mamicoach)
+    - [Table of Contents](#table-of-contents)
+  - [Deskripsi Aplikasi](#deskripsi-aplikasi)
+  - [Penggunaan](#penggunaan)
+  - [Daftar Modul](#daftar-modul)
+  - [ERD](#erd)
+  - [Sumber Data](#sumber-data)
+  - [Peran Pengguna](#peran-pengguna)
+    - [1. Pengguna (User)](#1-pengguna-user)
+    - [2. Pelatih (Coach)](#2-pelatih-coach)
+    - [3. Admin](#3-admin)
+  - [Link Deployment \& Design](#link-deployment--design)
 
 
 ## Deskripsi Aplikasi
@@ -84,6 +88,14 @@ Peran ini untuk para profesional atau ahli di bidangnya yang ingin membagikan il
 - **Mengelola Murid:** Dapat melihat daftar murid yang terdaftar di kelasnya, berinteraksi, dan memantau kemajuan mereka.
 - **Membangun Reputasi:** Menerima rating dan review dari murid, yang akan membangun kredibilitas dan reputasi mereka di platform.
 
+
+### 3. Admin
+Peran ini untuk pengelola platform yang bertanggung jawab menjaga kualitas, keamanan, dan operasional MamiCoach. Berdasarkan pembagian modul, Admin memiliki akses dan tugas spesifik untuk memastikan platform berjalan lancar.
+
+**Deskripsi & Hak Akses:**
+- **Verifikasi Pelatih:** Meninjau pendaftaran pelatih baru, memverifikasi sertifikat yang diunggah, dan memberikan status "Verified Coach" untuk menjaga kredibilitas platform.
+- **Manajemen Pembayaran:** Mengelola alur keuangan, termasuk mengonfirmasi pembayaran dari pengguna dan meneruskan pembayaran (*payout*) kepada pelatih.
+- **Manajemen Pengembalian Dana (Refund):** Memproses dan menyetujui permintaan pengembalian dana dari pengguna sesuai dengan kebijakan yang berlaku.
 
 ## Link Deployment & Design
 - [Link Deployment](https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id/)
