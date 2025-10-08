@@ -17,6 +17,7 @@ Pengguna dapat menemukan pelatih berkualitas, membeli kelas, dan berinteraksi la
 * [Anggota Kelompok](#MamiCoach)
 * [Deskripsi Aplikasi](#Deskripsi-Aplikasi)
 * [Daftar Modul](#Daftar-Modul)
+* [ERD](#ERD)
 * [Sumber Data](#Sumber-Data)
 * [Peran Pengguna](#Peran-Pengguna)
 * [Link Deployment dan Design](#Link-Deployment--Design)
@@ -38,6 +39,10 @@ Pengguna dapat menemukan pelatih berkualitas, membeli kelas, dan berinteraksi la
 | Homepage | Tampilan awal ketika user membuka website, mencakup hero, featured classes, featured coaches, dan testimonies | - |
 | Layouting | Layout dari aplikasi secara keseluruhan, mencakup navbar dan footer | - |
 | List Coaches| Page untuk menampilkan coach yang terdaftar | - |
+
+
+### ERD
+![ERD](./assets/erd.svg)
 
 
 ## Sumber Data
