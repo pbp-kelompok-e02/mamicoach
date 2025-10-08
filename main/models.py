@@ -99,3 +99,19 @@ class Review(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.class_ref.coach.update_rating()
+
+
+class ChatSession(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chat_sessions')
+    coach = models.ForeignKey(Coach, on_delete=models.CASCADE, related_name='chat_sessions')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    messages = models.JSONField(default=list, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'coach')
+        indexes = [models.Index(fields=['user']), models.Index(fields=['coach'])]
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"ChatSession between {self.user.username} and {self.coach.user.username}"
