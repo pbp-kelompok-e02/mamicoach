@@ -8,6 +8,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 class Coach(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='coach_profile')
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.00'))
+    image_url = models.URLField(blank=True, null=True)
     certification_links = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -33,9 +34,25 @@ class Coach(models.Model):
         ordering = ['-rating']
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    thumbnailUrl = models.URLField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Categories"
+
+
 class Course(models.Model):
     coach = models.ForeignKey(Coach, on_delete=models.CASCADE, related_name='courses')
     title = models.CharField(max_length=255)
+<<<<<<< HEAD
+=======
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='courses')
+>>>>>>> refs/remotes/origin/master
     description = models.TextField()
     price = models.PositiveIntegerField()
     location = models.CharField(max_length=255)
@@ -62,7 +79,7 @@ class BookingStatus(models.TextChoices):
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='bookings')
-    status = models.CharField(max_length=20, choices=BookingStatus.choices, default=BookingStatus.PENDING)
+    status = models.CharField(max_length=50, choices=BookingStatus.choices, default=BookingStatus.PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -98,3 +115,19 @@ class Review(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.class_ref.coach.update_rating()
+
+
+class ChatSession(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chat_sessions')
+    coach = models.ForeignKey(Coach, on_delete=models.CASCADE, related_name='chat_sessions')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    messages = models.JSONField(default=list, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'coach')
+        indexes = [models.Index(fields=['user']), models.Index(fields=['coach'])]
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"ChatSession between {self.user.username} and {self.coach.user.username}"
