@@ -7,23 +7,37 @@
 > - Vincent Valentino Oei (2406353225)
 > - Vincentius Filbert Amadeo (2406351711)
 
-### Deskripsi Aplikasi
-$${\color{green}\textbf{Mami}}\textbf{Coach}$$ adalah platform yang menghubungkan pelatih profesional dengan pengguna yang ingin belajar langsung dari ahlinya. Kami memfasilitasi jual beli kelas online dengan sistem rating, review, dan verifikasi pelatih untuk memastikan kredibilitas. 
-
-Pengguna dapat menemukan pelatih berkualitas, membeli kelas, dan berinteraksi langsung, sementara pelatih dapat membangun reputasi, mengelola murid, dan mengembangkan bisnisnya. MamiCoach menciptakan ekosistem belajar yang transparan, terpercaya, dan berorientasi pada hasil nyata.
-
-
 ### Table of Contents
 * [Anggota Kelompok](#MamiCoach)
 * [Deskripsi Aplikasi](#Deskripsi-Aplikasi)
+* [Penggunaan](#Penggunaan)
 * [Daftar Modul](#Daftar-Modul)
 * [ERD](#ERD)
 * [Sumber Data](#Sumber-Data)
 * [Peran Pengguna](#Peran-Pengguna)
 * [Link Deployment dan Design](#Link-Deployment--Design)
 
+### Deskripsi Aplikasi
+$${\color{green}\textbf{Mami}}\textbf{Coach}$$ adalah platform yang menghubungkan pelatih profesional dengan pengguna yang ingin belajar langsung dari ahlinya. Kami memfasilitasi jual beli kelas online dengan sistem rating, review, dan verifikasi pelatih untuk memastikan kredibilitas. 
+
+Pengguna dapat menemukan pelatih berkualitas, membeli kelas, dan berinteraksi langsung, sementara pelatih dapat membangun reputasi, mengelola murid, dan mengembangkan bisnisnya. MamiCoach menciptakan ekosistem belajar yang transparan, terpercaya, dan berorientasi pada hasil nyata.
+
 
 ---
+
+## Penggunaan
+Pastikan terlebih dahulu bahwa anda telah melakukan instalasi python pada device anda. Pastikan juga anda telah menduplikat file `.env.example` ke `.env`, serta mengisi file tersebut dengan environment variables yang sesuai dengan keperluan anda.
+
+Kemudian jika OS anda adalah windows, jalankan:
+```ps
+.\setup.bat
+```
+
+Jika OS anda UNIX based, seperti linux, jalankan:
+```
+./setup.sh
+```
+
 
 ## Daftar Modul
 
