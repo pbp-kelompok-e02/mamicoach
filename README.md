@@ -19,7 +19,7 @@ Pengguna dapat menemukan pelatih berkualitas, membeli kelas, dan berinteraksi la
 * [Daftar Modul](#Daftar-Modul)
 * [Sumber Data](#Sumber-Data)
 * [Peran Pengguna](#Peran-Pengguna)
-* [Link Deployment dan Design](#Link-Deployment-amp-Design)
+* [Link Deployment dan Design](#Link-Deployment--Design)
 
 
 ---
