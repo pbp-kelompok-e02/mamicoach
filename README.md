@@ -59,7 +59,7 @@ Jika OS anda UNIX based, seperti linux, jalankan:
 ## ERD
 ![ERD](./assets/erd.svg)
 [ERD Link](https://dbdiagram.io/d/68e6390fd2b621e422d55017)
-
+> Outdated
 
 ## Sumber Data
 [Superprof.id](https://www.superprof.co.id/)
@@ -96,6 +96,7 @@ Peran ini untuk pengelola platform yang bertanggung jawab menjaga kualitas, keam
 - **Verifikasi Pelatih:** Meninjau pendaftaran pelatih baru, memverifikasi sertifikat yang diunggah, dan memberikan status "Verified Coach" untuk menjaga kredibilitas platform.
 - **Manajemen Pembayaran:** Mengelola alur keuangan, termasuk mengonfirmasi pembayaran dari pengguna dan meneruskan pembayaran (*payout*) kepada pelatih.
 - **Manajemen Pengembalian Dana (Refund):** Memproses dan menyetujui permintaan pengembalian dana dari pengguna sesuai dengan kebijakan yang berlaku.
+
 
 ## Link Deployment & Design
 - [Link Deployment](https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id/)
