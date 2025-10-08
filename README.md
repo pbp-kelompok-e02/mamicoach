@@ -59,11 +59,18 @@ Jika OS anda UNIX based, seperti linux, jalankan:
 ## ERD
 ![ERD](./assets/erd.svg)
 [ERD Link](https://dbdiagram.io/d/68e6390fd2b621e422d55017)
-> Outdated
+> [!Note]
+> Subject to Change
 
 ## Sumber Data
 [Superprof.id](https://www.superprof.co.id/)
-All data source are curated, obtained, and modified manually to fit data needs for this project. 
+
+Data yang telah discrape:
+- [Coaches](./dataset/main_coach.csv)
+- [Courses](./dataset/main_course.csv)
+
+> [!Note]
+> Semua sumber data dikurasi, diperoleh, dan dimodifikasi secara manual untuk menyesuaikan kebutuhan data dalam proyek ini.
 
 
 ## Peran Pengguna
