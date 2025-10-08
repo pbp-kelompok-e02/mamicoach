@@ -12,8 +12,19 @@ else
   echo "✅ Virtual environment already exists."
 fi
 
-# Activate the venv
-source "$VENV_DIR/bin/activate"
+
+# Activate the venv (check both possible locations)
+if [ -f "$VENV_DIR/bin/activate" ]; then
+  ACTIVATE_SCRIPT="$VENV_DIR/bin/activate"
+elif [ -f "$VENV_DIR/Scripts/activate" ]; then
+  ACTIVATE_SCRIPT="$VENV_DIR/Scripts/activate"
+else
+  echo "ERROR: Cannot find activate script in bin or Scripts."
+  exit 1
+fi
+
+# shellcheck disable=SC1090
+source "$ACTIVATE_SCRIPT"
 
 # Upgrade pip and install requirements
 if [ -f "$REQ_FILE" ]; then
