@@ -27,13 +27,13 @@
                 <a href="/" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
                     Beranda
                 </a>
-                <a href="#" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
+                <a href="{% url 'courses_and_coach:show_courses' %}" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
                     Kelas
                 </a>
                 <a href="#" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
                     Coach
                 </a>
-                <a href="#" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
+                <a href="{% url 'user_profile:register_coach' %}" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
                     Bergabung Jadi Coach
                 </a>
             </div>
@@ -60,12 +60,15 @@
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 Kelas Saya
                             </a>
-                            {% if user.coach_profile %}
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            {% if user.coachprofile %}
+                                <a href="{% url 'courses_and_coach:my_courses' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     Dashboard Coach
                                 </a>
+                                <a href="{% url 'courses_and_coach:create_course' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    Buat Kelas Baru
+                                </a>
                             {% else %}
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <a href="{% url 'user_profile:register_coach' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     Bergabung Jadi Coach
                                 </a>
                             {% endif %}
@@ -113,13 +116,13 @@
             <a href="/" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                 Beranda
             </a>
-            <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+            <a href="{% url 'courses_and_coach:show_courses' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                 Kelas
             </a>
             <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                 Coach
             </a>
-            <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+            <a href="{% url 'user_profile:register_coach' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                 Bergabung Jadi Coach
             </a>
             
@@ -139,12 +142,15 @@
                     <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                         Kelas Saya
                     </a>
-                    {% if user.coach_profile %}
-                        <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+                    {% if user.coachprofile %}
+                        <a href="{% url 'courses_and_coach:my_courses' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                             Dashboard Coach
                         </a>
+                        <a href="{% url 'courses_and_coach:create_course' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+                            Buat Kelas Baru
+                        </a>
                     {% else %}
-                        <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+                        <a href="{% url 'user_profile:register_coach' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                             Bergabung Jadi Coach
                         </a>
                     {% endif %}
