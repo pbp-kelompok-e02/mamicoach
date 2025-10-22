@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Buat Kelas Baru - MamiCoach{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Buat Kelas Baru</h1>
+            <p class="text-lg text-gray-600">Bagikan keahlian Anda dan bantu lebih banyak orang mencapai tujuan fitness mereka</p>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-xl p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="{{ form.title.id_for_label }}" class="block text-sm font-semibold text-gray-900 mb-2">
+                        Nama Kelas *
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.category.id_for_label }}" class="block text-sm font-semibold text-gray-900 mb-2">
+                        Kategori *
+                    </label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.category.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.price.id_for_label }}" class="block text-sm font-semibold text-gray-900 mb-2">
+                            Harga per Sesi (Rp) *
+                        </label>
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.price.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.duration.id_for_label }}" class="block text-sm font-semibold text-gray-900 mb-2">
+                            Durasi (Menit) *
+                        </label>
+                        {{ form.duration }}
+                        {% if form.duration.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.duration.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-semibold text-gray-900 mb-2">
+                        Deskripsi Kelas *
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Jelaskan apa yang akan dipelajari peserta, level yang dibutuhkan, dan manfaat yang akan didapat.</p>
+                </div>
+
+                <div>
+                    <label for="{{ form.thumbnail_url.id_for_label }}" class="block text-sm font-semibold text-gray-900 mb-2">
+                        URL Gambar Kelas
+                    </label>
+                    {{ form.thumbnail_url }}
+                    {% if form.thumbnail_url.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.thumbnail_url.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Opsional: Link ke gambar yang mewakili kelas Anda</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 pt-6">
+                    <button 
+                        type="submit" 
+                        class="flex-1 bg-primary text-white py-4 px-8 rounded-2xl font-semibold text-lg hover:bg-green-600 transition-colors duration-200 flex items-center justify-center space-x-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        <span>Buat Kelas</span>
+                    </button>
+                    
+                    <a 
+                        href="{% url 'courses_and_coach:my_courses' %}" 
+                        class="flex-1 sm:flex-none border-2 border-gray-300 text-gray-700 py-4 px-8 rounded-2xl font-semibold text-lg hover:border-primary hover:text-primary transition-colors duration-200 text-center"
+                    >
+                        Batal
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Coach Info Card -->
+        <div class="mt-8 bg-white rounded-2xl shadow-lg p-6">
+            <div class="flex items-start space-x-4">
+                <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
+                    <img 
+                        src="{{ coach_profile.image_url|default:'https://ui-avatars.com/api/?name='|add:coach_profile.user.get_full_name|urlencode:'&background=35A753&color=ffffff' }}" 
+                        alt="{{ coach_profile.user.get_full_name }}"
+                        class="w-full h-full object-cover"
+                    >
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-semibold text-gray-900">{{ coach_profile.user.get_full_name }}</h3>
+                    <p class="text-sm text-gray-600 mb-2">{{ coach_profile.expertise|join:", " }}</p>
+                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                        <span class="flex items-center space-x-1">
+                            <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                                <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                            </svg>
+                            <span>{{ coach_profile.rating|floatformat:1 }} Rating</span>
+                        </span>
+                        {% if coach_profile.verified %}
+                        <span class="flex items-center space-x-1 text-primary">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>Terverifikasi</span>
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-2xl p-6">
+            <div class="flex items-start space-x-3">
+                <svg class="w-6 h-6 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                    <h4 class="font-semibold text-blue-900 mb-2">Tips Membuat Kelas yang Menarik:</h4>
+                    <ul class="text-sm text-blue-800 space-y-1">
+                        <li>• Gunakan nama kelas yang jelas dan mudah dipahami</li>
+                        <li>• Tulis deskripsi yang detail tentang apa yang akan dipelajari</li>
+                        <li>• Tentukan harga yang kompetitif sesuai dengan durasi dan level kelas</li>
+                        <li>• Gunakan gambar yang menarik dan relevan dengan kelas Anda</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

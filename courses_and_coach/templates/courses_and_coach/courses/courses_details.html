@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ course.title }} - MamiCoach{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen">
+    <!-- Breadcrumb -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="{% url 'courses_and_coach:show_courses' %}" class="text-gray-500 hover:text-primary">Kelas</a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-gray-500">{{ course.category.name }}</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-gray-900 font-medium">{{ course.title }}</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div class="relative rounded-3xl overflow-hidden shadow-xl mb-8">
+                    <img 
+                        src="{{ course.thumbnail_url|default:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80' }}" 
+                        alt="{{ course.title }}"
+                        class="w-full h-96 object-cover"
+                    >
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                    
+                    {% if course.coach.verified %}
+                    <div class="absolute top-4 left-4 bg-primary text-white px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Verified Coach</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {{ course.category.name }}
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                            {{ course.title }}
+                        </h1>
+                        <div class="flex items-center space-x-4 text-sm text-gray-600">
+                            <span class="flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>{{ course.duration_formatted }}</span>
+                            </span>
+                            <span class="flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span>{{ course.created_at|date:"d M Y" }}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="prose max-w-none">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-3">Tentang Kelas Ini</h3>
+                        <p class="text-gray-600 leading-relaxed">{{ course.description }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1">
+                <div class="sticky top-8">
+                    <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
+                        <div class="text-center mb-6">
+                            <div class="text-3xl font-bold text-gray-900 mb-1">
+                                {{ course.price_formatted }}<span class="text-sm font-normal text-gray-500">/sesi</span>
+                            </div>
+                            {% if course.coach.verified %}
+                            <div class="flex items-center justify-center space-x-2 text-primary">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                                </svg>
+                                <span class="text-sm font-medium">Tanya Coach</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <button class="w-full bg-primary text-white py-4 rounded-2xl font-semibold text-lg hover:bg-green-600 transition-colors duration-200 flex items-center justify-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>Jadwalkan Sesi</span>
+                        </button>
+
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
+                                    <img 
+                                        src="{{ course.coach.image_url|default:'https://ui-avatars.com/api/?name='|add:course.coach.user.get_full_name|urlencode:'&background=35A753&color=ffffff' }}" 
+                                        alt="{{ course.coach.user.get_full_name }}"
+                                        class="w-full h-full object-cover"
+                                    >
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-900">{{ course.coach.user.get_full_name }}</h4>
+                                    <p class="text-sm text-gray-600">{{ course.category.name }}, {{ course.coach.expertise|join:", " }}</p>
+                                    <div class="flex items-center space-x-1 mt-1">
+                                        <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                                        </svg>
+                                        <span class="text-sm font-medium text-gray-900">{{ course.coach.rating|floatformat:1 }}</span>
+                                        <span class="text-sm text-gray-500">(284,3 rb)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 text-sm text-gray-600">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>• 242 jam sesi dijadwalkan</span>
+                                </div>
+                            </div>
+
+                            <button class="w-full mt-4 text-primary border border-primary py-3 rounded-2xl font-semibold hover:bg-primary hover:text-white transition-colors duration-200 flex items-center justify-center space-x-2">
+                                <span>Lihat profil coach</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if related_courses %}
+        <div class="mt-16">
+            <h2 class="text-2xl font-bold text-gray-900 mb-8">Kelas Serupa</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {% for related_course in related_courses %}
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                    <div class="relative">
+                        <img 
+                            src="{{ related_course.thumbnail_url|default:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' }}" 
+                            alt="{{ related_course.title }}"
+                            class="w-full h-48 object-cover"
+                        >
+                        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-medium">
+                            {{ related_course.category.name }}
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2">{{ related_course.title }}</h3>
+                        <p class="text-sm text-gray-600 mb-3">{{ related_course.coach.user.get_full_name }}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-bold text-primary">{{ related_course.price_formatted }}</span>
+                            <a href="{% url 'courses_and_coach:course_details' related_course.id %}" class="text-primary text-sm font-medium hover:underline">
+                                Lihat Detail
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
