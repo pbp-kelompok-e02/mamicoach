@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block meta %}
+<title>Login MamiCoach</title>
+{% endblock meta %}
+
+{% block content %}
+<div>
+    <h1>Login</h1>
+
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Login</button>
+    </form>
+
+    <p>Don't have an account? <a href="{% url 'main:register' %}">Register here</a></p>
+</div>
+{% endblock content %}
