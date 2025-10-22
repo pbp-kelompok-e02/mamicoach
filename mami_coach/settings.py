@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 
 import os
+
 try:
     import dj_database_url  # type: ignore
 except Exception:  # pragma: no cover - optional dependency during dev
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "main",
+    "courses_and_coach",
 ]
 
 MIDDLEWARE = [
