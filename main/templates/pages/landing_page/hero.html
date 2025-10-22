@@ -1,0 +1,127 @@
+
+{% load static %}
+
+
+{% block content %}
+<section class="bg-gradient-to-br from-green-50 to-blue-50 min-h-screen flex items-center relative overflow-hidden">
+    <!-- Background Decorative E        lements -->
+    <div class="absolute top-20 left-10">
+        <div class="w-4 h-4 bg-primary rounded-full opacity-30"></div>
+    </div>
+    <div class="absolute top-32 right-20">
+        <div class="w-3 h-3 bg-blue-400 rounded-full opacity-40"></div>
+    </div>
+    <div class="absolute bottom-40 left-20">
+        <div class="w-6 h-6 bg-yellow-400 rounded-full opacity-25"></div>
+    </div>
+    <div class="absolute bottom-20 right-32">
+        <div class="w-8 h-8 bg-purple-400 opacity-20 transform rotate-45"></div>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="space-y-8">
+                <div class="inline-flex items-center space-x-2 bg-white rounded-full px-4 py-2 shadow-sm">
+                    <div class="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                    <span class="text-sm font-medium text-gray-700">Mulai Hidup Aktifmu Sekarang!</span>
+                </div>
+                
+                <div class="space-y-4">
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                        Akses <span class="text-primary underline  decoration-secondary">100+</span> Kelas Olahraga dari Coach 
+                        <span class="text-primary underline  decoration-secondary">Terverifikasi</span> 
+                        di Seluruh Indonesia
+                    </h1>
+                    
+                    <p class="text-lg text-gray-600 max-w-lg">
+                        Temukan gaya olahraga yang cocok buat kamu
+                    </p>
+                </div>
+                
+                <!-- Search Bar -->
+                <div class="relative max-w-md">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input 
+                        type="text" 
+                        placeholder="Cari kelas atau coach..." 
+                        class="block w-full pl-12 pr-4 py-4 border border-gray-300 rounded-2xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary text-sm shadow-sm"
+                    >
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        <button class="bg-primary text-white p-2 rounded-xl hover:bg-green-600 transition-colors duration-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- CTA -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="#" class="bg-primary text-white px-8 py-4 rounded-2xl font-semibold hover:bg-green-600 transition-colors duration-200 text-center">
+                        Mulai Sekarang
+                    </a>
+                    <a href="#" class="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-2xl font-semibold hover:border-primary hover:text-primary transition-colors duration-200 text-center">
+                        Jelajahi Kelas
+                    </a>
+                </div>
+            </div>
+            
+            <div class="relative">
+                <div class="relative h-[500px] w-full">
+                    <div class="absolute top-0 left-0 w-64 h-80 transform -rotate-6 hover:rotate-0 transition-transform duration-300">
+                        <div class="bg-white p-3 rounded-2xl shadow-2xl h-full">
+                            <img 
+                                src="{% static 'images/hero-plank.jpg' %}" 
+                                alt="Plank Exercise"
+                                class="w-full h-full object-cover rounded-xl"
+                                onerror="this.src='https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="absolute top-16 right-0 w-64 h-80 transform rotate-6 hover:rotate-0 transition-transform duration-300">
+                        <div class="bg-white p-3 rounded-2xl shadow-2xl h-full">
+                            <img 
+                                src="{% static 'images/hero-yoga.jpg' %}" 
+                                alt="Yoga Training Session"
+                                class="w-full h-full object-cover rounded-xl"
+                                onerror="this.src='https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="absolute top-32 left-1/2 transform -translate-x-1/2 rotate-2 hover:rotate-0 transition-transform duration-300 w-56 h-72">
+                        <div class="bg-white p-3 rounded-2xl shadow-2xl h-full">
+                            <img 
+                                src="{% static 'images/hero-fitness.jpg' %}" 
+                                alt="Fitness Training"
+                                class="w-full h-full object-cover rounded-xl"
+                                onerror="this.src='https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'"
+                            >
+                        </div>
+                    </div>
+                </div>
+                    
+                    <div class="absolute top-6 right-6 bg-white rounded-2xl p-4 shadow-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-primary fill-current" viewBox="0 0 20 20">
+                                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                                </svg>
+                                <span class="ml-1 font-bold text-gray-900">5.0</span>
+                            </div>
+                            <span class="text-sm text-gray-600">Rating</span>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
