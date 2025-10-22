@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block meta %}
+<title>Register as Coach - MamiCoach</title>
+{% endblock meta %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 50px auto; padding: 20px; border: 1px solid #ccc;">
+    <h1>Register as Coach</h1>
+    
+    {% if messages %}
+    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 20px;">
+        {% for message in messages %}
+        <p style="margin: 0; color: #721c24;">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 20px;">
+        {% for error in form.non_field_errors %}
+        <p style="margin: 0; color: #721c24;">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <fieldset style="border: 1px solid #35A753; padding: 15px; margin-bottom: 20px;">
+            <legend style="color: #35A753; font-weight: bold;">Account Information</legend>
+            
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.username.id_for_label }}" style="display: block; font-weight: bold;">{{ form.username.label }}</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <span style="color: red; font-size: 12px;">{{ form.username.errors|join:", " }}</span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.first_name.id_for_label }}" style="display: block; font-weight: bold;">{{ form.first_name.label }}</label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                    <span style="color: red; font-size: 12px;">{{ form.first_name.errors|join:", " }}</span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.last_name.id_for_label }}" style="display: block; font-weight: bold;">{{ form.last_name.label }}</label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                    <span style="color: red; font-size: 12px;">{{ form.last_name.errors|join:", " }}</span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.password1.id_for_label }}" style="display: block; font-weight: bold;">{{ form.password1.label }}</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                    <span style="color: red; font-size: 12px;">{{ form.password1.errors|join:", " }}</span>
+                {% endif %}
+                {% if form.password1.help_text %}
+                    <small style="display: block; color: #666;">{{ form.password1.help_text }}</small>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.password2.id_for_label }}" style="display: block; font-weight: bold;">{{ form.password2.label }}</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                    <span style="color: red; font-size: 12px;">{{ form.password2.errors|join:", " }}</span>
+                {% endif %}
+            </div>
+        </fieldset>
+
+        <fieldset style="border: 1px solid #35A753; padding: 15px; margin-bottom: 20px;">
+            <legend style="color: #35A753; font-weight: bold;">Coach Profile</legend>
+
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.bio.id_for_label }}" style="display: block; font-weight: bold;">{{ form.bio.label }}</label>
+                {{ form.bio }}
+                {% if form.bio.errors %}
+                    <span style="color: red; font-size: 12px;">{{ form.bio.errors|join:", " }}</span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.expertise.id_for_label }}" style="display: block; font-weight: bold;">{{ form.expertise.label }}</label>
+                {{ form.expertise }}
+                {% if form.expertise.errors %}
+                    <span style="color: red; font-size: 12px;">{{ form.expertise.errors|join:", " }}</span>
+                {% endif %}
+                <small style="display: block; color: #666;">{{ form.expertise.help_text }}</small>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.image_url.id_for_label }}" style="display: block; font-weight: bold;">{{ form.image_url.label }} (Optional)</label>
+                {{ form.image_url }}
+                {% if form.image_url.errors %}
+                    <span style="color: red; font-size: 12px;">{{ form.image_url.errors|join:", " }}</span>
+                {% endif %}
+            </div>
+        </fieldset>
+
+        <fieldset style="border: 1px solid #35A753; padding: 15px; margin-bottom: 20px;">
+            <legend style="color: #35A753; font-weight: bold;">Certifications (Optional)</legend>
+
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.certification_names.id_for_label }}" style="display: block; font-weight: bold;">{{ form.certification_names.label }}</label>
+                {{ form.certification_names }}
+                {% if form.certification_names.errors %}
+                    <span style="color: red; font-size: 12px;">{{ form.certification_names.errors|join:", " }}</span>
+                {% endif %}
+                <small style="display: block; color: #666;">{{ form.certification_names.help_text }}</small>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.certification_urls.id_for_label }}" style="display: block; font-weight: bold;">{{ form.certification_urls.label }}</label>
+                {{ form.certification_urls }}
+                {% if form.certification_urls.errors %}
+                    <span style="color: red; font-size: 12px;">{{ form.certification_urls.errors|join:", " }}</span>
+                {% endif %}
+                <small style="display: block; color: #666;">{{ form.certification_urls.help_text }}</small>
+            </div>
+        </fieldset>
+
+        <button type="submit" style="background-color: #35A753; color: white; padding: 10px 20px; border: none; cursor: pointer; font-size: 16px;">Register as Coach</button>
+    </form>
+
+    <p style="margin-top: 20px;">
+        Already have an account? <a href="{% url 'user_profile:login' %}" style="color: #35A753;">Login here</a> | 
+        <a href="{% url 'user_profile:register' %}" style="color: #35A753;">Register as Trainee</a>
+    </p>
+</div>
+
+<style>
+    input[type="text"], 
+    input[type="password"],
+    textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        box-sizing: border-box;
+    }
+</style>
+{% endblock content %}
