@@ -1,17 +1,18 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 from django.utils import timezone
+from django.utils.html import strip_tags
 from django.views.decorators.http import require_POST
 import json
 from .models import ChatSession, ChatMessage
+from user_profile.models import CoachProfile
 
 # Create your views here.
 @login_required(login_url="/login")
 def chat_index(request):
     """Main chat page showing all chat sessions"""
-    return render(request, "pages/chat_index.html")
+    return render(request, "pages/chat_interface.html")
 
 @login_required(login_url="/login")
 def chat_detail(request, session_id):
@@ -23,19 +24,32 @@ def chat_detail(request, session_id):
         return JsonResponse({'error': 'Unauthorized'}, status=403)
     
     context = {
-        'session': session,
+        'selected_session': session,
+        'selected_session_id': str(session_id),
         'other_user': session.get_other_user(request.user)
     }
-    return render(request, "pages/chat_detail.html", context)
+    return render(request, "pages/chat_interface.html", context)
 
-@login_required
+@login_required(login_url="/login")
 def get_chat_sessions(request):
     """AJAX endpoint to get all chat sessions for current user"""
-    sessions = ChatSession.objects.filter(
-        Q(user=request.user) | Q(coach=request.user)
-    ).order_by('-started_at')
+    # Check if the current user is a coach by checking their coach profile
+    is_coach = CoachProfile.objects.filter(user=request.user).exists()
+    
+    if is_coach:
+        # If user is a coach, show sessions where they are the coach
+        sessions = ChatSession.objects.filter(
+            coach=request.user
+        ).order_by('-started_at')
+    else:
+        # If user is not a coach, show sessions where they are the user
+        sessions = ChatSession.objects.filter(
+            user=request.user
+        ).order_by('-started_at')
     
     sessions_data = []
+    # Sort sessions by last message timestamp
+    sessions_with_messages = []
     for session in sessions:
         other_user = session.get_other_user(request.user)
         last_message = ChatMessage.objects.filter(session=session).order_by('-timestamp').first()
@@ -46,6 +60,24 @@ def get_chat_sessions(request):
             read=False, 
             sender=other_user
         ).count()
+        
+        sessions_with_messages.append({
+            'session': session,
+            'other_user': other_user,
+            'last_message': last_message,
+            'unread_count': unread_count,
+            'last_message_time': last_message.timestamp if last_message else session.started_at
+        })
+    
+    # Sort by last message timestamp (most recent first)
+    sessions_with_messages.sort(key=lambda x: x['last_message_time'], reverse=True)
+    
+    # Build the response data
+    for item in sessions_with_messages:
+        session = item['session']
+        other_user = item['other_user']
+        last_message = item['last_message']
+        unread_count = item['unread_count']
         
         sessions_data.append({
             'id': str(session.id),
@@ -61,7 +93,7 @@ def get_chat_sessions(request):
     
     return JsonResponse({'sessions': sessions_data})
 
-@login_required
+@login_required(login_url="/login")
 def get_messages(request, session_id):
     """AJAX endpoint to get messages for a specific chat session"""
     session = get_object_or_404(ChatSession, id=session_id)
@@ -89,7 +121,7 @@ def get_messages(request, session_id):
     })
 
 @require_POST
-@login_required
+@login_required(login_url="/login")
 def send_message(request):
     """AJAX endpoint to send a new message"""
     try:
@@ -100,6 +132,13 @@ def send_message(request):
         if not session_id:
             return JsonResponse({'error': 'Session ID is required'}, status=400)
             
+        if not content:
+            return JsonResponse({'error': 'Message content cannot be empty'}, status=400)
+        
+        # Sanitize the message content
+        content = strip_tags(content)
+        
+        # Verify content is not empty after sanitization
         if not content:
             return JsonResponse({'error': 'Message content cannot be empty'}, status=400)
         
@@ -116,6 +155,10 @@ def send_message(request):
             content=content
         )
         
+        # Update session's last activity timestamp
+        session.started_at = timezone.now()
+        session.save(update_fields=['started_at'])
+        
         return JsonResponse({
             'success': True,
             'message': _serialize_message(message, is_current_user=True)
@@ -127,7 +170,7 @@ def send_message(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 @require_POST
-@login_required
+@login_required(login_url="/login")
 def mark_messages_read(request):
     """AJAX endpoint to mark messages as read"""
     try:
@@ -161,6 +204,54 @@ def mark_messages_read(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@require_POST
+@login_required(login_url="/login")
+def create_chat_with_coach(request, coach_id):
+    """AJAX endpoint to create a chat session with a coach"""
+    try:
+        from django.contrib.auth.models import User
+        
+        # Get the coach user
+        coach = get_object_or_404(User, id=coach_id)
+        
+        # Verify that the coach has a coach profile
+        if not CoachProfile.objects.filter(user=coach).exists():
+            return JsonResponse({'error': 'User is not a coach'}, status=400)
+        
+        # Prevent user from creating chat with themselves
+        if request.user == coach:
+            return JsonResponse({'error': 'Cannot create chat with yourself'}, status=400)
+        
+        # Check if chat session already exists
+        existing_session = ChatSession.objects.filter(
+            user=request.user,
+            coach=coach
+        ).first()
+        
+        if existing_session:
+            # Return existing session
+            return JsonResponse({
+                'success': True,
+                'session_id': str(existing_session.id),
+                'message': 'Chat session already exists'
+            })
+        
+        # Create new chat session
+        session = ChatSession.objects.create(
+            user=request.user,
+            coach=coach
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'session_id': str(session.id),
+            'message': 'Chat session created successfully'
+        })
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 # Helper functions
 def _user_in_session(user, session):
     """Check if user is authorized to access this chat session"""
@@ -189,5 +280,4 @@ def _serialize_user(user):
         'username': user.username,
         'first_name': user.first_name,
         'last_name': user.last_name,
-        'profile_url': f'/profile/{user.username}/'
     }

@@ -8,6 +8,7 @@ class ChatSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     coach = models.ForeignKey(User, related_name='coach_sessions', on_delete=models.CASCADE)
     started_at = models.DateTimeField(auto_now_add=True)
+    last_message_at = models.DateTimeField(auto_now=True)
     ended_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):

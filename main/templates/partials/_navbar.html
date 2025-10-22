@@ -60,6 +60,9 @@
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 Kelas Saya
                             </a>
+                            <a href="{% url 'chat:chat_index' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                Pesan Saya
+                            </a>
                             {% if user.coachprofile %}
                                 <a href="{% url 'courses_and_coach:my_courses' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     Dashboard Coach
