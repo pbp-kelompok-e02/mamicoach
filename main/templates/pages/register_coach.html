@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block meta %}
+<title>Register as Coach - MamiCoach</title>
+{% endblock meta %}
+
+{% block content %}
+<div>
+    <h1>Register as Coach</h1>
+    
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Register as Coach</button>
+    </form>
+
+    <p><a href="{% url 'main:show_main' %}">Back to Home</a></p>
+</div>
+{% endblock content %}

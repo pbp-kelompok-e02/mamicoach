@@ -22,6 +22,12 @@
         <button type="submit">Login</button>
     </form>
 
-    <p>Don't have an account? <a href="{% url 'main:register' %}">Register here</a></p>
+    <div>
+        <p>Don't have an account?</p>
+        <p><a href="{% url 'main:register' %}">Register as User</a></p>
+        <p>Already have an account but want to become a coach? 
+           <a href="{% url 'main:register_coach' %}">Register as Coach</a>
+        </p>
+    </div>
 </div>
 {% endblock content %}
