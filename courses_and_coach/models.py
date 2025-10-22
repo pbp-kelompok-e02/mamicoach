@@ -1,7 +1,6 @@
 from django.db import models
 
-# TODO: Import CoachProfile
-# from coach_app.models import CoachProfile
+from user_profile.models import CoachProfile
 
 
 class Category(models.Model):
@@ -28,7 +27,7 @@ class Course(models.Model):
 
     # TODO: Update this ForeignKey to use the actual CoachProfile model from another app
     coach = models.ForeignKey(
-        "coach_app.CoachProfile",
+        CoachProfile,
         on_delete=models.CASCADE,
         related_name="courses",
     )

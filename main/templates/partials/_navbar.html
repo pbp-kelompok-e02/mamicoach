@@ -70,16 +70,16 @@
                                 </a>
                             {% endif %}
                             <div class="border-t border-gray-100"></div>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <a href="{% url 'user_profile:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 Keluar
                             </a>
                         </div>
                     </div>
                 {% else %}
-                    <a href="#" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
+                    <a href="{% url 'user_profile:login' %}" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
                         Masuk
                     </a>
-                    <a href="#" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors duration-200">
+                    <a href="{% url 'user_profile:register' %}" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors duration-200">
                         Mulai Sekarang
                     </a>
                 {% endif %}
@@ -148,16 +148,16 @@
                             Bergabung Jadi Coach
                         </a>
                     {% endif %}
-                    <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+                    <a href="{% url 'user_profile:logout' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                         Keluar
                     </a>
                 </div>
             {% else %}
                 <div class="border-t border-gray-200 pt-4 space-y-1">
-                    <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+                    <a href="{% url 'user_profile:login' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                         Masuk
                     </a>
-                    <a href="#" class="block px-3 py-2 bg-primary text-white hover:bg-green-600 rounded-md text-base font-medium text-center">
+                    <a href="{% url 'user_profile:register' %}" class="block px-3 py-2 bg-primary text-white hover:bg-green-600 rounded-md text-base font-medium text-center">
                         Mulai Sekarang
                     </a>
                 </div>
