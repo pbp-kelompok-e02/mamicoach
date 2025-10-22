@@ -6,7 +6,7 @@
 
 {% block content %}
 <div>
-    <h1>Register as Coach</h1>
+    <h1 class="text-primary">Register as Coach</h1>
     
     {% if messages %}
     <div>
@@ -22,6 +22,6 @@
         <button type="submit">Register as Coach</button>
     </form>
 
-    <p><a href="{% url 'main:show_main' %}">Back to Home</a></p>
+    <p>Already have an account? <a href="{% url 'user_profile:login' %}">Login here</a></p>
 </div>
 {% endblock content %}

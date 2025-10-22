@@ -6,7 +6,7 @@
 
 {% block content %}
 <div>
-    <h1>Register</h1>
+    <h1>Register as Trainee</h1>
     
     {% if messages %}
     <div>
@@ -22,6 +22,9 @@
         <button type="submit">Register</button>
     </form>
 
-    <p>Already have an account? <a href="{% url 'main:login' %}">Login here</a></p>
+    <div>
+        <p>Already have an account? <a href="{% url 'user_profile:login' %}">Login here</a></p>
+        <p>Want to register as a coach? <a href="{% url 'user_profile:register_coach' %}">Register as Coach</a></p>
+    </div>
 </div>
 {% endblock content %}

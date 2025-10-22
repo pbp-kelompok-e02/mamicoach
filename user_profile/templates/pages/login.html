@@ -23,11 +23,13 @@
     </form>
 
     <div>
-        <p>Don't have an account?</p>
-        <p><a href="{% url 'main:register' %}">Register as User</a></p>
-        <p>Already have an account but want to become a coach? 
-           <a href="{% url 'main:register_coach' %}">Register as Coach</a>
-        </p>
+        <p>Don't have an account? Register as:</p>
+        <a href="{% url 'user_profile:register' %}">
+            <button type="button">Register as Trainee</button>
+        </a>
+        <a href="{% url 'user_profile:register_coach' %}">
+            <button type="button">Register as Coach</button>
+        </a>
     </div>
 </div>
 {% endblock content %}

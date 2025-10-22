@@ -6,7 +6,6 @@ class CoachProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField()
     expertise = models.CharField(max_length=255)
-    experience_years = models.IntegerField()
     image_url = models.CharField(max_length=255)
     rating = models.FloatField(default=0.0)
     verified = models.BooleanField(default=False)
