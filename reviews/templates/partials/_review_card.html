@@ -1,0 +1,40 @@
+<!-- Review Card Partial -->
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100">
+	<!-- Header: Avatar, Name, Role, and Stars in one row -->
+	<div class="flex items-start gap-4 mb-4">
+		<div class="h-16 w-16 overflow-hidden rounded-full flex-shrink-0">
+			<img src="{{ reviewer_avatar|default:'https://i.pravatar.cc/100' }}" alt="{{ reviewer_name }} avatar" class="h-full w-full object-cover" />
+		</div>
+		
+		<div class="flex-1 min-w-0">
+			<h3 class="text-xl font-semibold text-neutral-900">
+				{% if is_anonymous %}
+					Anonymous User
+				{% else %}
+					{{ reviewer_name }}
+				{% endif %}
+			</h3>
+			<p class="text-sm text-neutral-600 mt-1">{{ reviewer_role|default:"Student" }}</p>
+		</div>
+		
+		<!-- Stars aligned to the right -->
+		<div class="flex items-center gap-1 flex-shrink-0">
+			{% for star in "12345" %}
+				{% if forloop.counter <= rating %}
+					<svg class="h-7 w-7 text-primary" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+					</svg>
+				{% else %}
+					<svg class="h-7 w-7 text-neutral-300" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+					</svg>
+				{% endif %}
+			{% endfor %}
+		</div>
+	</div>
+
+	<!-- Review Content -->
+	<div class="text-neutral-700 leading-relaxed text-base space-y-4">
+		{{ comment|linebreaksbr }}
+	</div>
+</div>

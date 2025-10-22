@@ -1,0 +1,73 @@
+<!-- Styled Review Card Partial -->
+<div class="relative">
+    <!-- Large Green Background Container -->
+    <div class="bg-primary rounded-3xl shadow-lg">
+        <!-- White Card with Content -->
+        <div class="bg-white rounded-2xl shadow-sm border border-neutral-100 relative mb-2">
+            <!-- Green Quote Icon -->
+            <div class="absolute top-6 right-6">
+                <svg class="h-8 w-8 text-green-500" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
+                </svg>
+            </div>
+
+            <!-- Main Content -->
+            <div class="p-8 pb-6">
+                <!-- Header: Avatar and User Info -->
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="h-16 w-16 overflow-hidden rounded-full flex-shrink-0">
+                        <img src="{{ reviewer_avatar|default:'https://i.pravatar.cc/100' }}" 
+                             alt="{{ reviewer_name }} avatar" 
+                             class="h-full w-full object-cover" />
+                    </div>
+                    
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-xl font-semibold text-neutral-900">
+                            {% if is_anonymous %}
+                                Anonymous User
+                            {% else %}
+                                {{ reviewer_name }}
+                            {% endif %}
+                        </h3>
+                        <p class="text-sm text-neutral-600 mt-1">{{ reviewer_role|default:"Student" }}</p>
+                    </div>
+                </div>
+
+                <!-- Review Content -->
+                <div class="text-neutral-700 leading-relaxed text-base">
+                    {{ comment|linebreaksbr }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer with Stars and Course Info -->
+        <div class="px-6 py-2 pb-4 flex items-center justify-between">
+            <!-- Star Rating -->
+            <div class="flex items-center gap-1">
+                {% for star in "12345" %}
+                    {% if forloop.counter <= rating %}
+                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                        </svg>
+                    {% else %}
+                        <svg class="h-5 w-5 text-white/30" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                        </svg>
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- Course Name -->
+                {% if course_name and show_course_info %}
+                    <span class="text-white ml-4 font-semibold">{{ course_name }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Arrow Icon -->
+            <div class="text-white">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5l7 7-7 7M12 5l7 7-7 7"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
