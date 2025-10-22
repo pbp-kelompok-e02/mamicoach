@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block meta %}
+<title>Register MamiCoach</title>
+{% endblock meta %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; padding: 20px; border: 1px solid #ccc;">
+    <h1>Register as Trainee</h1>
+    
+    {% if messages %}
+    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 20px;">
+        {% for message in messages %}
+        <p style="margin: 0; color: #721c24;">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 15px;">
+            <label for="{{ form.username.id_for_label }}" style="display: block; font-weight: bold;">{{ form.username.label }}</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <span style="color: red; font-size: 12px;">{{ form.username.errors|join:", " }}</span>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label for="{{ form.first_name.id_for_label }}" style="display: block; font-weight: bold;">{{ form.first_name.label }}</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+                <span style="color: red; font-size: 12px;">{{ form.first_name.errors|join:", " }}</span>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label for="{{ form.last_name.id_for_label }}" style="display: block; font-weight: bold;">{{ form.last_name.label }}</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+                <span style="color: red; font-size: 12px;">{{ form.last_name.errors|join:", " }}</span>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label for="{{ form.password1.id_for_label }}" style="display: block; font-weight: bold;">{{ form.password1.label }}</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+                <span style="color: red; font-size: 12px;">{{ form.password1.errors|join:", " }}</span>
+            {% endif %}
+            {% if form.password1.help_text %}
+                <small style="display: block; color: #666;">{{ form.password1.help_text }}</small>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label for="{{ form.password2.id_for_label }}" style="display: block; font-weight: bold;">{{ form.password2.label }}</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+                <span style="color: red; font-size: 12px;">{{ form.password2.errors|join:", " }}</span>
+            {% endif %}
+        </div>
+
+        <button type="submit" style="background-color: #35A753; color: white; padding: 10px 20px; border: none; cursor: pointer; font-size: 16px;">Register as Trainee</button>
+    </form>
+
+    <div style="margin-top: 20px;">
+        <p>Already have an account? <a href="{% url 'user_profile:login' %}" style="color: #35A753;">Login here</a></p>
+        <p>Want to register as a coach? <a href="{% url 'user_profile:register_coach' %}" style="color: #35A753;">Register as Coach</a></p>
+    </div>
+</div>
+
+<style>
+    input[type="text"], 
+    input[type="password"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        box-sizing: border-box;
+    }
+</style>
+{% endblock content %}
