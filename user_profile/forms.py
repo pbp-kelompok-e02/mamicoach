@@ -4,10 +4,48 @@ from django.contrib.auth.models import User
 from .models import CoachProfile, Certification
 
 
-def get_sport_choices():
-    from courses_and_coach.models import Category
-    categories = Category.objects.all().order_by('name')
-    return [(cat.name, cat.name) for cat in categories]
+SPORT_CHOICES = [
+    ('Fitness', 'Fitness'),
+    ('Yoga', 'Yoga'),
+    ('Pilates', 'Pilates'),
+    ('Bodybuilding', 'Bodybuilding'),
+    ('Weightlifting', 'Weightlifting'),
+    ('CrossFit', 'CrossFit'),
+    ('Running', 'Running'),
+    ('Marathon', 'Marathon'),
+    ('Swimming', 'Swimming'),
+    ('Cycling', 'Cycling'),
+    ('Boxing', 'Boxing'),
+    ('Kickboxing', 'Kickboxing'),
+    ('Muay Thai', 'Muay Thai'),
+    ('Martial Arts', 'Martial Arts'),
+    ('Basketball', 'Basketball'),
+    ('Football', 'Football'),
+    ('Soccer', 'Soccer'),
+    ('Tennis', 'Tennis'),
+    ('Badminton', 'Badminton'),
+    ('Volleyball', 'Volleyball'),
+    ('Baseball', 'Baseball'),
+    ('Golf', 'Golf'),
+    ('Gymnastics', 'Gymnastics'),
+    ('Dance', 'Dance'),
+    ('Zumba', 'Zumba'),
+    ('Aerobics', 'Aerobics'),
+    ('HIIT', 'HIIT (High-Intensity Interval Training)'),
+    ('Calisthenics', 'Calisthenics'),
+    ('Nutrition', 'Nutrition'),
+    ('Sports Nutrition', 'Sports Nutrition'),
+    ('Weight Loss', 'Weight Loss'),
+    ('Strength Training', 'Strength Training'),
+    ('Functional Training', 'Functional Training'),
+    ('Personal Training', 'Personal Training'),
+    ('Athletic Performance', 'Athletic Performance'),
+    ('Rehabilitation', 'Rehabilitation'),
+    ('Mobility', 'Mobility'),
+    ('Flexibility', 'Flexibility'),
+    ('Meditation', 'Meditation'),
+    ('Wellness', 'Wellness'),
+]
 
 
 class TraineeRegistrationForm(UserCreationForm):
