@@ -5,6 +5,8 @@ from django.core.paginator import Paginator
 from .models import Course, Category
 from .forms import CourseForm
 from user_profile.models import CoachProfile
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 
 def show_courses(request):
@@ -14,7 +16,7 @@ def show_courses(request):
     # Filter by category
     category_filter = request.GET.get("category")
     if category_filter:
-        courses = courses.filter(category__id=category_filter)
+        courses = courses.filter(category__name=category_filter)
 
     # Search functionality
     search_query = request.GET.get("search")
@@ -112,3 +114,85 @@ def my_courses(request):
         "coach_profile": coach_profile,
     }
     return render(request, "courses_and_coach/courses/my_courses.html", context)
+
+
+def courses_ajax(request):
+    courses_list = Course.objects.all()
+
+    search_query = request.GET.get("search")
+    if search_query:
+        courses_list = courses_list.filter(title__icontains=search_query)
+
+    category_detail = request.GET.get("category")
+    if category_detail:
+        courses_list = courses_list.filter(category__name__iexact=category_detail)
+
+    page = request.GET.get("page", 1)
+    paginator = Paginator(courses_list, 12)  # 12 courses per page
+    page_obj = paginator.get_page(page)
+
+    data = [
+        {
+            "id": course.id,
+            "title": course.title,
+            "description": course.description,
+            "coach": course.coach.user.get_full_name(),
+            "category": course.category.name if course.category else None,
+            "price": course.price,
+            "duration": course.duration,
+            "location": course.location,
+            "rating": 4,  # Placeholder for future rating feature
+            "thumbnail_url": course.thumbnail_url,
+        }
+        for course in page_obj
+    ]
+
+    return JsonResponse({"courses": data})
+
+
+def courses_card_ajax(request):
+    courses_list = Course.objects.all()
+
+    search_query = request.GET.get("search")
+    if search_query:
+        courses_list = courses_list.filter(title__icontains=search_query)
+
+    category_detail = request.GET.get("category")
+    if category_detail:
+        courses_list = courses_list.filter(category__name__iexact=category_detail)
+
+    page = request.GET.get("page", 1)
+    paginator = Paginator(courses_list, 12)  # 12 courses per page
+    page_obj = paginator.get_page(page)
+
+    html = "".join(
+        render_to_string(
+            "courses_and_coach/partials/course_card.html", {"course": course}
+        )
+        for course in page_obj
+    )
+
+    return JsonResponse(
+        {
+            "total_count": paginator.count,
+            "count": len(page_obj),
+            "html": html,
+        }
+    )
+
+
+def courses_by_id_ajax(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+
+    data = {
+        "id": course.id,
+        "title": course.title,
+        "description": course.description,
+        "coach": course.coach.user.get_full_name(),
+        "category": course.category.name if course.category else None,
+        "price": course.price,
+        "duration": course.duration,
+        "thumbnail_url": course.thumbnail_url,
+    }
+
+    return JsonResponse({"course": data})

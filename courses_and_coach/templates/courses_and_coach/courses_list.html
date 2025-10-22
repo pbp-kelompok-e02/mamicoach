@@ -57,7 +57,7 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="bg-white rounded-3xl shadow-lg p-6 mb-8">
-            <form method="get" class="space-y-4">
+            <div class="space-y-4" id="search-form">
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,7 +66,7 @@
                     </div>
                     <input 
                         type="text" 
-                        name="search"
+                        name="courses-search"
                         value="{{ search_query|default:'' }}"
                         placeholder="Cari kelas atau coach..." 
                         class="block w-full pl-12 pr-4 py-4 border border-gray-300 rounded-2xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary"
@@ -76,63 +76,260 @@
                 <!-- Category Filter -->
                 <div class="flex flex-wrap gap-3 items-center">
                     <span class="text-sm font-medium text-gray-700">Kategori:</span>
-                    <a href="{% url 'courses_and_coach:show_courses' %}" 
-                       class="px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 {% if not selected_category %}bg-primary text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                    <button type="button" 
+                            class="category-filter px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 {% if not selected_category %}bg-primary text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}"
+                            data-category="">
                         Semua
-                    </a>
+                    </button>
                     {% for category in categories %}
-                    <a href="{% url 'courses_and_coach:category_detail' category.name %}" 
-                       class="px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:bg-primary hover:text-white">
+                    <button type="button" 
+                            class="category-filter px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:bg-primary hover:text-white"
+                            data-category="{{category.name}}">
                         {{ category.name }}
-                    </a>
+                    </button>
                     {% endfor %}
+                    <!-- Hidden input to store selected category -->
+                    <input type="hidden" name="category" id="category-input" value="{{ selected_category|default:'' }}">
                 </div>
                 
                 <!-- Filter Actions -->
                 <div class="flex justify-between items-center pt-4 border-t border-gray-200">
-                    <div class="text-sm text-gray-600">
-                        {% if courses.paginator.count %}
-                            Menampilkan {{ courses.paginator.count }} kelas
+                    <div class="text-sm text-gray-600" id="class-count-info">
+                        {% if courses %}
+                            Menampilkan {{ courses|length }} dari {{courses.paginator.count}} kelas
                         {% else %}
                             Tidak ada kelas ditemukan
                         {% endif %}
                     </div>
-                    <button type="submit" class="bg-primary text-white px-6 py-2 rounded-xl font-medium hover:bg-green-600 transition-colors duration-200">
+                    <button type="button" onclick="loadCourses()" class="bg-primary text-white px-6 py-2 rounded-xl font-medium hover:bg-green-600 transition-colors duration-200">
                         Cari
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
 
-        {% if courses %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-            {% for course in courses %}
-                {% include "courses_and_coach/partials/course_card.html" with course=course %}
-            {% endfor %}
+        <div id="courses-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            {% if courses %}
+                {% for course in courses %}
+                    {% include "courses_and_coach/partials/course_card.html" with course=course %}
+                {% endfor %}
+            {% endif %}
         </div>
 
         <!-- Empty State -->
-        {% else %}
-        <div class="text-center py-16">
+        <div id="empty-state" class="text-center py-16 {% if courses %}hidden{% endif %}">
             <div class="max-w-md mx-auto">
                 <svg class="w-24 h-24 mx-auto text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.562M15 6.306a7.962 7.962 0 00-6 0M6 15.894V3a1 1 0 011-1h8a1 1 0 011 1v12.894a1 1 0 01-1.447.894l-3.553-1.776a1 1 0 00-.894 0L6.447 16.788A1 1 0 016 15.894z"></path>
                 </svg>
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Kelas</h3>
-                <p class="text-gray-600 mb-6">
-                    {% if search_query %}
-                        Tidak ada kelas yang cocok dengan pencarian "{{ search_query }}"
-                    {% else %}
-                        Saat ini belum ada kelas yang tersedia untuk kategori ini
-                    {% endif %}
-                </p>
-                <a href="{% url 'courses_and_coach:show_courses' %}" 
-                   class="inline-flex items-center space-x-2 bg-primary text-white px-6 py-3 rounded-2xl font-semibold hover:bg-green-600 transition-colors duration-200">
+                <p id="empty-message" class="text-gray-600 mb-6">Tidak ada kelas ditemukan</p>
+                <button onclick="clearSearch()" class="inline-flex items-center space-x-2 bg-primary text-white px-6 py-3 rounded-2xl font-semibold hover:bg-green-600 transition-colors duration-200">
                     <span>Lihat Semua Kelas</span>
-                </a>
+                </button>
             </div>
         </div>
-        {% endif %}
     </div>
 </div>
+
+<script>
+let searchTimeout;
+let isLoading = false;
+
+// Get CSRF token
+const csrfToken = '{{ csrf_token }}';
+
+document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.querySelector('input[name="courses-search"]');
+    const categoryButtons = document.querySelectorAll('.category-filter');
+    const coursesContainer = document.getElementById('courses-container');
+    const emptyState = document.getElementById('empty-state');
+    const classCountInfo = document.getElementsByClassName('class-count-info');
+
+    // Real-time search with debounce
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            loadCourses();
+        }, 500); // 500ms delay
+    });
+
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const categoryInput = document.getElementById('category-input');
+            const selectedCategory = this.getAttribute('data-category');
+            if (categoryInput) {
+                categoryInput.value = selectedCategory;
+                // console.log("set to ", categoryInput.value)
+            }
+            
+            categoryButtons.forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            
+            this.classList.remove('bg-gray-100', 'text-gray-700');
+            this.classList.add('bg-primary', 'text-white');
+            loadCourses();
+        });
+    });
+
+    // Add Enter key support for search input
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            loadCourses();
+        }
+    });
+
+    async function loadCourses() {
+        console.log("loadCourses called");
+        if (isLoading) return;
+        
+        isLoading = true;
+        
+        try {
+            // Show loading state
+            coursesContainer.innerHTML = `
+                <div class="col-span-full text-center py-16">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p class="text-gray-600">Memuat kelas...</p>
+                </div>
+            `;
+            
+            // Hide empty state during loading
+            emptyState.classList.add('hidden');
+
+            // Get form values properly
+            const searchInput = document.querySelector('input[name="courses-search"]');
+            const categoryInput = document.getElementById('category-input');
+            
+            const searchQuery = searchInput ? searchInput.value.trim() : '';
+            const selectedCategory = categoryInput ? categoryInput.value.trim() : '';
+            
+            // Build URL parameters
+            const params = new URLSearchParams();
+            if (searchQuery) {
+                params.append('search', searchQuery);
+            }
+            if (selectedCategory) {
+                params.append('category', selectedCategory);
+            }
+            
+            console.log('Search Query:', searchQuery);
+            console.log('Category:', selectedCategory);
+            console.log('Params:', params.toString());
+
+            // Fetch data
+            const response = await fetch(`{% url 'courses_and_coach:courses_card_ajax' %}?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Response data:', data);
+            
+            // Update UI based on response
+            if (data.html && data.html.trim()) {
+                coursesContainer.innerHTML = data.html;
+                emptyState.classList.add('hidden');
+                
+                // Update class count info
+                const classCountInfo = document.getElementById('class-count-info');
+                if (classCountInfo && data.count !== undefined) {
+                    if (data.count > 0) {
+                        classCountInfo.textContent = `Menampilkan ${data.count} dari ${data.total_count} kelas`;
+                    } else {
+                        classCountInfo.textContent = 'Tidak ada kelas ditemukan';
+                    }
+                }
+            } else {
+                coursesContainer.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                
+                // Update class count info for empty results
+                const classCountInfo = document.getElementById('class-count-info');
+                if (classCountInfo) {
+                    classCountInfo.textContent = 'Tidak ada kelas ditemukan';
+                }
+                
+                // Update empty message
+                const emptyMessage = document.getElementById('empty-message');
+                if (emptyMessage) {
+                    if (searchQuery) {
+                        emptyMessage.textContent = `Tidak ada kelas yang cocok dengan pencarian "${searchQuery}"`;
+                    } else if (selectedCategory) {
+                        emptyMessage.textContent = `Tidak ada kelas dalam kategori "${selectedCategory}"`;
+                    } else {
+                        emptyMessage.textContent = 'Tidak ada kelas ditemukan';
+                    }
+                }
+            }
+
+        } catch (error) {
+            console.error('Error loading courses:', error);
+            
+            // Show error state
+            coursesContainer.innerHTML = `
+                <div class="col-span-full text-center py-16">
+                    <div class="text-red-500 mb-4">
+                        <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="text-lg font-semibold">Terjadi Kesalahan</h3>
+                        <p class="text-gray-600 mt-2">Gagal memuat kelas. Silakan coba lagi.</p>
+                        <button onclick="loadCourses()" class="mt-4 bg-primary text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                            Coba Lagi
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            emptyState.classList.add('hidden');
+        } finally {
+            isLoading = false;
+        }
+    }
+
+    window.loadCourses = loadCourses;
+});
+
+function clearSearch() {
+    const searchInput = document.querySelector('input[name="courses-search"]');
+    const categoryInput = document.getElementById('category-input');
+    
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    if (categoryInput) {
+        categoryInput.value = '';
+    }
+    
+    const categoryButtons = document.querySelectorAll('.category-filter');
+    categoryButtons.forEach(btn => {
+        btn.classList.remove('bg-primary', 'text-white');
+        btn.classList.add('bg-gray-100', 'text-gray-700');
+    });
+    
+    const allButton = document.querySelector('.category-filter[data-category=""]');
+    if (allButton) {
+        allButton.classList.remove('bg-gray-100', 'text-gray-700');
+        allButton.classList.add('bg-primary', 'text-white');
+    }
+    
+    if (typeof window.loadCourses === 'function') {
+        window.loadCourses();
+    }
+}
+</script>
 {% endblock %}
