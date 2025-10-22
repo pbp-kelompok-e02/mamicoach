@@ -9,6 +9,7 @@ class CourseForm(forms.ModelForm):
             "category",
             "title",
             "description",
+            "location",
             "price",
             "duration",
             "thumbnail_url",
@@ -25,6 +26,12 @@ class CourseForm(forms.ModelForm):
                     "class": "block w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary",
                     "rows": 4,
                     "placeholder": "Deskripsi lengkap tentang kelas ini...",
+                }
+            ),
+            "location": forms.TextInput(
+                attrs={
+                    "class": "block w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary",
+                    "placeholder": "Lokasi kelas (contoh: Jl. Kemang Raya No.7, Jakarta Selatan)",
                 }
             ),
             "price": forms.NumberInput(

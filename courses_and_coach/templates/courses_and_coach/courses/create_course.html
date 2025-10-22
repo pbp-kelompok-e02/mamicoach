@@ -36,6 +36,16 @@
                     {% endif %}
                 </div>
 
+                <div>
+                    <label for="{{ form.location.id_for_label }}" class="block text-sm font-semibold text-gray-900 mb-2">
+                        Lokasi Kelas *
+                    </label>
+                    {{ form.location }}
+                    {% if form.location.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.location.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="{{ form.price.id_for_label }}" class="block text-sm font-semibold text-gray-900 mb-2">

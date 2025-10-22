@@ -18,7 +18,7 @@
                             <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                             </svg>
-                            <span class="text-gray-500">{{ course.category.name }}</span>
+                            <a href="{% url 'courses_and_coach:category_detail' course.category.name %}" class="text-gray-500">{{ course.category.name }}</a>
                         </div>
                     </li>
                     <li>
@@ -65,7 +65,7 @@
                         <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
                             {{ course.title }}
                         </h1>
-                        <div class="flex items-center space-x-4 text-sm text-gray-600">
+                        <div class="flex flex-col  space-y-2 text-sm text-gray-600">
                             <span class="flex items-center space-x-1">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -78,6 +78,13 @@
                                 </svg>
                                 <span>{{ course.created_at|date:"d M Y" }}</span>
                             </span>
+                            <span class="flex items-center space-x-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                <span>{{ course.location }}</span>
+                            </span>
                         </div>
                     </div>
 
@@ -89,20 +96,12 @@
             </div>
 
             <div class="lg:col-span-1">
-                <div class="sticky top-8">
+                <div class="sticky top-24">
                     <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
                         <div class="text-center mb-6">
                             <div class="text-3xl font-bold text-gray-900 mb-1">
                                 {{ course.price_formatted }}<span class="text-sm font-normal text-gray-500">/sesi</span>
                             </div>
-                            {% if course.coach.verified %}
-                            <div class="flex items-center justify-center space-x-2 text-primary">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
-                                </svg>
-                                <span class="text-sm font-medium">Tanya Coach</span>
-                            </div>
-                            {% endif %}
                         </div>
 
                         <button class="w-full bg-primary text-white py-4 rounded-2xl font-semibold text-lg hover:bg-green-600 transition-colors duration-200 flex items-center justify-center space-x-2">
@@ -134,14 +133,6 @@
                                 </div>
                             </div>
                             
-                            <div class="mt-4 text-sm text-gray-600">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    <span>• 242 jam sesi dijadwalkan</span>
-                                </div>
-                            </div>
 
                             <button class="w-full mt-4 text-primary border border-primary py-3 rounded-2xl font-semibold hover:bg-primary hover:text-white transition-colors duration-200 flex items-center justify-center space-x-2">
                                 <span>Lihat profil coach</span>
@@ -158,31 +149,12 @@
         {% if related_courses %}
         <div class="mt-16">
             <h2 class="text-2xl font-bold text-gray-900 mb-8">Kelas Serupa</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {% for related_course in related_courses %}
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                    <div class="relative">
-                        <img 
-                            src="{{ related_course.thumbnail_url|default:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' }}" 
-                            alt="{{ related_course.title }}"
-                            class="w-full h-48 object-cover"
-                        >
-                        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-medium">
-                            {{ related_course.category.name }}
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2">{{ related_course.title }}</h3>
-                        <p class="text-sm text-gray-600 mb-3">{{ related_course.coach.user.get_full_name }}</p>
-                        <div class="flex items-center justify-between">
-                            <span class="text-lg font-bold text-primary">{{ related_course.price_formatted }}</span>
-                            <a href="{% url 'courses_and_coach:course_details' related_course.id %}" class="text-primary text-sm font-medium hover:underline">
-                                Lihat Detail
-                            </a>
-                        </div>
-                    </div>
+            <div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"> 
+                    {% for course in related_courses %}
+                    {% include "courses_and_coach/partials/course_card.html" with course=course %}
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
         </div>
         {% endif %}

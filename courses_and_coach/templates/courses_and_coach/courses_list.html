@@ -1,12 +1,138 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Courses - MamiCoach{% endblock %}
+{% block title %}Semua Kelas - MamiCoach{% endblock %}
 
 {% block content %}
-    <h1>Courses</h1>
-    <ul>
-        <li>Course 1</li>
-        <li>Course 2</li>
-        <li>Course 3</li>
-    </ul>
+<div class="bg-gray-50 min-h-screen">
+    <div class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                    Temukan Kelas <span class="text-primary">Olahraga</span> Favoritmu
+                </h1>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Bergabung dengan ribuan orang yang sudah memulai perjalanan fitness mereka
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% if categories %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Jelajahi Kategori</h2>
+            <p class="text-gray-600">Pilih kategori olahraga yang sesuai dengan minatmu</p>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+            {% for category in categories %}
+            <a href="{% url 'courses_and_coach:category_detail' category.name %}" 
+               class="group bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+                {% if category.thumbnail_url %}
+                <div class="aspect-square overflow-hidden">
+                    <img 
+                        src="{{ category.thumbnail_url }}" 
+                        alt="{{ category.name }}"
+                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    >
+                </div>
+                {% else %}
+                <div class="aspect-square bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center">
+                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                {% endif %}
+                <div class="p-3">
+                    <h3 class="font-semibold text-gray-900 text-sm text-center group-hover:text-primary transition-colors duration-200">
+                        {{ category.name }}
+                    </h3>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-3xl shadow-lg p-6 mb-8">
+            <form method="get" class="space-y-4">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input 
+                        type="text" 
+                        name="search"
+                        value="{{ search_query|default:'' }}"
+                        placeholder="Cari kelas atau coach..." 
+                        class="block w-full pl-12 pr-4 py-4 border border-gray-300 rounded-2xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary"
+                    >
+                </div>
+                
+                <!-- Category Filter -->
+                <div class="flex flex-wrap gap-3 items-center">
+                    <span class="text-sm font-medium text-gray-700">Kategori:</span>
+                    <a href="{% url 'courses_and_coach:show_courses' %}" 
+                       class="px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 {% if not selected_category %}bg-primary text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                        Semua
+                    </a>
+                    {% for category in categories %}
+                    <a href="{% url 'courses_and_coach:category_detail' category.name %}" 
+                       class="px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:bg-primary hover:text-white">
+                        {{ category.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+                
+                <!-- Filter Actions -->
+                <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+                    <div class="text-sm text-gray-600">
+                        {% if courses.paginator.count %}
+                            Menampilkan {{ courses.paginator.count }} kelas
+                        {% else %}
+                            Tidak ada kelas ditemukan
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="bg-primary text-white px-6 py-2 rounded-xl font-medium hover:bg-green-600 transition-colors duration-200">
+                        Cari
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {% if courses %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            {% for course in courses %}
+                {% include "courses_and_coach/partials/course_card.html" with course=course %}
+            {% endfor %}
+        </div>
+
+        <!-- Empty State -->
+        {% else %}
+        <div class="text-center py-16">
+            <div class="max-w-md mx-auto">
+                <svg class="w-24 h-24 mx-auto text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.562M15 6.306a7.962 7.962 0 00-6 0M6 15.894V3a1 1 0 011-1h8a1 1 0 011 1v12.894a1 1 0 01-1.447.894l-3.553-1.776a1 1 0 00-.894 0L6.447 16.788A1 1 0 016 15.894z"></path>
+                </svg>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Kelas</h3>
+                <p class="text-gray-600 mb-6">
+                    {% if search_query %}
+                        Tidak ada kelas yang cocok dengan pencarian "{{ search_query }}"
+                    {% else %}
+                        Saat ini belum ada kelas yang tersedia untuk kategori ini
+                    {% endif %}
+                </p>
+                <a href="{% url 'courses_and_coach:show_courses' %}" 
+                   class="inline-flex items-center space-x-2 bg-primary text-white px-6 py-3 rounded-2xl font-semibold hover:bg-green-600 transition-colors duration-200">
+                    <span>Lihat Semua Kelas</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

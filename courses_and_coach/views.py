@@ -32,7 +32,7 @@ def show_courses(request):
         "selected_category": category_filter,
         "search_query": search_query,
     }
-    return render(request, "courses_and_coach/courses/courses_list.html", context)
+    return render(request, "courses_and_coach/courses_list.html", context)
 
 
 def course_details(request, course_id):
@@ -75,6 +75,26 @@ def create_course(request):
         "coach_profile": coach_profile,
     }
     return render(request, "courses_and_coach/courses/create_course.html", context)
+
+
+def category_detail(request, category_name):
+    category = get_object_or_404(Category, name__iexact=category_name)
+    courses = Course.objects.filter(category=category).select_related("coach")
+
+    search_query = request.GET.get("search")
+    if search_query:
+        courses = courses.filter(title__icontains=search_query)
+
+    paginator = Paginator(courses, 12)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "category": category,
+        "courses": page_obj,
+        "search_query": search_query,
+    }
+    return render(request, "courses_and_coach/category_detail.html", context)
 
 
 @login_required(login_url="user_profile:login")

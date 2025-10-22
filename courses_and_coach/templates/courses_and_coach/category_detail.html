@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - MamiCoach{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="relative bg-gradient-to-r from-pink-600 to-purple-600 text-white">
+        <div class="absolute inset-0 bg-black opacity-20"></div>
+        <div class="relative container mx-auto px-4 py-16">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h1 class="text-4xl font-bold mb-4">{{ category.name }}</h1>
+                    <p class="text-xl text-pink-100 mb-6">{{ category.description }}</p>
+                    <div class="flex items-center space-x-4">
+                        <span class="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-full text-sm">
+                            {{ courses.paginator.count }} kelas tersedia
+                        </span>
+                    </div>
+                </div>
+                {% if category.thumbnail_url %}
+                <div class="hidden md:block">
+                    <img 
+                        src="{{ category.thumbnail_url }}" 
+                        alt="{{ category.name }}"
+                        class="w-full h-64 object-cover rounded-lg shadow-2xl"
+                    >
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <form method="GET" class="flex-1 max-w-md">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            name="search" 
+                            value="{{ search_query|default:'' }}"
+                            placeholder="Cari kelas {{ category.name|lower }}..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        >
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </form>
+
+                <a 
+                    href="{% url 'courses_and_coach:show_courses' %}"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                >
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Semua Kelas
+                </a>
+            </div>
+        </div>
+
+        {% if courses %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                {% for course in courses %}
+                    {% include 'courses_and_coach/partials/course_card.html' %}
+                {% endfor %}
+            </div>
+
+            {% if courses.has_other_pages %}
+                <div class="flex justify-center">
+                    <nav class="flex items-center space-x-2">
+                        {% if courses.has_previous %}
+                            <a 
+                                href="?page={{ courses.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                                class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                            >
+                                Previous
+                            </a>
+                        {% endif %}
+
+                        {% for num in courses.paginator.page_range %}
+                            {% if courses.number == num %}
+                                <span class="px-3 py-2 text-sm font-medium text-white bg-pink-600 border border-pink-600 rounded-md">
+                                    {{ num }}
+                                </span>
+                            {% elif num > courses.number|add:'-3' and num < courses.number|add:'3' %}
+                                <a 
+                                    href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                                    class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                                >
+                                    {{ num }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if courses.has_next %}
+                            <a 
+                                href="?page={{ courses.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                                class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                            >
+                                Next
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-16">
+                <div class="max-w-md mx-auto">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">Belum ada kelas</h3>
+                    <p class="mt-2 text-gray-500">
+                        {% if search_query %}
+                            Tidak ada kelas {{ category.name|lower }} yang cocok dengan pencarian "{{ search_query }}".
+                        {% else %}
+                            Belum ada kelas yang tersedia untuk kategori {{ category.name }}.
+                        {% endif %}
+                    </p>
+                    {% if search_query %}
+                        <div class="mt-6">
+                            <a 
+                                href="{% url 'courses_and_coach:category_detail' category.name %}"
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700"
+                            >
+                                Lihat Semua Kelas {{ category.name }}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
