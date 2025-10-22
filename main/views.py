@@ -4,6 +4,8 @@ from django.contrib.auth import authenticate, login as auth_login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from main.forms import RegisterForm
+from django.contrib.auth import logout
+from django.http import HttpResponseRedirect
 
 
 # Create your views here.
@@ -38,3 +40,9 @@ def login_user(request):
     
     context = {'form': form}
     return render(request, 'pages/login.html', context)
+
+def logout_user(request):
+    logout(request)
+    response = HttpResponseRedirect(reverse('main:login'))
+    response.delete_cookie('last_login')
+    return response
