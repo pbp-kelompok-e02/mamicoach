@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block meta %}
+<title>Login MamiCoach</title>
+{% endblock meta %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 50px auto; padding: 20px; border: 1px solid #ccc;">
+    <h1>Login to MamiCoach</h1>
+
+    {% if messages %}
+    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 20px;">
+        {% for message in messages %}
+        <p style="margin: 0; color: #721c24;">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 15px;">
+            <label for="{{ form.username.id_for_label }}" style="display: block; font-weight: bold;">{{ form.username.label }}</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <span style="color: red; font-size: 12px;">{{ form.username.errors|join:", " }}</span>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label for="{{ form.password.id_for_label }}" style="display: block; font-weight: bold;">{{ form.password.label }}</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+                <span style="color: red; font-size: 12px;">{{ form.password.errors|join:", " }}</span>
+            {% endif %}
+        </div>
+
+        <button type="submit" style="background-color: #35A753; color: white; padding: 10px 20px; border: none; cursor: pointer; font-size: 16px; width: 100%;">Login</button>
+    </form>
+
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+        <p style="font-weight: bold; margin-bottom: 10px;">Don't have an account? Register as:</p>
+        <div style="display: flex; gap: 10px;">
+            <a href="{% url 'user_profile:register' %}" style="flex: 1; text-decoration: none;">
+                <button type="button" style="width: 100%; padding: 10px; background-color: white; color: #35A753; border: 2px solid #35A753; cursor: pointer; font-weight: bold;">Register as Trainee</button>
+            </a>
+            <a href="{% url 'user_profile:register_coach' %}" style="flex: 1; text-decoration: none;">
+                <button type="button" style="width: 100%; padding: 10px; background-color: white; color: #35A753; border: 2px solid #35A753; cursor: pointer; font-weight: bold;">Register as Coach</button>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    input[type="text"], 
+    input[type="password"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        box-sizing: border-box;
+    }
+    
+    button:hover {
+        opacity: 0.9;
+    }
+</style>
+{% endblock content %}

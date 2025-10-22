@@ -21,7 +21,7 @@ def register_user(request):
         form = TraineeRegistrationForm()
     
     context = {"form": form}
-    return render(request, "pages/register.html", context)
+    return render(request, "register.html", context)
 
 
 def register_coach(request):
@@ -36,7 +36,7 @@ def register_coach(request):
         form = CoachRegistrationForm()
     
     context = {"form": form}
-    return render(request, "pages/register_coach.html", context)
+    return render(request, "register_coach.html", context)
 
 
 def login_user(request):
@@ -55,7 +55,7 @@ def login_user(request):
         form = AuthenticationForm(request)
     
     context = {'form': form}
-    return render(request, 'pages/login.html', context)
+    return render(request, 'login.html', context)
 
 
 def logout_user(request):
