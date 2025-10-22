@@ -1,0 +1,40 @@
+<!-- Chat Header -->
+<div class="bg-white border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
+    <div class="flex items-center">
+        <!-- Back Button (for mobile) -->
+        <button class="md:hidden mr-3 text-gray-600" onclick="showSessions()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </button>
+        
+        <!-- Profile Picture -->
+        <div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center mr-3">
+            <span class="font-semibold" id="chat-header-initial">
+                {{initial}}
+            </span>
+        </div>
+        
+        <!-- User Info -->
+        <div>
+            <h2 class="font-semibold text-gray-900" id="chat-header-name">
+                {{name}}
+            </h2>
+            <p class="text-sm text-gray-500">
+                <span class="text-green-500 flex items-center">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                    Online
+                </span>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Chat Actions -->
+    <div class="flex space-x-2">
+        <button class="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+            </svg>
+        </button>
+    </div>
+</div>

@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Chat - MamiCoach{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>    
+    <!-- Google Fonts - Quicksand -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    <style type="text/tailwindcss">
+        @theme {
+        --color-primary: #35A753;
+        --color-secondary: #FFC27A;
+        --font-quicksand: 'Quicksand', sans-serif;
+        --font-public-sans: 'Public Sans', sans-serif;
+        }
+    </style>
+    
+</head>
+<body class="font-quicksand h-screen flex flex-col overflow-hidden">
+    <!-- Navbar -->
+    {% include 'partials/_navbar.html' %}
+    
+    <!-- Main Chat Content - Full height without footer -->
+    <main class="flex-grow flex flex-col overflow-hidden">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <script>
+        // Global CSRF token setup for all AJAX requests
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Set CSRF token globally for all fetch requests
+        const csrftoken = getCookie('csrftoken');
+        
+        // Override fetch to automatically include CSRF token
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            // Only add CSRF token for same-origin requests
+            if (!options.headers) {
+                options.headers = {};
+            }
+            
+            // Add CSRF token for POST requests
+            if (options.method && options.method.toUpperCase() === 'POST') {
+                options.headers['X-CSRFToken'] = csrftoken;
+            }
+            
+            // Set content type for JSON requests
+            if (!options.headers['Content-Type'] && options.body && typeof options.body === 'string') {
+                options.headers['Content-Type'] = 'application/json';
+            }
+            
+            return originalFetch(url, options);
+        };
+    </script>
+</body>
+</html>
