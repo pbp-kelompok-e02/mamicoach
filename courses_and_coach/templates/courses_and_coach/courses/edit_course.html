@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Kelas - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-12">
+    <div class="bg-white rounded-2xl shadow p-6">
+        <h1 class="text-2xl font-bold mb-4">Edit Kelas</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="flex items-center gap-4  mt-6">
+                <button type="submit" class=" flex flex-row justify-center gap-1 leading-tight hover:cursor-pointer bg-primary text-white px-6 py-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-save-icon lucide-save"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>
+                    Simpan Perubahan
+                </button>
+                <button type="button" id="delete-btn" class="flex flex-row justify-center items-center gap-1 leading-tight  px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:opacity-90 hover:cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    Hapus
+                </button>
+                <a href="{% url 'courses_and_coach:course_details' course.id %}" class="text-gray-600">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteBtn = document.getElementById('delete-btn');
+    if (!deleteBtn) return;
+
+    // create modal
+    const courseTitle = "{{ course.title|escapejs }}";
+    const modal = document.createElement('div');
+    modal.innerHTML = `
+    <div id="confirm-delete-modal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-xl font-semibold mb-4">Konfirmasi Hapus</h3>
+            <p class="mb-6">Apakah Anda yakin ingin menghapus kelas "${courseTitle}"? Tindakan ini tidak dapat dibatalkan.</p>
+            <div class="flex justify-end gap-3">
+                <button id="cancel-delete" class="px-4 hover:cursor-pointer py-2 rounded-md border">Batal</button>
+                <button id="confirm-delete" class="px-4  hover:cursor-pointer py-2 bg-red-600 text-white rounded-md">Hapus</button>
+            </div>
+        </div>
+    </div>`;
+
+    document.body.appendChild(modal);
+    const modalEl = document.getElementById('confirm-delete-modal');
+    const cancelBtn = modalEl.querySelector('#cancel-delete');
+    const confirmBtn = modalEl.querySelector('#confirm-delete');
+
+    deleteBtn.addEventListener('click', function() {
+        modalEl.classList.remove('hidden');
+    });
+
+    cancelBtn.addEventListener('click', function() {
+        modalEl.classList.add('hidden');
+    });
+
+    confirmBtn.addEventListener('click', async function() {
+        confirmBtn.disabled = true;
+        try {
+            const response = await fetch(`{% url 'courses_and_coach:delete_course' course.id %}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            });
+            const data = await response.json();
+            if (data.success && data.redirect) {
+                window.location.href = data.redirect;
+            } else {
+                alert('Gagal menghapus kelas.');
+                modalEl.classList.add('hidden');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Terjadi kesalahan. Silakan coba lagi.');
+            modalEl.classList.add('hidden');
+        } finally {
+            confirmBtn.disabled = false;
+        }
+    });
+});
+</script>
+{% endblock %}

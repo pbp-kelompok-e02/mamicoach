@@ -13,7 +13,15 @@
         </div>
 
         <div class="bg-white rounded-3xl shadow-xl p-8">
-            <form method="post" class="space-y-6">
+            <style>
+                .create-course-form ::placeholder {
+                    color: #bcc1c9;
+                    opacity: 1;
+                }
+                .create-course-form:-ms-input-placeholder { color: #374151; }
+                .create-course-form::-ms-input-placeholder { color: #374151; }
+            </style>
+            <form method="post" class="space-y-6 create-course-form">
                 {% csrf_token %}
                 
                 <div>
@@ -33,6 +41,16 @@
                     {{ form.category }}
                     {% if form.category.errors %}
                         <p class="mt-1 text-sm text-red-600">{{ form.category.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.location.id_for_label }}" class="block text-sm font-semibold text-gray-900 mb-2">
+                        Lokasi Kelas *
+                    </label>
+                    {{ form.location }}
+                    {% if form.location.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.location.errors.0 }}</p>
                     {% endif %}
                 </div>
 
