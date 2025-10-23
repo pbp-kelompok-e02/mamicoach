@@ -1,8 +1,10 @@
 from django.urls import path
 from courses_and_coach.views import (
+    coach_details,
     courses_ajax,
     courses_by_id_ajax,
     courses_card_ajax,
+    show_coaches,
     show_courses,
     course_details,
     create_course,
@@ -27,4 +29,6 @@ urlpatterns = [
     path(
         "courses-ajax/<int:course_id>/", courses_by_id_ajax, name="courses_by_id_ajax"
     ),
+    path("coaches/", show_coaches, name="show_coaches"),
+    path("coaches/<int:coach_id>/", coach_details, name="coach_details"),
 ]

@@ -31,3 +31,7 @@ urlpatterns = [
     path("api/coach/<int:coach_id>/available-dates/", booking_views.api_coach_available_dates_legacy, name='legacy_available_dates'),
     path("api/coach/<int:coach_id>/available-times/", booking_views.api_coach_available_times_legacy, name='legacy_available_times'),
 ]
+
+# Custom error handlers
+handler404 = "main.views.handler_404"
+handler500 = "main.views.handler_500"
