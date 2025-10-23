@@ -1,11 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# Create your models here.
 class CoachProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField()
-    expertise = models.JSONField(default=list)  # Array string untuk multiple expertise
+    expertise = models.JSONField(default=list) 
     image_url = models.CharField(max_length=255)
     rating = models.FloatField(default=0.0)
     verified = models.BooleanField(default=False)
