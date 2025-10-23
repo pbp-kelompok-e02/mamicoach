@@ -18,7 +18,11 @@
             <a href="{% url 'courses_and_coach:coach_details' coach.id %}" class="bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 group flex flex-col">
                 <div class="relative h-48 bg-gradient-to-br from-primary to-green-600 overflow-hidden">
                     <img 
-                        src="{{ coach.image_url }}" 
+                        src="{% if coach.profile_image and coach.profile_image.url %}
+                        {{ coach.profile_image.url }}
+                        {% else %}
+                        {% static 'images/logo.png' %}
+                        {% endif %}" 
                         alt="{{ coach.user.get_full_name }}" 
                         class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                     >
@@ -40,7 +44,7 @@
                     </div>
 
                     {% if coach.bio %}
-                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ coach.bio }}</p>
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ coach.profile_image }}</p>
                     {% endif %}
 
                     <div

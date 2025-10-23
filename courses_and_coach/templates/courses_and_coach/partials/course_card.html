@@ -1,4 +1,5 @@
 <!-- Course Card Component-->
+ {% load static %}
 <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group">
     <div class="relative">
         <a href="{% url 'courses_and_coach:course_details' course.id %}">
@@ -36,7 +37,11 @@
         <div class="flex items-center space-x-2 mb-3">
             <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
                 <img 
-                    src="{{ course.coach.image_url }}" 
+                    src="{% if course.coach.profile_image and course.coach.profile_image.url %}
+                        {{ course.coach.profile_image.url }}
+                        {% else %}
+                        {% static 'images/logo.png' %}
+                        {% endif %}" 
                     alt="{{ course.coach.user.get_full_name }}"
                     class="w-full h-full object-cover"
                 >
