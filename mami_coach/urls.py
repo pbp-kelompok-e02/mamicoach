@@ -24,3 +24,7 @@ urlpatterns = [
     path("", include("courses_and_coach.urls")),
     path("", include("user_profile.urls")),
 ]
+
+# Custom error handlers
+handler404 = "main.views.handler_404"
+handler500 = "main.views.handler_500"
