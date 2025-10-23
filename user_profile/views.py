@@ -192,14 +192,57 @@ def dashboard_coach(request):
 
 @login_required
 def coach_profile(request):
+    from courses_and_coach.models import Category
+    
     try:
         coach_profile = CoachProfile.objects.get(user=request.user)
     except CoachProfile.DoesNotExist:
         messages.error(request, "You don't have a coach profile. Please register as a coach.")
         return redirect('main:show_main')
     
+    if request.method == "POST":
+        # Update user data
+        request.user.first_name = request.POST.get('first_name', '').strip()
+        request.user.last_name = request.POST.get('last_name', '').strip()
+        request.user.save()
+        
+        coach_profile.bio = request.POST.get('bio', '').strip()
+        
+        expertise_list = request.POST.getlist('expertise[]')
+        if expertise_list:
+            coach_profile.expertise = expertise_list
+        
+        if 'profile_image' in request.FILES:
+            coach_profile.profile_image = request.FILES['profile_image']
+        
+        coach_profile.save()
+        
+        deleted_cert_ids = request.POST.getlist('deleted_certifications[]')
+        if deleted_cert_ids:
+            Certification.objects.filter(id__in=deleted_cert_ids, coach=coach_profile).delete()
+        
+        new_cert_names = request.POST.getlist('new_cert_names[]')
+        new_cert_urls = request.POST.getlist('new_cert_urls[]')
+        
+        for name, url in zip(new_cert_names, new_cert_urls):
+            if name.strip() and url.strip():
+                Certification.objects.create(
+                    coach=coach_profile,
+                    certificate_name=name.strip(),
+                    file_url=url.strip(),
+                    status='pending'
+                )
+        
+        messages.success(request, "Profile updated successfully!")
+        return redirect('user_profile:dashboard_coach')
+    
+    certifications = Certification.objects.filter(coach=coach_profile)
+    categories = Category.objects.all().order_by('name')
+    
     context = {
         'coach_profile': coach_profile,
+        'certifications': certifications,
+        'categories': categories,
     }
     return render(request, 'coach_profile.html', context)
 
