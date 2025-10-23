@@ -23,7 +23,7 @@
                         </div>
                     {% else %}
                         <div class="h-16 w-16 overflow-hidden rounded-full flex-shrink-0">
-                            <img src="https://i.pravatar.cc/100?u={{ review.user.username }}" 
+                            <img src="{% if review.user.userprofile.profile_image %}{{ review.user.userprofile.profile_image.url }}{% else %}/image/logo.png{% endif %}" 
                                  alt="{{ review.user.username }} avatar" 
                                  class="h-full w-full object-cover" />
                         </div>
@@ -32,9 +32,9 @@
                     <div class="flex-1 min-w-0">
                         <h3 class="text-xl font-semibold text-neutral-900">
                             {% if review.is_anonymous %}
-                                Anonymous User
+                            Anonymous User
                             {% else %}
-                                {{ review.user.first_name|default:review.user.username }}
+                            {{ review.user.first_name|default:review.user.username }}
                             {% endif %}
                         </h3>
                         <p class="text-sm text-neutral-600 mt-1">{{ review.course.title }}</p>

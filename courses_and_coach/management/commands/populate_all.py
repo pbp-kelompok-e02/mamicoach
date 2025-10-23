@@ -2,6 +2,9 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from courses_and_coach.models import Category, Course
 from user_profile.models import CoachProfile
+from reviews.models import Review
+from booking.models import Booking
+from django.utils import timezone
 import random
 
 
@@ -13,27 +16,44 @@ class Command(BaseCommand):
         self.create_categories()
         self.create_coaches()
         self.create_courses()
+        self.create_trainees()
         self.create_bookings()
         self.create_reviews()
-
         self.stdout.write(self.style.SUCCESS("Successfully populated all sample data!"))
+    
+    def create_trainees(self):
+        """Create new trainee User objects and their UserProfile"""
+        from user_profile.models import UserProfile
+        from django.contrib.auth.models import User
+        trainee_data = [
+            {"username": f"trainee{i}", "first_name": f"Trainee{i}", "last_name": "Test", "email": f"trainee{i}@mamicoach.com"}
+            for i in range(1, 11)
+        ]
+        self.trainee_users = []
+        for data in trainee_data:
+            user, created = User.objects.get_or_create(
+                username=data["username"],
+                defaults={
+                    "first_name": data["first_name"],
+                    "last_name": data["last_name"],
+                    "email": data["email"],
+                },
+            )
+            if created:
+                user.set_password("password123")
+                user.save()
+                self.stdout.write(self.style.SUCCESS(f"Created trainee user: {user.username}"))
+            profile, _ = UserProfile.objects.get_or_create(
+                user=user,
+                profile_image=f"https://i.pravatar.cc/150?u={user.username}"
+            )
+            self.trainee_users.append(user)
+        self.stdout.write(self.style.SUCCESS(f"Total trainees created/used: {len(self.trainee_users)}"))
+    
     def create_reviews(self):
-        """Create sample reviews based on some bookings"""
+        """Create reviews for a subset of bookings created in create_bookings"""
         from reviews.models import Review
-        from booking.models import Booking
         from django.utils import timezone
-        import random
-
-        # Get all bookings
-        bookings = list(Booking.objects.all())
-        if not bookings:
-            self.stdout.write(self.style.WARNING("No bookings found to seed reviews."))
-            return
-
-        # Select 8 random bookings to review
-        num_reviews = min(8, len(bookings))
-        sampled_bookings = random.sample(bookings, num_reviews)
-
         review_contents = [
             "Pelatihnya ramah dan profesional! Saya belajar banyak.",
             "Kelasnya seru dan bermanfaat, recommended banget.",
@@ -44,11 +64,13 @@ class Command(BaseCommand):
             "Kelasnya intens tapi hasilnya terasa!",
             "Akan ikut lagi di kelas berikutnya!",
         ]
-
+        bookings = getattr(self, 'bookings_created', None)
+        if not bookings:
+            self.stdout.write(self.style.WARNING("No bookings found to seed reviews."))
+            return
+        num_reviews = min(8, len(bookings))
+        sampled_bookings = random.sample(bookings, num_reviews)
         for i, booking in enumerate(sampled_bookings):
-            # Avoid duplicate reviews for same user/course
-            if Review.objects.filter(user=booking.user, course=booking.course).exists():
-                continue
             content = review_contents[i % len(review_contents)]
             rating = random.randint(4, 5)
             is_anonymous = random.choice([True, False])
@@ -62,60 +84,37 @@ class Command(BaseCommand):
                 is_anonymous=is_anonymous,
                 created_at=timezone.now(),
             )
-            self.stdout.write(self.style.SUCCESS(f"✓ Created review for {booking.user.username} - {booking.course.title} (Rating: {rating})"))
+            self.stdout.write(self.style.SUCCESS(f"Created review for {booking.user.username} - {booking.course.title} (Rating: {rating})"))
     def create_bookings(self):
-        """Create sample bookings"""
+        """Create sample bookings for non-coach users and random courses"""
         from booking.models import Booking
         from django.utils import timezone
-        # Get all users except coaches
         coach_usernames = [
             "sarah_yoga", "mike_fitness", "diana_pilates", "alex_zumba", "lisa_swim"
         ]
-        users = User.objects.exclude(username__in=coach_usernames)
-        # If no non-coach users, create some
-        if users.count() == 0:
-            for i in range(1, 6):
-                user, created = User.objects.get_or_create(
-                    username=f"user{i}",
-                    defaults={
-                        "first_name": f"User{i}",
-                        "last_name": "Test",
-                        "email": f"user{i}@mamicoach.com",
-                    },
-                )
-                if created:
-                    user.set_password("password123")
-                    user.save()
-            users = User.objects.exclude(username__in=coach_usernames)
-
-        courses = Course.objects.all()
-
-        # Create 20 bookings
+        users = list(User.objects.exclude(username__in=coach_usernames))
+        courses = list(Course.objects.all())
         status_choices = [choice[0] for choice in Booking.STATUS_CHOICES]
+        self.bookings_created = []
         for i in range(20):
-            user = random.choice(list(users))
-            course = random.choice(list(courses))
-            coach = course.coach  # Always use the course's coach
-            # Generate random start and end datetime
+            user = random.choice(users)
+            course = random.choice(courses)
+            coach = course.coach
             start_datetime = timezone.now() + timezone.timedelta(days=random.randint(1, 30), hours=random.randint(6, 18))
-            duration_minutes = course.duration if hasattr(course, 'duration') and course.duration else random.choice([45, 60, 90])
+            duration_minutes = getattr(course, 'duration', random.choice([45, 60, 90]))
             end_datetime = start_datetime + timezone.timedelta(minutes=duration_minutes)
             status = random.choice(status_choices)
-
             booking, created = Booking.objects.get_or_create(
                 user=user,
                 course=course,
                 coach=coach,
                 start_datetime=start_datetime,
                 end_datetime=end_datetime,
-                defaults={
-                    "status": status,
-                },
+                defaults={"status": status},
             )
             if created:
-                self.stdout.write(
-                    self.style.SUCCESS(f"Created booking (ID: {booking.pk}) for {user.username} - {course.title} ({status}) [{start_datetime} - {end_datetime}]")
-                )
+                self.stdout.write(self.style.SUCCESS(f"Created booking (ID: {booking.pk}) for {user.username} - {course.title} ({status}) [{start_datetime} - {end_datetime}]"))
+            self.bookings_created.append(booking)
 
     def create_categories(self):
         """Create sample categories"""
@@ -162,7 +161,7 @@ class Command(BaseCommand):
             )
             if created:
                 self.stdout.write(
-                    self.style.SUCCESS(f"✓ Created category: {category.name}")
+                    self.style.SUCCESS(f"Created category: {category.name}")
                 )
 
     def create_coaches(self):
@@ -240,7 +239,7 @@ class Command(BaseCommand):
                 user.set_password("password123")  # Default password
                 user.save()
                 self.stdout.write(
-                    self.style.SUCCESS(f"✓ Created user: {user.get_full_name()}")
+                    self.style.SUCCESS(f"Created user: {user.get_full_name()}")
                 )
 
             # Create coach profile if doesn't exist
@@ -257,7 +256,7 @@ class Command(BaseCommand):
             if coach_created:
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"✓ Created coach profile: {user.get_full_name()}"
+                        f"Created coach profile: {user.get_full_name()}"
                     )
                 )
 
@@ -519,7 +518,7 @@ class Command(BaseCommand):
 
                 if created:
                     self.stdout.write(
-                        self.style.SUCCESS(f"✓ Created course: {course.title}")
+                        self.style.SUCCESS(f"Created course: {course.title}")
                     )
 
             except (
@@ -529,6 +528,6 @@ class Command(BaseCommand):
             ) as e:
                 self.stdout.write(
                     self.style.ERROR(
-                        f"✗ Error creating course {course_data['title']}: {e}"
+                        f"Error creating course {course_data['title']}: {e}"
                     )
                 )
