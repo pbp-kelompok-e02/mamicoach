@@ -5,9 +5,6 @@ from courses_and_coach.views import (
     courses_by_id_ajax,
     courses_card_ajax,
     show_coaches,
-    courses_ajax,
-    courses_by_id_ajax,
-    courses_card_ajax,
     show_courses,
     course_details,
     create_course,
@@ -34,11 +31,4 @@ urlpatterns = [
     ),
     path("coaches/", show_coaches, name="show_coaches"),
     path("coaches/<int:coach_id>/", coach_details, name="coach_details"),
-    path("courses/<int:course_id>/edit/", edit_course, name="edit_course"),
-    path("courses/<int:course_id>/delete/", delete_course, name="delete_course"),
-    path("courses-ajax/", courses_ajax, name="courses_ajax"),
-    path("courses-card-ajax/", courses_card_ajax, name="courses_card_ajax"),
-    path(
-        "courses-ajax/<int:course_id>/", courses_by_id_ajax, name="courses_by_id_ajax"
-    ),
 ]
