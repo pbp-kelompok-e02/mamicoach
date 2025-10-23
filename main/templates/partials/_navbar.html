@@ -31,7 +31,7 @@
                 <a href="{% url 'courses_and_coach:show_courses' %}" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
                     Kelas
                 </a>
-                <a href="#" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
+                <a href="{% url 'courses_and_coach:show_coaches' %}" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
                     Coach
                 </a>
                 {% if user.coachprofile %}
@@ -68,13 +68,10 @@
                         
                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-200 z-50">
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                Profil Saya
-                            </a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 Kelas Saya
                             </a>
                             {% if user.coachprofile %}
-                                <a href="{% url 'courses_and_coach:my_courses' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <a href="{% url 'user_profile:dashboard_coach' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     Dashboard
                                 </a>
                                 <a href="{% url 'courses_and_coach:create_course' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -136,7 +133,7 @@
             <a href="{% url 'courses_and_coach:show_courses' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                 Kelas
             </a>
-            <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+            <a href="{% url 'courses_and_coach:show_coaches' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                 Coach
             </a>
             <a href="{% url 'user_profile:register_coach' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
@@ -154,14 +151,11 @@
                         <span class="ml-3 text-base font-medium text-gray-800">{{ user.first_name|default:user.username }}</span>
                     </div>
                     <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
-                        Profil Saya
-                    </a>
-                    <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                         Kelas Saya
                     </a>
                     {% if user.coachprofile %}
-                        <a href="{% url 'courses_and_coach:my_courses' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
-                            Dashboard Coach
+                        <a href="{% url 'user_profile:dashboard_coach' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+                            Dashboard
                         </a>
                         <a href="{% url 'courses_and_coach:create_course' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                             Buat Kelas Baru
