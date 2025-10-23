@@ -17,6 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from booking import views as booking_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -24,4 +25,10 @@ urlpatterns = [
     path("", include("courses_and_coach.urls")),
     path("", include("user_profile.urls")),
     path("", include("reviews.urls")),
+    path("booking/", include("booking.urls")),
+    path("schedule/", include("schedule.urls")),
+    
+    # Legacy API endpoints (without prefix) for old booking UI
+    path("api/coach/<int:coach_id>/available-dates/", booking_views.api_coach_available_dates_legacy, name='legacy_available_dates'),
+    path("api/coach/<int:coach_id>/available-times/", booking_views.api_coach_available_times_legacy, name='legacy_available_times'),
 ]

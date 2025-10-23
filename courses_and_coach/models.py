@@ -19,13 +19,16 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    def get_url_name(self):
+        """Return URL-safe version of category name"""
+        return self.name.replace(" ", "%20")
+
 
 class Course(models.Model):
     """
     Course model based on the provided table schema
     """
 
-    # TODO: Update this ForeignKey to use the actual CoachProfile model from another app
     coach = models.ForeignKey(
         CoachProfile,
         on_delete=models.CASCADE,
@@ -35,11 +38,13 @@ class Course(models.Model):
         Category,
         on_delete=models.SET_NULL,
         null=True,
-        blank=True,
         related_name="courses",
     )
     title = models.CharField(max_length=255)
     description = models.TextField()
+    location = models.CharField(
+        max_length=255, help_text="Location where the course takes place"
+    )
     price = models.PositiveIntegerField(
         help_text="Price in the smallest currency unit (e.g., cents, rupiah)"
     )

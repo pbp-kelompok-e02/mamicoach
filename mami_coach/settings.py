@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     "courses_and_coach",
     "user_profile",
     "reviews"
+    "schedule",
+    "booking",
 ]
 
 MIDDLEWARE = [
