@@ -43,7 +43,9 @@ def register_user(request):
     return render(request, "register.html", context)
 
 
-def register_coach(request):    
+def register_coach(request):
+    from courses_and_coach.models import Category
+    
     if request.method == "POST":
         form = CoachRegistrationForm(request.POST)
         if form.is_valid():
@@ -57,7 +59,8 @@ def register_coach(request):
                     }, status=400)
                 
                 messages.error(request, "Please select at least one expertise area.")
-                context = {"form": form}
+                categories = Category.objects.all().order_by('name')
+                context = {"form": form, "categories": categories}
                 return render(request, "register_coach.html", context)
             
             user = form.save()
