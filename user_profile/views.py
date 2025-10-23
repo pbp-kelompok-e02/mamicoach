@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .forms import TraineeRegistrationForm, CoachRegistrationForm
-from .models import CoachProfile, Certification
+from .models import CoachProfile, Certification, UserProfile
 
 
 def register_user(request):
@@ -15,6 +15,9 @@ def register_user(request):
         form = TraineeRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            
+            # Create UserProfile for the new user
+            UserProfile.objects.create(user=user)
             
             # Ajax Request
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -47,7 +50,7 @@ def register_coach(request):
     from courses_and_coach.models import Category
     
     if request.method == "POST":
-        form = CoachRegistrationForm(request.POST)
+        form = CoachRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             expertise_list = request.POST.getlist('expertise[]')
             
@@ -69,7 +72,7 @@ def register_coach(request):
                 user=user,
                 bio=form.cleaned_data['bio'],
                 expertise=expertise_list,
-                image_url=form.cleaned_data.get('image_url', '')
+                profile_image=form.cleaned_data.get('profile_image')
             )
             
             cert_names = request.POST.getlist('certification_name[]')
@@ -81,7 +84,7 @@ def register_coach(request):
                         coach=coach_profile,
                         certificate_name=name.strip(),
                         file_url=url.strip(),
-                        verified=False
+                        status='pending'
                     )
             
             # Ajax Request
@@ -175,10 +178,9 @@ def dashboard_coach(request):
     try:
         coach_profile = CoachProfile.objects.get(user=request.user)
     except CoachProfile.DoesNotExist:
-        messages.error(request, "You don't have a coach profile. Please register as a coach.")
+        messages.error(request, "Access denied. This page is only for coaches.")
         return redirect('main:show_main')
     
-    # Get all certifications for this coach
     certifications = Certification.objects.filter(coach=coach_profile)
     
     context = {
@@ -189,15 +191,192 @@ def dashboard_coach(request):
 
 
 @login_required
+def get_coach_profile(request):
+    try:
+        coach_profile = CoachProfile.objects.get(user=request.user)
+        certifications = Certification.objects.filter(coach=coach_profile)
+        
+        # Build profile data
+        profile_data = {
+            'success': True,
+            'profile': {
+                'full_name': request.user.get_full_name(),
+                'initials': f"{request.user.first_name[0]}{request.user.last_name[0]}" if request.user.first_name and request.user.last_name else "??",
+                'profile_image': coach_profile.profile_image.url if coach_profile.profile_image else None,
+                'expertise': coach_profile.expertise if coach_profile.expertise else [],
+                'rating': coach_profile.rating,
+                'bio': coach_profile.bio,
+                'verified': coach_profile.verified,
+                'certifications': [
+                    {
+                        'id': cert.id,
+                        'name': cert.certificate_name,
+                        'url': cert.file_url,
+                        'status': cert.status
+                    }
+                    for cert in certifications
+                ]
+            }
+        }
+        
+        return JsonResponse(profile_data)
+        
+    except CoachProfile.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': "Access denied. This page is only for coaches."
+        }, status=403)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+@login_required
 def coach_profile(request):
+    from courses_and_coach.models import Category
+    
     try:
         coach_profile = CoachProfile.objects.get(user=request.user)
     except CoachProfile.DoesNotExist:
-        messages.error(request, "You don't have a coach profile. Please register as a coach.")
+        messages.error(request, "Access denied. This page is only for coaches.")
         return redirect('main:show_main')
     
-    # TODO: Implement profile editing functionality
+    if request.method == "POST":
+        # Update user data
+        request.user.first_name = request.POST.get('first_name', '').strip()
+        request.user.last_name = request.POST.get('last_name', '').strip()
+        request.user.save()
+        
+        coach_profile.bio = request.POST.get('bio', '').strip()
+        
+        expertise_list = request.POST.getlist('expertise[]')
+        if expertise_list:
+            coach_profile.expertise = expertise_list
+        
+        if 'profile_image' in request.FILES:
+            coach_profile.profile_image = request.FILES['profile_image']
+        
+        coach_profile.save()
+        
+        deleted_cert_ids = request.POST.getlist('deleted_certifications[]')
+        if deleted_cert_ids:
+            Certification.objects.filter(id__in=deleted_cert_ids, coach=coach_profile).delete()
+        
+        new_cert_names = request.POST.getlist('new_cert_names[]')
+        new_cert_urls = request.POST.getlist('new_cert_urls[]')
+        
+        for name, url in zip(new_cert_names, new_cert_urls):
+            if name.strip() and url.strip():
+                Certification.objects.create(
+                    coach=coach_profile,
+                    certificate_name=name.strip(),
+                    file_url=url.strip(),
+                    status='pending'
+                )
+        
+        messages.success(request, "Profile updated successfully!")
+        return redirect('user_profile:dashboard_coach')
+    
+    certifications = Certification.objects.filter(coach=coach_profile)
+    categories = Category.objects.all().order_by('name')
+    
     context = {
         'coach_profile': coach_profile,
+        'certifications': certifications,
+        'categories': categories,
     }
     return render(request, 'coach_profile.html', context)
+
+
+@login_required
+def dashboard_user(request):
+    # Check if user is a coach
+    try:
+        coach_profile = CoachProfile.objects.get(user=request.user)
+        messages.error(request, "Access denied. Coaches cannot access user dashboard.")
+        return redirect('user_profile:dashboard_coach')
+    except CoachProfile.DoesNotExist:
+        pass
+    
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    context = {
+        'user': request.user,
+        'user_profile': user_profile,
+    }
+    return render(request, 'dashboard_user.html', context)
+
+
+@login_required
+def get_user_profile(request):
+    try:
+        # Check if user is a coach
+        try:
+            coach_profile = CoachProfile.objects.get(user=request.user)
+            return JsonResponse({
+                'success': False,
+                'message': "Access denied. Coaches cannot access user dashboard."
+            }, status=403)
+        except CoachProfile.DoesNotExist:
+            pass
+        
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        profile_data = {
+            'success': True,
+            'profile': {
+                'full_name': request.user.get_full_name(),
+                'initials': f"{request.user.first_name[0]}{request.user.last_name[0]}" if request.user.first_name and request.user.last_name else "??",
+                'profile_image': user_profile.profile_image.url if user_profile.profile_image else None,
+            }
+        }
+        
+        return JsonResponse(profile_data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+@login_required
+def user_profile(request):
+    # Check if user is a coach
+    try:
+        coach_profile = CoachProfile.objects.get(user=request.user)
+        messages.error(request, "Access denied. Coaches cannot access user profile.")
+        return redirect('user_profile:coach_profile')
+    except CoachProfile.DoesNotExist:
+        pass
+    
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    if request.method == "POST":
+        # Update user data
+        request.user.first_name = request.POST.get('first_name', '').strip()
+        request.user.last_name = request.POST.get('last_name', '').strip()
+        request.user.save()
+        
+        # Update profile image if provided
+        if 'profile_image' in request.FILES:
+            user_profile.profile_image = request.FILES['profile_image']
+            user_profile.save()
+        
+        # AJAX Request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Profile updated successfully!'
+            })
+        
+        messages.success(request, "Profile updated successfully!")
+        return redirect('user_profile:dashboard_user')
+    
+    context = {
+        'user': request.user,
+        'user_profile': user_profile,
+    }
+    return render(request, 'user_profile.html', context)
