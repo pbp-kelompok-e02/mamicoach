@@ -1,0 +1,421 @@
+{% load static %}
+
+<!-- Booking Card -->
+<div class="sticky top-8">
+    <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
+        <div class="text-center mb-6">
+            <div class="text-3xl font-bold text-gray-900 mb-1">
+                {{ course.price_formatted }}<span class="text-sm font-normal text-gray-500">/sesi</span>
+            </div>
+            {% if course.coach.verified %}
+            <div class="flex items-center justify-center space-x-2 text-primary">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                </svg>
+                <span class="text-sm font-medium">Verified Coach</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Tombol Jadwalkan Sesi -->
+        <button 
+            onclick="openBookingModal()"
+            class="w-full bg-primary text-white py-4 rounded-2xl font-semibold text-lg hover:bg-green-600 transition-colors duration-200 flex items-center justify-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span>Jadwalkan Sesi</span>
+        </button>
+
+        <!-- Coach Info -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
+                    <img 
+                        src="{{ course.coach.image_url|default:'https://ui-avatars.com/api/?name='|add:course.coach.user.get_full_name|urlencode:'&background=35A753&color=ffffff' }}" 
+                        alt="{{ course.coach.user.get_full_name }}"
+                        class="w-full h-full object-cover"
+                    >
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-semibold text-gray-900">{{ course.coach.user.get_full_name }}</h4>
+                    <p class="text-sm text-gray-600">{{ course.category.name }}, {{ course.coach.expertise|join:", " }}</p>
+                    <div class="flex items-center space-x-1 mt-1">
+                        <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                        </svg>
+                        <span class="text-sm font-medium text-gray-900">{{ course.coach.rating|floatformat:1 }}</span>
+                        <span class="text-sm text-gray-500">(284,3 rb)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-sm text-gray-600">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>• 242 jam sesi dijadwalkan</span>
+                </div>
+            </div>
+
+            <button class="w-full mt-4 text-primary border border-primary py-3 rounded-2xl font-semibold hover:bg-primary hover:text-white transition-colors duration-200 flex items-center justify-center space-x-2">
+                <span>Lihat profil coach</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+{% load static %}
+
+<!-- Modal Booking -->
+<div id="bookingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full">
+        <div class="p-6">
+            <!-- Header Modal - Lebih compact -->
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Select a Date & Time</h2>
+                    <p class="text-sm text-gray-600 mt-1">Choose your preferred schedule with {{ course.coach.user.get_full_name }}</p>
+                </div>
+                <button onclick="closeBookingModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Content Modal -->
+            <div>
+                <!-- Calendar Section -->
+                <div id="calendarSection">
+                    <div class="bg-gray-50 rounded-2xl p-4">
+                        <!-- Calendar Header -->
+                        <div class="flex items-center justify-between mb-4">
+                            <button onclick="previousMonth()" class="p-2 hover:bg-white rounded-lg transition-colors">
+                                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
+                            <h3 id="currentMonth" class="text-lg font-bold text-gray-900">October 2025</h3>
+                            <button onclick="nextMonth()" class="p-2 hover:bg-white rounded-lg transition-colors">
+                                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Calendar Grid -->
+                        <div class="grid grid-cols-7 gap-1 mb-3">
+                            <div class="text-center text-xs font-semibold text-gray-600 py-1">MON</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-1">TUE</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-1">WED</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-1">THU</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-1">FRI</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-1">SAT</div>
+                            <div class="text-center text-xs font-semibold text-gray-600 py-1">SUN</div>
+                        </div>
+
+                        <!-- Calendar Days - Lebih compact -->
+                        <div id="calendarDays" class="grid grid-cols-7 gap-1">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+
+                        <!-- Timezone - Lebih kecil -->
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="text-xs text-gray-600 flex items-center space-x-2">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span><span class="font-semibold">Time zone:</span> Indochina Time (UTC+7)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Slots Section -->
+                <div id="timeSlotsSection" class="hidden">
+                    <div class="bg-gray-50 rounded-2xl p-4">
+                        <div class="mb-4">
+                            <button onclick="backToCalendar()" class="text-primary hover:text-green-600 flex items-center space-x-1 mb-3 font-medium text-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                                <span>Back to calendar</span>
+                            </button>
+                            <h3 id="selectedDateDisplay" class="text-xl font-bold text-gray-900 mb-1">Thursday, October 23</h3>
+                            <p class="text-xs text-gray-600">Select a time slot</p>
+                        </div>
+
+                        <!-- Time Slots Grid - Lebih compact -->
+                        <div id="timeSlotsList" class="space-y-2 max-h-80 overflow-y-auto">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+
+                        <!-- Next Button -->
+                        <button 
+                            id="nextButton" 
+                            onclick="confirmBooking()"
+                            class="hidden w-full mt-4 bg-primary text-white py-3 rounded-2xl font-semibold hover:bg-green-600 transition-colors duration-200">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const courseId = {{ course.id }};
+    const coachId = {{ course.coach.id }};
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth() + 1;
+    let selectedDate = null;
+    let selectedSlotId = null;
+    let availableDates = [];
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function openBookingModal() {
+        document.getElementById('bookingModal').classList.remove('hidden');
+        loadCalendar();
+    }
+
+    function closeBookingModal() {
+        document.getElementById('bookingModal').classList.add('hidden');
+        document.getElementById('calendarSection').classList.remove('hidden');
+        document.getElementById('timeSlotsSection').classList.add('hidden');
+        selectedDate = null;
+        selectedSlotId = null;
+    }
+
+    function loadCalendar() {
+        // Show loading
+        const calendarDays = document.getElementById('calendarDays');
+        calendarDays.innerHTML = '<div class="col-span-7 text-center py-8 text-gray-500">Loading calendar...</div>';
+
+        // Fetch available dates
+        fetch(`/api/coach/${coachId}/available-dates/?year=${currentYear}&month=${currentMonth}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Calendar data:', data); // Debug
+                availableDates = data.available_dates || [];
+                renderCalendar(data);
+            })
+            .catch(error => {
+                console.error('Error loading calendar:', error);
+                calendarDays.innerHTML = '<div class="col-span-7 text-center py-8 text-red-500">Failed to load calendar</div>';
+            });
+    }
+
+    function renderCalendar(data) {
+        document.getElementById('currentMonth').textContent = `${data.month_name} ${data.year}`;
+
+        const calendarDays = document.getElementById('calendarDays');
+        calendarDays.innerHTML = '';
+
+        const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+        const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
+
+        for (let i = 0; i < adjustedFirstDay; i++) {
+            const emptyCell = document.createElement('div');
+            calendarDays.appendChild(emptyCell);
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const currentDate = new Date(currentYear, currentMonth - 1, day);
+            
+            const isAvailable = availableDates.some(d => d.date === dateStr);
+            const isPast = currentDate < today;
+
+            const dayCell = document.createElement('div');
+            const button = document.createElement('button');
+            
+            button.textContent = day;
+            // Update: Ukuran button lebih kecil dengan h-10
+            button.className = 'w-full h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-all ';
+            
+            if (isPast) {
+                button.className += 'text-gray-300 cursor-not-allowed bg-gray-50';
+                button.disabled = true;
+            } else if (isAvailable) {
+                button.className += 'bg-green-100 text-green-700 hover:bg-primary hover:text-white cursor-pointer border-2 border-green-300';
+                button.onclick = () => selectDate(dateStr);
+            } else {
+                button.className += 'text-gray-400 cursor-not-allowed hover:bg-gray-100';
+                button.disabled = true;
+            }
+
+            dayCell.appendChild(button);
+            calendarDays.appendChild(dayCell);
+        }
+    }
+
+    function selectDate(dateStr) {
+        selectedDate = dateStr;
+        console.log('Selected date:', dateStr); // Debug
+        
+        // Hide calendar, show time slots
+        document.getElementById('calendarSection').classList.add('hidden');
+        document.getElementById('timeSlotsSection').classList.remove('hidden');
+        
+        // Show loading
+        document.getElementById('timeSlotsList').innerHTML = '<div class="text-center py-8 text-gray-500">Loading available times...</div>';
+        
+        // Fetch available times
+        fetch(`/api/coach/${coachId}/available-times/?date=${dateStr}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Time slots data:', data); // Debug
+                renderTimeSlots(data);
+                
+                // Update selected date display
+                const date = new Date(dateStr);
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('selectedDateDisplay').textContent = date.toLocaleDateString('en-US', options);
+            })
+            .catch(error => {
+                console.error('Error loading time slots:', error);
+                document.getElementById('timeSlotsList').innerHTML = '<div class="text-center py-8 text-red-500">Failed to load time slots</div>';
+            });
+    }
+
+    function renderTimeSlots(data) {
+        const timeSlotsList = document.getElementById('timeSlotsList');
+        
+        if (!data.available_times || data.available_times.length === 0) {
+            timeSlotsList.innerHTML = '<div class="text-center py-8 text-gray-500">No available time slots for this date</div>';
+            return;
+        }
+
+        timeSlotsList.innerHTML = '';
+        
+        data.available_times.forEach(slot => {
+            const button = document.createElement('button');
+            button.className = 'w-full text-center px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all font-medium text-gray-900';
+            button.textContent = slot.display;
+            button.onclick = () => selectTimeSlot(slot.slot_id, button);
+            
+            timeSlotsList.appendChild(button);
+        });
+    }
+
+    function selectTimeSlot(slotId, button) {
+        // Remove previous selection
+        document.querySelectorAll('#timeSlotsList button').forEach(btn => {
+            btn.classList.remove('border-primary', 'bg-primary/10', 'border-green-500', 'bg-green-50');
+            btn.classList.add('border-gray-200');
+        });
+
+        // Mark as selected
+        button.classList.add('border-green-500', 'bg-green-50');
+        button.classList.remove('border-gray-200');
+        
+        selectedSlotId = slotId;
+        
+        // Show next button
+        document.getElementById('nextButton').classList.remove('hidden');
+    }
+
+    function backToCalendar() {
+        document.getElementById('timeSlotsSection').classList.add('hidden');
+        document.getElementById('calendarSection').classList.remove('hidden');
+        document.getElementById('nextButton').classList.add('hidden');
+        selectedSlotId = null;
+    }
+
+    function previousMonth() {
+        if (currentMonth === 1) {
+            currentMonth = 12;
+            currentYear--;
+        } else {
+            currentMonth--;
+        }
+        loadCalendar();
+    }
+
+    function nextMonth() {
+        if (currentMonth === 12) {
+            currentMonth = 1;
+            currentYear++;
+        } else {
+            currentMonth++;
+        }
+        loadCalendar();
+    }
+
+    function confirmBooking() {
+        if (!selectedDate || !selectedSlotId) {
+            alert('Please select a date and time slot');
+            return;
+        }
+
+        const nextButton = document.getElementById('nextButton');
+        const originalText = nextButton.textContent;
+        nextButton.textContent = 'Processing...';
+        nextButton.disabled = true;
+
+        fetch(`/api/create/${courseId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                schedule_id: selectedSlotId,
+                date: selectedDate
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Booking created successfully! Redirecting to payment...');
+                closeBookingModal();
+                // Uncomment untuk redirect ke payment nanti
+                // window.location.href = data.redirect_url;
+            } else {
+                alert('Error: ' + data.message);
+                nextButton.textContent = originalText;
+                nextButton.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error creating booking:', error);
+            alert('Failed to create booking. Please try again.');
+            nextButton.textContent = originalText;
+            nextButton.disabled = false;
+        });
+    }
+</script>
