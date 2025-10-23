@@ -56,9 +56,7 @@ def create_course(request):
     try:
         coach_profile = request.user.coachprofile
     except CoachProfile.DoesNotExist:
-        messages.error(
-            request, "Anda harus menjadi coach terverifikasi untuk membuat kelas."
-        )
+        messages.error(request, "Anda harus menjadi coach untuk membuat kelas.")
         return redirect("courses_and_coach:show_courses")
 
     if request.method == "POST":
