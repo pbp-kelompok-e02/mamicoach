@@ -29,11 +29,11 @@ class CoachRegistrationForm(UserCreationForm):
     first_name = forms.CharField(max_length=150, required=True)
     last_name = forms.CharField(max_length=150, required=True)
     bio = forms.CharField(widget=forms.Textarea, required=True)
-    image_url = forms.CharField(max_length=255, required=False)
+    profile_image = forms.ImageField(required=False, help_text='Upload your profile picture')
     
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'password1', 'password2', 'bio', 'image_url']
+        fields = ['username', 'first_name', 'last_name', 'password1', 'password2', 'bio', 'profile_image']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

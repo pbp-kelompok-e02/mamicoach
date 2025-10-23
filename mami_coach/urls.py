@@ -17,6 +17,8 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from booking import views as booking_views
 
 urlpatterns = [
@@ -27,8 +29,22 @@ urlpatterns = [
     path("", include("reviews.urls")),
     path("booking/", include("booking.urls")),
     path("schedule/", include("schedule.urls")),
-    
     # Legacy API endpoints (without prefix) for old booking UI
-    path("api/coach/<int:coach_id>/available-dates/", booking_views.api_coach_available_dates_legacy, name='legacy_available_dates'),
-    path("api/coach/<int:coach_id>/available-times/", booking_views.api_coach_available_times_legacy, name='legacy_available_times'),
+    path(
+        "api/coach/<int:coach_id>/available-dates/",
+        booking_views.api_coach_available_dates_legacy,
+        name="legacy_available_dates",
+    ),
+    path(
+        "api/coach/<int:coach_id>/available-times/",
+        booking_views.api_coach_available_times_legacy,
+        name="legacy_available_times",
+    ),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Custom error handlers
+handler404 = "main.views.handler_404"
+handler500 = "main.views.handler_500"

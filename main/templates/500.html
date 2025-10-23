@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Kesalahan Server - MamiCoach{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-red-50 flex items-center justify-center px-4 py-8">
+    <div class="max-w-5xl w-full flex flex-col md:flex-row-reverse items-center gap-12">
+        <div class="flex-shrink-0">
+            <img 
+                src="{% static 'images/500.png' %}" 
+                alt="500 Internal Server Error" 
+                class="w-64 h-64 md:w-96 md:h-96 object-contain"
+            >
+        </div>
+
+        <div class="flex-1 text-center md:text-left">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Kesalahan Server</h1>
+            
+            <p class="text-lg text-gray-600 mb-8">
+                Maaf, terjadi kesalahan pada server kami. Silakan coba lagi nanti.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 md:justify-start justify-center">
+                <a 
+                    href="/" 
+                    class="inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-semibold hover:bg-green-700 transition-colors duration-300"
+                >
+                    Kembali ke Beranda
+                </a>
+                <a 
+                    href="/courses/" 
+                    class="inline-flex items-center justify-center gap-2 bg-gray-300 text-gray-900 px-6 py-3 rounded-2xl font-semibold hover:bg-gray-400 transition-colors duration-300"
+                >
+                    Jelajahi Kelas
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

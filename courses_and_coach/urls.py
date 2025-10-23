@@ -1,5 +1,10 @@
 from django.urls import path
 from courses_and_coach.views import (
+    coach_details,
+    courses_ajax,
+    courses_by_id_ajax,
+    courses_card_ajax,
+    show_coaches,
     courses_ajax,
     courses_by_id_ajax,
     courses_card_ajax,
@@ -20,6 +25,15 @@ urlpatterns = [
     path("courses/create/", create_course, name="create_course"),
     path("courses/<str:category_name>/", category_detail, name="category_detail"),
     path("my-courses/", my_courses, name="my_courses"),
+    path("courses/<int:course_id>/edit/", edit_course, name="edit_course"),
+    path("courses/<int:course_id>/delete/", delete_course, name="delete_course"),
+    path("courses-ajax/", courses_ajax, name="courses_ajax"),
+    path("courses-card-ajax/", courses_card_ajax, name="courses_card_ajax"),
+    path(
+        "courses-ajax/<int:course_id>/", courses_by_id_ajax, name="courses_by_id_ajax"
+    ),
+    path("coaches/", show_coaches, name="show_coaches"),
+    path("coaches/<int:coach_id>/", coach_details, name="coach_details"),
     path("courses/<int:course_id>/edit/", edit_course, name="edit_course"),
     path("courses/<int:course_id>/delete/", delete_course, name="delete_course"),
     path("courses-ajax/", courses_ajax, name="courses_ajax"),
