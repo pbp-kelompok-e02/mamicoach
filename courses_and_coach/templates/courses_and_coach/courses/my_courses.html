@@ -11,105 +11,69 @@
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelas Saya</h1>
                 <p class="text-gray-600">Kelola semua kelas yang Anda buat</p>
             </div>
-            <a 
-                href="{% url 'courses_and_coach:create_course' %}" 
-                class="inline-flex items-center space-x-2 bg-primary text-white px-6 py-3 rounded-2xl font-semibold hover:bg-green-600 transition-colors duration-200 mt-4 sm:mt-0"
-            >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                <span>Buat Kelas Baru</span>
-            </a>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-2xl p-6 shadow-lg">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-primary/10">
-                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-500">Total Kelas</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ courses.count }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl p-6 shadow-lg">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-blue-100">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-500">Total Peserta</p>
-                        <p class="text-2xl font-bold text-gray-900">0</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl p-6 shadow-lg">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-yellow-100">
-                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-500">Rating Rata-rata</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ coach_profile.rating|floatformat:1 }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl p-6 shadow-lg">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-green-100">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-500">Total Pendapatan</p>
-                        <p class="text-2xl font-bold text-gray-900">Rp 0</p>
-                    </div>
-                </div>
+            <div class="flex items-center gap-3 mt-4 sm:mt-0">
+                <!-- Tombol Atur Ketersediaan -->
+                <button
+                    onclick="openAvailabilityModal()"
+                    class="inline-flex items-center space-x-2 bg-white border-2 border-primary text-primary px-6 py-3 rounded-2xl font-semibold hover:bg-primary hover:text-white transition-colors duration-200"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Atur Ketersediaan</span>
+                </button>
+                
+                <!-- Tombol Buat Kelas Baru -->
+                <a 
+                    href="{% url 'courses_and_coach:create_course' %}" 
+                    class="inline-flex items-center space-x-2 bg-primary text-white px-6 py-3 rounded-2xl font-semibold hover:bg-green-600 transition-colors duration-200"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    <span>Buat Kelas Baru</span>
+                </a>
             </div>
         </div>
+
 
         {% if courses %}
         <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-xl font-semibold text-gray-900">Daftar Kelas</h2>
             </div>
-            
+
             <div class="divide-y divide-gray-200">
                 {% for course in courses %}
-                <div class="p-6 hover:bg-gray-50 transition-colors duration-200">
-                    <div class="flex items-center space-x-4">
+                <div class="p-4 sm:p-6 hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
                         <!-- Course Image -->
-                        <div class="flex-shrink-0">
+                        <div class="flex-shrink-0 self-center sm:self-start">
                             <img 
-                                src="{{ course.thumbnail_url|default:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80' }}" 
+                                src="{{ course.thumbnail_url|default:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' }}" 
                                 alt="{{ course.title }}"
-                                class="w-20 h-20 rounded-xl object-cover"
+                                class="w-full h-full sm:w-24 sm:h-24 rounded-xl object-cover"
                             >
                         </div>
-                        
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-900 truncate">{{ course.title }}</h3>
-                                    <p class="text-sm text-gray-500 mt-1">{{ course.category.name }}</p>
-                                    <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+
+                        <div class="flex-1 mt-3 sm:mt-0 min-w-0">
+                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                                <div class="pr-2">
+                                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 truncate">{{ course.title }}</h3>
+                                    <p class="text-sm text-gray-500 mt-1 truncate">{{ course.category.name }}</p>
+                                    <div class="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-600">
                                         <span class="flex items-center space-x-1">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
-                                            <span>{{ course.duration_formatted }}</span>
+                                            <span class="truncate">{{ course.duration_formatted }}</span>
+                                        </span>
+                                        <span class="flex items-center space-x-1 max-w-xs">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            </svg>
+                                            <span class="truncate">{{ course.location }}</span>
                                         </span>
                                         <span class="flex items-center space-x-1">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,18 +83,18 @@
                                         </span>
                                     </div>
                                 </div>
-                                
-                                <div class="text-right">
-                                    <p class="text-xl font-bold text-primary">{{ course.price_formatted }}</p>
+
+                                <div class="mt-3 sm:mt-0 sm:text-right flex-shrink-0">
+                                    <p class="text-lg sm:text-xl font-bold text-primary">{{ course.price_formatted }}</p>
                                     <p class="text-sm text-gray-500">per sesi</p>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="flex items-center space-x-2">
+
+                        <div class="mt-4 sm:mt-0 sm:ml-4 flex flex-col sm:flex-row items-stretch sm:items-center sm:space-x-2 space-y-2 sm:space-y-0 w-full sm:w-auto">
                             <a 
                                 href="{% url 'courses_and_coach:course_details' course.id %}" 
-                                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
+                                class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-2xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 w-full sm:w-auto"
                             >
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -138,12 +102,14 @@
                                 </svg>
                                 Lihat
                             </a>
-                            <button class="inline-flex items-center px-4 py-2 border border-primary text-primary rounded-xl text-sm font-medium hover:bg-primary hover:text-white transition-colors duration-200">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                                Edit
-                            </button>
+                            <a href="{% url 'courses_and_coach:edit_course' course.id %}" class="w-full sm:w-auto">
+                                <button type="button" class="inline-flex justify-center cursor-pointer items-center w-full sm:w-auto px-4 py-2 border border-primary text-primary rounded-2xl text-sm font-medium hover:bg-primary hover:text-white transition-colors duration-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Edit
+                                </button>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -172,4 +138,10 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Include Availability Modal -->
+{% include 'schedule/_availability_modal.html' with today=today %}
+
+<!-- Load Availability JavaScript -->
+<script src="{% static 'schedule/availability.js' %}"></script>
 {% endblock %}

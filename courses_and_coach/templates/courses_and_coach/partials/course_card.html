@@ -1,0 +1,88 @@
+<!-- Course Card Component-->
+ {% load static %}
+<div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 group">
+    <div class="relative">
+        <a href="{% url 'courses_and_coach:course_details' course.id %}">
+        <img 
+            src="{{ course.thumbnail_url|default:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' }}" 
+            alt="{{ course.title }}"
+            class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+        >
+        </a>    
+        
+        {% if course.coach.verified %}
+        <div class="absolute top-3 left-3 bg-primary text-white px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Verified Coach</span>
+        </div>
+        {% endif %}
+        
+        <div class="absolute top-3 right-3">
+            <a href="{% url 'courses_and_coach:category_detail' course.category.name %}" 
+               class="bg-white/90 backdrop-blur-sm text-gray-800 px-2 py-1 rounded-lg text-xs font-medium hover:bg-white hover:shadow-sm transition-all duration-200">
+                {{ course.category.name }}
+            </a>
+        </div>
+    </div>
+
+    <a href="{% url 'courses_and_coach:course_details' course.id %}">
+
+    <div class="p-4">
+        <h3 class="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary transition-colors duration-200">
+            {{ course.title }}
+        </h3>
+        
+        <div class="flex items-center space-x-2 mb-3">
+            <div class="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+                <img 
+                    src="{% if course.coach.profile_image and course.coach.profile_image.url %}
+                        {{ course.coach.profile_image.url }}
+                        {% else %}
+                        {% static 'images/logo.png' %}
+                        {% endif %}" 
+                    alt="{{ course.coach.user.get_full_name }}"
+                    class="w-full h-full object-cover"
+                >
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-900">{{ course.coach.user.get_full_name }}</p>
+                <p class="text-xs text-gray-500">{{ course.category.name }}</p>
+            </div>
+        </div>
+        
+        <div class="space-y-2 mb-4">
+            <div class="flex items-center text-sm text-gray-600">
+                <svg class="w-4 h-4 mr-2" fill="none"  viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>{{ course.duration_formatted }}</span>
+            </div>
+            
+            <div class="flex items-center text-sm text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin-icon lucide-map-pin"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                <span class="truncate">{{ course.location }}</span>
+            </div>
+            
+            <div class="flex items-center text-sm text-gray-600">
+                <svg class="w-4 h-4 mr-2 text-primary fill-current" viewBox="0 0 20 20">
+                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                </svg>
+                <span>{{ course.coach.rating|floatformat:1 }} (102)</span>
+            </div>
+        </div>
+        
+        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+            <div>
+                <span class="text-xl font-bold text-primary">{{ course.price_formatted }}</span>
+                <span class="text-sm text-gray-500">/sesi</span>
+            </div>
+            <div  
+               class="bg-primary text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-600 transition-colors duration-200">
+                Details > 
+            </div>
+        </div>  
+    </div>
+    </a>
+</div>

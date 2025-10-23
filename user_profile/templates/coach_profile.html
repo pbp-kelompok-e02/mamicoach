@@ -1,2 +1,476 @@
 {% extends 'base.html' %}
 {% load static %}
+
+{% block title %}Edit Coach Profile - MamiCoach{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-4xl mx-auto px-4">
+        <!-- Back Button -->
+        <div class="mb-4">
+            <a href="{% url 'user_profile:dashboard_coach' %}" id="backButton"
+               class="inline-flex items-center text-primary hover:text-green-600 text-sm font-medium">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Edit Profile Card -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6">Edit Coach Profile</h1>
+            
+            <form method="POST" enctype="multipart/form-data" id="editProfileForm">
+                {% csrf_token %}
+                
+                <!-- Profile Image Section -->
+                <div class="mb-6 text-center">
+                    <div class="inline-block relative">
+                        {% if coach_profile.profile_image %}
+                        <img src="{{ coach_profile.profile_image.url }}" 
+                             alt="{{ user.get_full_name }}" 
+                             id="profileImagePreview"
+                             class="w-32 h-32 rounded-full object-cover bg-gray-300 mx-auto">
+                        {% else %}
+                        <div id="profileImagePreview" class="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center text-white text-4xl font-bold mx-auto">
+                            {{ user.first_name|first }}{{ user.last_name|first }}
+                        </div>
+                        {% endif %}
+                        <label for="profile_image" class="absolute bottom-0 right-0 bg-primary hover:bg-green-600 text-white rounded-full p-2 cursor-pointer transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </label>
+                    </div>
+                    <input type="file" name="profile_image" id="profile_image" accept="image/*" class="hidden">
+                    <p class="text-sm text-gray-500 mt-2">Click camera icon to change profile picture</p>
+                </div>
+
+                <!-- First Name -->
+                <div class="mb-4">
+                    <label for="first_name" class="block text-sm font-bold text-gray-700 mb-2">First Name</label>
+                    <input type="text" name="first_name" id="first_name" 
+                           value="{{ user.first_name }}"
+                           class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                           required>
+                </div>
+
+                <!-- Last Name -->
+                <div class="mb-4">
+                    <label for="last_name" class="block text-sm font-bold text-gray-700 mb-2">Last Name</label>
+                    <input type="text" name="last_name" id="last_name" 
+                           value="{{ user.last_name }}"
+                           class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                           required>
+                </div>
+
+                <!-- Expertise -->
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Expertise</label>
+                    <select id="expertise-dropdown" class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all mb-3">
+                        <option value="">-- Select expertise --</option>
+                        {% for category in categories %}
+                        <option value="{{ category.name }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <div id="expertise-tags" class="flex flex-wrap gap-2 min-h-[40px]">
+                        {% for exp in coach_profile.expertise %}
+                        <div class="expertise-tag bg-primary text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-semibold shadow-sm" data-sport="{{ exp }}">
+                            <span>{{ exp }}</span>
+                            <button type="button" onclick="removeExpertiseTag('{{ exp }}')" class="bg-white/20 hover:bg-white/30 text-white rounded-full px-2 py-0.5 text-lg font-bold transition-colors">&times;</button>
+                            <input type="hidden" name="expertise[]" value="{{ exp }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Bio -->
+                <div class="mb-4">
+                    <label for="bio" class="block text-sm font-bold text-gray-700 mb-2">Bio</label>
+                    <textarea name="bio" id="bio" rows="5"
+                              class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all resize-none"
+                              required>{{ coach_profile.bio }}</textarea>
+                </div>
+
+                <!-- Certifications -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-bold text-gray-700">Certifications</label>
+                        <button type="button" id="addCertificationBtn"
+                                class="text-primary hover:text-green-600 text-sm font-medium flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add Certification
+                        </button>
+                    </div>
+                    
+                    <!-- New Certification Form (Hidden by default) -->
+                    <div id="newCertificationForm" class="hidden mb-4 p-4 bg-gray-50 rounded-lg border-2 border-primary">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-3">New Certification</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label for="new_cert_name" class="block text-xs font-medium text-gray-700 mb-1">Certificate Name</label>
+                                <input type="text" id="new_cert_name"
+                                       class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-green-100"
+                                       placeholder="e.g., Certified Personal Trainer">
+                            </div>
+                            <div>
+                                <label for="new_cert_url" class="block text-xs font-medium text-gray-700 mb-1">Certificate Link</label>
+                                <input type="url" id="new_cert_url"
+                                       class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-green-100"
+                                       placeholder="https://example.com/certificate.pdf">
+                            </div>
+                            <div class="flex justify-end gap-2">
+                                <button type="button" id="cancelNewCertBtn"
+                                        class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="button" id="saveNewCertBtn"
+                                        class="px-4 py-2 bg-primary hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors">
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3" id="certifications-list">
+                        {% if certifications %}
+                            {% for cert in certifications %}
+                            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200" data-cert-id="{{ cert.id }}">
+                                {% if cert.status == 'verified' %}
+                                <span class="w-4 h-4 rounded-full bg-primary flex-shrink-0"></span>
+                                {% elif cert.status == 'declined' %}
+                                <span class="w-4 h-4 rounded-full bg-red-500 flex-shrink-0"></span>
+                                {% else %}
+                                <span class="w-4 h-4 rounded-full bg-blue-500 flex-shrink-0"></span>
+                                {% endif %}
+                                <span class="text-sm text-gray-800 flex-grow">{{ cert.certificate_name }}</span>
+                                {% if cert.status == 'verified' %}
+                                <span class="bg-primary text-white text-xs px-3 py-1 rounded-md font-medium flex-shrink-0">Verified</span>
+                                {% elif cert.status == 'declined' %}
+                                <span class="bg-red-500 text-white text-xs px-3 py-1 rounded-md font-medium flex-shrink-0">Declined</span>
+                                {% else %}
+                                <span class="bg-blue-500 text-white text-xs px-3 py-1 rounded-md font-medium flex-shrink-0">Pending</span>
+                                {% endif %}
+                                <a href="{{ cert.file_url }}" target="_blank" class="text-gray-600 hover:text-gray-800 flex-shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                    </svg>
+                                </a>
+                                <button type="button" onclick="deleteCertification({{ cert.id }})" class="text-red-500 hover:text-red-700 flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-sm text-gray-400">No certificates added yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="cancelButton"
+                            class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-6 py-3 bg-primary hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.25);">
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold text-gray-800 mb-4" id="modalTitle">Confirm Action</h3>
+        <p class="text-gray-600 mb-6" id="modalMessage">Are you sure?</p>
+        <div class="flex justify-end gap-3">
+            <button type="button" id="modalCancelBtn"
+                    class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+                Continue Editing
+            </button>
+            <button type="button" id="modalConfirmBtn"
+                    class="px-6 py-2 bg-primary hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let formChanged = false;
+let selectedExpertise = new Set();
+let deletedCertifications = [];
+let newCertifications = [];
+
+// Initialize selected expertise
+{% for exp in coach_profile.expertise %}
+selectedExpertise.add('{{ exp }}');
+{% endfor %}
+
+document.getElementById('editProfileForm').addEventListener('input', function() {
+    formChanged = true;
+});
+
+document.getElementById('editProfileForm').addEventListener('change', function() {
+    formChanged = true;
+});
+
+// Profile image preview
+document.getElementById('profile_image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('profileImagePreview');
+            if (preview.tagName === 'IMG') {
+                preview.src = e.target.result;
+            } else {
+                const newImg = document.createElement('img');
+                newImg.src = e.target.result;
+                newImg.className = 'w-32 h-32 rounded-full object-cover bg-gray-300 mx-auto';
+                newImg.id = 'profileImagePreview';
+                preview.parentNode.replaceChild(newImg, preview);
+            }
+        };
+        reader.readAsDataURL(file);
+        formChanged = true;
+    }
+});
+
+// Expertise dropdown
+document.getElementById('expertise-dropdown').addEventListener('change', function() {
+    const sport = this.value;
+    
+    if (sport && !selectedExpertise.has(sport)) {
+        selectedExpertise.add(sport);
+        addExpertiseTag(sport);
+        this.value = '';
+        formChanged = true;
+    }
+});
+
+function addExpertiseTag(sport) {
+    const tagsContainer = document.getElementById('expertise-tags');
+    const tag = document.createElement('div');
+    tag.className = 'expertise-tag bg-primary text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-semibold shadow-sm';
+    tag.dataset.sport = sport;
+    
+    tag.innerHTML = `
+        <span>${sport}</span>
+        <button type="button" onclick="removeExpertiseTag('${sport}')" class="bg-white/20 hover:bg-white/30 text-white rounded-full px-2 py-0.5 text-lg font-bold transition-colors">&times;</button>
+        <input type="hidden" name="expertise[]" value="${sport}">
+    `;
+    
+    tagsContainer.appendChild(tag);
+}
+
+function removeExpertiseTag(sport) {
+    selectedExpertise.delete(sport);
+    const tags = document.querySelectorAll('.expertise-tag');
+    tags.forEach(tag => {
+        if (tag.dataset.sport === sport) {
+            tag.remove();
+        }
+    });
+    formChanged = true;
+}
+
+function deleteCertification(certId) {
+    deletedCertifications.push(certId);
+    const certElement = document.querySelector(`[data-cert-id="${certId}"]`);
+    if (certElement) {
+        certElement.remove();
+    }
+    formChanged = true;
+}
+
+document.getElementById('addCertificationBtn').addEventListener('click', function() {
+    document.getElementById('newCertificationForm').classList.remove('hidden');
+    this.classList.add('hidden');
+});
+
+document.getElementById('cancelNewCertBtn').addEventListener('click', function() {
+    document.getElementById('newCertificationForm').classList.add('hidden');
+    document.getElementById('addCertificationBtn').classList.remove('hidden');
+    document.getElementById('new_cert_name').value = '';
+    document.getElementById('new_cert_url').value = '';
+});
+
+document.getElementById('saveNewCertBtn').addEventListener('click', function() {
+    const certName = document.getElementById('new_cert_name').value.trim();
+    const certUrl = document.getElementById('new_cert_url').value.trim();
+    
+    if (!certName || !certUrl) {
+        alert('Please fill in both certificate name and link.');
+        return;
+    }
+    
+    newCertifications.push({
+        name: certName,
+        url: certUrl
+    });
+    
+    const certsList = document.getElementById('certifications-list');
+    const newCertElement = document.createElement('div');
+    newCertElement.className = 'flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200';
+    newCertElement.dataset.isNew = 'true';
+    newCertElement.innerHTML = `
+        <span class="w-4 h-4 rounded-full bg-blue-500 flex-shrink-0"></span>
+        <span class="text-sm text-gray-800 flex-grow">${certName}</span>
+        <span class="bg-blue-500 text-white text-xs px-3 py-1 rounded-md font-medium flex-shrink-0">Pending</span>
+        <a href="${certUrl}" target="_blank" class="text-gray-600 hover:text-gray-800 flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+        </a>
+        <button type="button" onclick="removeNewCertification(this, '${certName}')" class="text-red-500 hover:text-red-700 flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    `;
+    
+    const noCertsMsg = certsList.querySelector('.text-gray-400');
+    if (noCertsMsg) {
+        noCertsMsg.remove();
+    }
+    
+    certsList.appendChild(newCertElement);
+    
+    document.getElementById('newCertificationForm').classList.add('hidden');
+    document.getElementById('addCertificationBtn').classList.remove('hidden');
+    document.getElementById('new_cert_name').value = '';
+    document.getElementById('new_cert_url').value = '';
+    
+    formChanged = true;
+});
+
+function removeNewCertification(button, certName) {
+    newCertifications = newCertifications.filter(cert => cert.name !== certName);
+    
+    button.closest('.flex').remove();
+
+    const certsList = document.getElementById('certifications-list');
+    if (certsList.children.length === 0) {
+        certsList.innerHTML = '<p class="text-sm text-gray-400">No certificates added yet</p>';
+    }
+    
+    formChanged = true;
+}
+
+// Cancel button
+document.getElementById('cancelButton').addEventListener('click', function(e) {
+    e.preventDefault();
+    showModal(
+        'Cancel Editing',
+        'Are you sure you want to cancel? All unsaved changes will be lost.',
+        function() {
+            formChanged = false; 
+            window.location.href = "{% url 'user_profile:dashboard_coach' %}";
+        }
+    );
+});
+
+// Back button
+document.getElementById('backButton').addEventListener('click', function(e) {
+    if (formChanged) {
+        e.preventDefault();
+        showModal(
+            'Unsaved Changes',
+            'You have unsaved changes. Do you want to continue editing or discard changes?',
+            function() {
+                formChanged = false; 
+                window.location.href = "{% url 'user_profile:dashboard_coach' %}";
+            }
+        );
+    }
+});
+
+// Browser back button
+window.addEventListener('beforeunload', function(e) {
+    if (formChanged) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    }
+});
+
+// Form submission
+document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    showModal(
+        'Save Changes',
+        'Are you sure you want to save these changes?',
+        function() {
+            // Add deleted certifications to form
+            deletedCertifications.forEach(certId => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'deleted_certifications[]';
+                input.value = certId;
+                document.getElementById('editProfileForm').appendChild(input);
+            });
+            
+            // Add new certifications to form
+            newCertifications.forEach(cert => {
+                const nameInput = document.createElement('input');
+                nameInput.type = 'hidden';
+                nameInput.name = 'new_cert_names[]';
+                nameInput.value = cert.name;
+                document.getElementById('editProfileForm').appendChild(nameInput);
+                
+                const urlInput = document.createElement('input');
+                urlInput.type = 'hidden';
+                urlInput.name = 'new_cert_urls[]';
+                urlInput.value = cert.url;
+                document.getElementById('editProfileForm').appendChild(urlInput);
+            });
+            
+            formChanged = false;
+            document.getElementById('editProfileForm').submit();
+        }
+    );
+});
+
+// Modal functions
+function showModal(title, message, confirmCallback) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalMessage').textContent = message;
+    document.getElementById('confirmModal').classList.remove('hidden');
+    
+    const confirmBtn = document.getElementById('modalConfirmBtn');
+    const cancelBtn = document.getElementById('modalCancelBtn');
+    
+    // Remove old event listeners
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    // Add new event listeners
+    document.getElementById('modalConfirmBtn').addEventListener('click', function() {
+        hideModal();
+        confirmCallback();
+    });
+    
+    document.getElementById('modalCancelBtn').addEventListener('click', hideModal);
+}
+
+function hideModal() {
+    document.getElementById('confirmModal').classList.add('hidden');
+}
+</script>
+{% endblock %}
