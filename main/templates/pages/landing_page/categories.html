@@ -1,0 +1,70 @@
+{% load static %}
+
+
+<section class="relative py-20 bg-[#FFFAF5] overflow-hidden">
+
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+                Temukan <span class="text-primary underline decoration-secondary">Olahraga Mu</span>
+            </h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Jelajahi berbagai kategori olahraga dan temukan kelas yang sesuai dengan minat dan tujuan Anda
+            </p>
+        </div>
+
+        {% if categories %}
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+            {% for category in categories %}
+            <a 
+                href="{% url 'courses_and_coach:category_detail' category.get_url_name %}"
+                class="category-card group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
+            >
+                {% if category.thumbnail_url %}
+                <img 
+                    src="{{ category.thumbnail_url }}" 
+                    alt="{{ category.name }}"
+                    class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                {% else %}
+                <div class="w-full h-48 bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                    <svg class="w-20 h-20 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                {% endif %}
+                
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-75 transition-opacity duration-300"></div>
+                
+                <div class="absolute inset-0 flex flex-col justify-end p-4">
+                    <h3 class="text-white font-bold text-lg mb-2 group-hover:translate-y-0 transition-transform duration-300">
+                        {{ category.name }}
+                    </h3>
+                    {% if category.description %}
+                    <p class="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 line-clamp-2">
+                        {{ category.description }}
+                    </p>
+                    {% endif %}
+                </div>
+                
+                <div class="absolute top-4 right-4 bg-white bg-opacity-90 p-2 rounded-full group-hover:bg-primary group-hover:text-white transition-all duration-300 transform group-hover:rotate-45">
+                    <svg class="w-5 h-5 text-primary group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        
+        {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-16 bg-gray-50 rounded-lg">
+            <svg class="w-20 h-20 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <p class="text-gray-600 text-lg">Belum ada kategori yang tersedia</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
