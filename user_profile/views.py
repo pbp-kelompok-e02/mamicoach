@@ -178,7 +178,7 @@ def dashboard_coach(request):
     try:
         coach_profile = CoachProfile.objects.get(user=request.user)
     except CoachProfile.DoesNotExist:
-        messages.error(request, "You don't have a coach profile. Please register as a coach.")
+        messages.error(request, "Access denied. This page is only for coaches.")
         return redirect('main:show_main')
     
     certifications = Certification.objects.filter(coach=coach_profile)
@@ -224,8 +224,8 @@ def get_coach_profile(request):
     except CoachProfile.DoesNotExist:
         return JsonResponse({
             'success': False,
-            'message': "You don't have a coach profile."
-        }, status=404)
+            'message': "Access denied. This page is only for coaches."
+        }, status=403)
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -240,7 +240,7 @@ def coach_profile(request):
     try:
         coach_profile = CoachProfile.objects.get(user=request.user)
     except CoachProfile.DoesNotExist:
-        messages.error(request, "You don't have a coach profile. Please register as a coach.")
+        messages.error(request, "Access denied. This page is only for coaches.")
         return redirect('main:show_main')
     
     if request.method == "POST":
@@ -292,9 +292,10 @@ def coach_profile(request):
 
 @login_required
 def dashboard_user(request):
+    # Check if user is a coach
     try:
         coach_profile = CoachProfile.objects.get(user=request.user)
-        messages.info(request, "You are registered as a coach. Redirecting to coach dashboard.")
+        messages.error(request, "Access denied. Coaches cannot access user dashboard.")
         return redirect('user_profile:dashboard_coach')
     except CoachProfile.DoesNotExist:
         pass
@@ -309,15 +310,73 @@ def dashboard_user(request):
 
 
 @login_required
+def get_user_profile(request):
+    try:
+        # Check if user is a coach
+        try:
+            coach_profile = CoachProfile.objects.get(user=request.user)
+            return JsonResponse({
+                'success': False,
+                'message': "Access denied. Coaches cannot access user dashboard."
+            }, status=403)
+        except CoachProfile.DoesNotExist:
+            pass
+        
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        profile_data = {
+            'success': True,
+            'profile': {
+                'full_name': request.user.get_full_name(),
+                'initials': f"{request.user.first_name[0]}{request.user.last_name[0]}" if request.user.first_name and request.user.last_name else "??",
+                'profile_image': user_profile.profile_image.url if user_profile.profile_image else None,
+            }
+        }
+        
+        return JsonResponse(profile_data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+@login_required
 def user_profile(request):
+    # Check if user is a coach
     try:
         coach_profile = CoachProfile.objects.get(user=request.user)
-        messages.info(request, "You are registered as a coach. Please use coach profile.")
+        messages.error(request, "Access denied. Coaches cannot access user profile.")
         return redirect('user_profile:coach_profile')
     except CoachProfile.DoesNotExist:
         pass
     
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    if request.method == "POST":
+        # Update user data
+        request.user.first_name = request.POST.get('first_name', '').strip()
+        request.user.last_name = request.POST.get('last_name', '').strip()
+        request.user.save()
+        
+        # Update profile image if provided
+        if 'profile_image' in request.FILES:
+            user_profile.profile_image = request.FILES['profile_image']
+            user_profile.save()
+        
+        # AJAX Request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Profile updated successfully!'
+            })
+        
+        messages.success(request, "Profile updated successfully!")
+        return redirect('user_profile:dashboard_user')
+    
     context = {
         'user': request.user,
+        'user_profile': user_profile,
     }
     return render(request, 'user_profile.html', context)

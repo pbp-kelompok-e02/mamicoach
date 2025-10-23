@@ -5,36 +5,13 @@
 {% block content %}
 <div class="bg-gray-50 min-h-screen py-8">
     <div class="max-w-4xl mx-auto px-4">
-        <!-- User Profile Card -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <!-- Profile Image -->
-                    <div class="flex-shrink-0">
-                        {% if user_profile.profile_image %}
-                        <img src="{{ user_profile.profile_image.url }}" 
-                             alt="{{ user.get_full_name }}" 
-                             class="w-16 h-16 rounded-full object-cover bg-gray-300">
-                        {% else %}
-                        <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-white text-2xl font-bold">
-                            {{ user.first_name|first }}{{ user.last_name|first }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Name -->
-                    <div>
-                        <h1 class="text-xl font-bold text-gray-800">{{ user.get_full_name }}</h1>
-                    </div>
-                </div>
-                
-                <!-- Edit Profile Button -->
-                <div>
-                    <a href="{% url 'user_profile:user_profile' %}" 
-                       class="inline-block bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
-                        Edit Profile
-                    </a>
-                </div>
+        <div id="user-profile-card" class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <!-- Loading State -->
+            <div class="flex items-center justify-center py-12">
+                <svg class="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
             </div>
         </div>
         
@@ -203,4 +180,91 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetchUserProfile();
+});
+
+function fetchUserProfile() {
+    fetch('{% url "user_profile:get_user_profile" %}', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            renderUserProfile(data.profile);
+        } else {
+            showError(data.message || 'Failed to load profile');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError('An error occurred while loading profile');
+    });
+}
+
+function renderUserProfile(profile) {
+    const profileCard = document.getElementById('user-profile-card');
+    
+   
+    let profileImageHTML = '';
+    if (profile.profile_image) {
+        profileImageHTML = `
+            <img src="${profile.profile_image}" 
+                 alt="${profile.full_name}" 
+                 class="w-16 h-16 rounded-full object-cover bg-gray-300">
+        `;
+    } else {
+        profileImageHTML = `
+            <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-white text-2xl font-bold">
+                ${profile.initials}
+            </div>
+        `;
+    }
+    
+    // Render profile card
+    profileCard.innerHTML = `
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <!-- Profile Image -->
+                <div class="flex-shrink-0">
+                    ${profileImageHTML}
+                </div>
+                
+                <!-- Name -->
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">${profile.full_name}</h1>
+                </div>
+            </div>
+            
+            <!-- Edit Profile Button -->
+            <div>
+                <a href="{% url 'user_profile:user_profile' %}" 
+                   class="inline-block bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                    Edit Profile
+                </a>
+            </div>
+        </div>
+    `;
+}
+
+function showError(message) {
+    const profileCard = document.getElementById('user-profile-card');
+    profileCard.innerHTML = `
+        <div class="text-center py-12">
+            <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-gray-600 mb-4">${message}</p>
+            <button onclick="fetchUserProfile()" class="bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                Retry
+            </button>
+        </div>
+    `;
+}
+</script>
 {% endblock %}
