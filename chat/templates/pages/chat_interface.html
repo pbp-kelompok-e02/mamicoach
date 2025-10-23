@@ -176,6 +176,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (selectedSessionId) {
         await loadMessages(selectedSessionId);
         setupMessageInput();
+        
+        // Handle pre-attachment from presend route
+        {% if pre_attachment %}
+        addPreAttachmentToPending({
+            type: '{{ pre_attachment.type }}',
+            data: {{ pre_attachment.data|safe }}
+        });
+        {% endif %}
     }
     
     // Search functionality
@@ -293,6 +301,81 @@ function formatFileSize(bytes) {
     return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
 }
 
+// Helper function to create booking attachment HTML
+function createBookingAttachmentHtml(attachment, isOwn) {
+    // Defensive: always check for nested data
+    const data = attachment.data || {};
+    const courseId = attachment.course_id || data.course_id || '';
+    const courseUrl = `{% url 'courses_and_coach:course_details' course_id='0' %}`.replace('/0', `/${courseId}`);
+    // Normalize course title/name
+    let courseTitle = attachment.course_title || attachment.course_name || data.course_title || data.course_name || data.title || 'Unknown Course';
+    // Format booking date if present
+    let bookingDate = attachment.booking_date || data.booking_date || '';
+    if (bookingDate && bookingDate.length > 10) {
+        try {
+            const d = new Date(bookingDate);
+            bookingDate = isNaN(d.getTime()) ? bookingDate : d.toLocaleString();
+        } catch { /* ignore */ }
+    }
+    const bookingId = attachment.booking_id || attachment.id || data.booking_id || data.id || '';
+    const status = attachment.status || data.status || '';
+    return `
+        <div class="mt-2 w-full max-w-sm bg-gradient-to-br from-blue-50 to-blue-100 ${isOwn ? 'from-white/20 to-white/10' : ''} rounded-lg p-3 border border-blue-200 ${isOwn ? 'border-white/20' : ''}">
+            <div class="flex items-center gap-2 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ${isOwn ? 'text-white' : 'text-blue-600'}" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                </svg>
+                <span class="font-semibold ${isOwn ? 'text-white' : 'text-blue-900'}">Booking</span>
+            </div>
+            <div class="space-y-1 text-sm">
+                <p class="font-semibold ${isOwn ? 'text-white' : 'text-gray-800'}">Booking ID: ${DOMPurify.sanitize(String(bookingId))}</p>
+                <p class="${isOwn ? 'text-white' : 'text-gray-800'}">Course: ${DOMPurify.sanitize(courseTitle)}</p>
+                ${bookingDate ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Date: ${DOMPurify.sanitize(bookingDate)}</p>` : ''}
+                ${status ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Status: ${DOMPurify.sanitize(status)}</p>` : ''}
+                <a href="${courseUrl}" class="inline-block px-3 py-1 bg-blue-600 ${isOwn ? 'bg-white/30' : ''} text-white rounded hover:opacity-80 transition-opacity text-xs mt-2">View Booking</a>
+            </div>
+        </div>
+    `;
+}
+
+// Helper function to create course attachment HTML
+function createCourseAttachmentHtml(attachment, isOwn) {
+    const data = attachment.data || {};
+    const courseId = attachment.course_id || data.course_id || '';
+    const courseUrl = `{% url 'courses_and_coach:course_details' course_id='0' %}`.replace('/0', `/${courseId}`);
+    // Normalize course title/name
+    let courseTitle = attachment.course_title || attachment.course_name || data.title || data.course_title || data.course_name || 'Unknown Course';
+    // Coach name
+    let coachName = '';
+    if (attachment.coach && (attachment.coach.first_name || attachment.coach.last_name)) {
+        coachName = `${attachment.coach.first_name || ''} ${attachment.coach.last_name || ''}`.trim();
+    } else if (data.coach && (data.coach.first_name || data.coach.last_name)) {
+        coachName = `${data.coach.first_name || ''} ${data.coach.last_name || ''}`.trim();
+    }
+    // Location, price, duration
+    const location = attachment.location || data.location || '';
+    const price = attachment.price || data.price || '';
+    const duration = attachment.duration || data.duration || '';
+    return `
+        <div class="mt-2 w-full max-w-sm bg-gradient-to-br from-purple-50 to-purple-100 ${isOwn ? 'from-white/20 to-white/10' : ''} rounded-lg p-3 border border-purple-200 ${isOwn ? 'border-white/20' : ''}">
+            <div class="flex items-center gap-2 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ${isOwn ? 'text-white' : 'text-purple-600'}" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-13c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+                </svg>
+                <span class="font-semibold ${isOwn ? 'text-white' : 'text-purple-900'}">Course</span>
+            </div>
+            <div class="space-y-1 text-sm">
+                <p class="font-semibold ${isOwn ? 'text-white' : 'text-gray-800'}">${DOMPurify.sanitize(courseTitle)}</p>
+                ${coachName ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Coach: ${DOMPurify.sanitize(coachName)}</p>` : ''}
+                ${location ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Location: ${DOMPurify.sanitize(location)}</p>` : ''}
+                ${price ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Price: Rp${DOMPurify.sanitize(String(price))}</p>` : ''}
+                ${duration ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Duration: ${DOMPurify.sanitize(String(duration))} min</p>` : ''}
+                <a href="${courseUrl}" class="inline-block px-3 py-1 bg-purple-600 ${isOwn ? 'bg-white/30' : ''} text-white rounded hover:opacity-80 transition-opacity text-xs mt-2">View Course</a>
+            </div>
+        </div>
+    `;
+}
+
 function createSessionItem(session) {
     const isSelected = selectedSessionId === session.id;
     const lastMessageTime = session.last_message.timestamp ? 
@@ -350,21 +433,12 @@ async function loadMessages(sessionId, skipScroll = false) {
         
         if (data.messages && data.messages.length > 0) {
             // On initial load, rebuild entire DOM
-            if (!skipScroll) {
-                container.innerHTML = data.messages.map(createMessageItem).join('');
-                // Scroll to bottom after DOM is rendered
-                await new Promise(resolve => setTimeout(resolve, 0));
-                scrollToBottom();
-            } else {
-                // During polling, only update changed messages
-                updateMessagesIncrementally(container, data.messages);
-            }
+            container.innerHTML = data.messages.map(msg => createMessageItem({
+                ...msg,
+                is_sent_by_me: msg.sender.id === data.current_user_id
+            })).join('');
         } else {
-            if (!skipScroll) {
-                container.innerHTML = '<div class="text-center text-gray-500 py-8">No messages yet. Start the conversation!</div>';
-                await new Promise(resolve => setTimeout(resolve, 0));
-                scrollToBottom();
-            }
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">No messages yet</div>';
         }
         
         // Setup scroll event listener for marking as read
@@ -378,72 +452,8 @@ async function loadMessages(sessionId, skipScroll = false) {
             loading.textContent = 'Error loading messages';
             loading.style.display = 'block';
         } else {
-            container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading messages. Please try again.</div>';
+            container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading messages</div>';
         }
-    }
-}
-
-// Update messages incrementally without full DOM rebuild
-function updateMessagesIncrementally(container, newMessages) {
-    // Get all current message elements (each message has data-message-id)
-    const existingMessages = new Map();
-    container.querySelectorAll('[data-message-id]').forEach(el => {
-        existingMessages.set(parseInt(el.dataset.messageId), el);
-    });
-    
-    // Track which message IDs we've seen
-    const newMessageIds = new Set(newMessages.map(msg => msg.id));
-    
-    // Remove messages that no longer exist
-    existingMessages.forEach((el, id) => {
-        if (!newMessageIds.has(id)) {
-            el.remove();
-        }
-    });
-    
-    // Add new messages or update existing ones
-    newMessages.forEach((message, index) => {
-        const existingEl = existingMessages.get(message.id);
-        
-        if (existingEl) {
-            // Update existing message (mainly for read status)
-            const readIndicator = existingEl.querySelector('[data-read-status]');
-            if (readIndicator && message.read) {
-                readIndicator.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 ml-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>';
-            }
-        } else {
-            // Add new message - insert in correct position
-            const messageHtml = createMessageItemWithId(message);
-            
-            // Find the correct position to insert (based on message order)
-            let lastExistingIndex = -1;
-            for (let i = index - 1; i >= 0; i--) {
-                if (existingMessages.has(newMessages[i].id)) {
-                    lastExistingIndex = i;
-                    break;
-                }
-            }
-            
-            if (lastExistingIndex === -1) {
-                // No previous message exists, append at end
-                container.insertAdjacentHTML('beforeend', messageHtml);
-            } else {
-                // Insert after the last existing message before this one
-                const lastExistingEl = existingMessages.get(newMessages[lastExistingIndex].id);
-                lastExistingEl.insertAdjacentHTML('afterend', messageHtml);
-            }
-            
-            // Update the existingMessages map with the new element
-            const newEl = container.querySelector(`[data-message-id="${message.id}"]`);
-            if (newEl) {
-                existingMessages.set(message.id, newEl);
-            }
-        }
-    });
-    
-    // Auto-scroll to bottom if there are new messages
-    if (newMessages.length > existingMessages.size) {
-        scrollToBottom();
     }
 }
 
@@ -466,6 +476,7 @@ function createMessageItem(message) {
     // ATTACHMENTS RENDERING
     // Images: Show thumbnail preview (clickable for full size)
     // Files: Show download link with file size
+    // Bookings/Courses: Show embed cards
     let attachmentsHtml = '';
     if (message.attachments && message.attachments.length > 0) {
         attachmentsHtml = '<div class="mt-2 space-y-2 flex flex-wrap gap-2">';
@@ -479,6 +490,12 @@ function createMessageItem(message) {
                         </a>
                     </div>
                 `;
+            } else if (att.type === 'booking' && att.booking_id) {
+                // BOOKING: Show booking embed card
+                attachmentsHtml += createBookingAttachmentHtml(att, isOwn);
+            } else if (att.type === 'course' && att.course_id) {
+                // COURSE: Show course embed card
+                attachmentsHtml += createCourseAttachmentHtml(att, isOwn);
             } else if (att.file_url) {
                 // FILE: Show as download link with metadata
                 const fileSize = formatFileSize(att.file_size);
@@ -725,6 +742,23 @@ async function handleFileUpload(file) {
     }
 }
 
+// Add pre-attachment from presend route to pending attachments
+function addPreAttachmentToPending(preAttachment) {
+    if (!preAttachment || !preAttachment.type || !preAttachment.data) {
+        return;
+    }
+    
+    // Add as a special attachment object (not a file)
+    pendingAttachments.push({
+        type: preAttachment.type,
+        isEmbed: true,
+        data: preAttachment.data
+    });
+    
+    // Update UI to show pending attachment
+    updatePendingAttachmentsUI();
+}
+
 function updatePendingAttachmentsUI() {
     let attachmentsList = document.getElementById('pending-attachments-list');
     
@@ -732,7 +766,7 @@ function updatePendingAttachmentsUI() {
     if (!attachmentsList) {
         attachmentsList = document.createElement('div');
         attachmentsList.id = 'pending-attachments-list';
-        attachmentsList.className = 'mt-2 space-y-1 max-h-32 overflow-y-auto';
+        attachmentsList.className = 'mt-2 mb-2 space-y-1 max-h-32 overflow-y-auto';
         
         const messageForm = document.getElementById('message-form');
         messageForm.parentNode.insertBefore(attachmentsList, messageForm);
@@ -745,13 +779,47 @@ function updatePendingAttachmentsUI() {
     }
     
     // RENDER each pending attachment with remove button
-    attachmentsList.innerHTML = pendingAttachments.map((att, idx) => `
-        <div class="flex items-center gap-2 bg-gray-100 p-2 rounded text-sm">
-            <span class="flex-1 truncate">${att.file.name}</span>
-            <button type="button" class="text-red-500 hover:text-red-700 font-bold" 
-                    onclick="removePendingAttachment(${idx})">×</button>
-        </div>
-    `).join('');
+    attachmentsList.innerHTML = pendingAttachments.map((att, idx) => {
+        if (att.isEmbed) {
+            // Show booking/course embed preview
+            if (att.type === 'booking') {
+                return `
+                    <div class="bg-blue-50 border border-blue-200 rounded p-2 flex items-center justify-between">
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                            </svg>
+                            <span class="text-sm text-gray-800 truncate">Booking: ${att.data.course_title}</span>
+                        </div>
+                        <button type="button" class="text-red-500 hover:text-red-700 font-bold flex-shrink-0 ml-2" 
+                                onclick="removePendingAttachment(${idx})">×</button>
+                    </div>
+                `;
+            } else if (att.type === 'course') {
+                return `
+                    <div class="bg-purple-50 border border-purple-200 rounded p-2 flex items-center justify-between">
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-purple-600 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                            </svg>
+                            <span class="text-sm text-gray-800 truncate">Course: ${att.data.title}</span>
+                        </div>
+                        <button type="button" class="text-red-500 hover:text-red-700 font-bold flex-shrink-0 ml-2" 
+                                onclick="removePendingAttachment(${idx})">×</button>
+                    </div>
+                `;
+            }
+        } else {
+            // Show file attachment
+            return `
+                <div class="flex items-center gap-2 bg-gray-100 p-2 rounded text-sm">
+                    <span class="flex-1 truncate">${att.file.name}</span>
+                    <button type="button" class="text-red-500 hover:text-red-700 font-bold" 
+                            onclick="removePendingAttachment(${idx})">×</button>
+                </div>
+            `;
+        }
+    }).join('');
 }
 
 /*
@@ -772,6 +840,11 @@ async function uploadPendingAttachments(messageId) {
     try {
         // UPLOAD each file sequentially
         for (const attachment of pendingAttachments) {
+            // Skip embeds - they're handled differently
+            if (attachment.isEmbed) {
+                continue;
+            }
+            
             const formData = new FormData();
             formData.append('file', attachment.file);
             formData.append('type', attachment.type);  // 'image' or 'file'
@@ -814,6 +887,72 @@ async function uploadPendingAttachments(messageId) {
     }
 }
 
+async function createEmbedAttachments(messageId) {
+    if (pendingAttachments.length === 0) {
+        return;
+    }
+    
+    try {
+        // CREATE embed attachments (bookings, courses, etc.)
+        for (const attachment of pendingAttachments) {
+            // Only process embeds
+            if (!attachment.isEmbed) {
+                continue;
+            }
+
+            const data = attachment.data || {};
+            const attachmentData = {
+                message_id: messageId,
+                type: attachment.type,  // 'booking' or 'course'
+            };
+
+            // Add type-specific ID - check both direct and nested properties
+            if (attachment.type === 'booking') {
+                attachmentData.booking_id = attachment.booking_id || data.id || data.booking_id;
+            } else if (attachment.type === 'course') {
+                attachmentData.course_id = attachment.course_id || data.id || data.course_id;
+            }
+
+            // SEND to create attachment endpoint
+            const createResponse = await fetch(
+                `{% url 'chat:create_attachment' session_id='00000000-0000-0000-0000-000000000000' %}`
+                    .replace('00000000-0000-0000-0000-000000000000', selectedSessionId),
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(),
+                    },
+                    body: JSON.stringify(attachmentData)
+                }
+            );
+
+            const createData = await createResponse.json();
+            console.log(attachment, attachmentData)
+            console.log(createData)
+
+            // LOG errors but continue with other embeds
+            if (!createData.success) {
+                console.error('Error creating embed attachment:', createData.error);
+            }
+        }
+
+        // Clear pending attachments after creation
+        pendingAttachments = [];
+        const attachmentsList = document.getElementById('pending-attachments-list');
+        if (attachmentsList) {
+            attachmentsList.innerHTML = '';
+        }
+
+        // Reload messages to show created embeds
+        await loadMessages(selectedSessionId);
+
+    } catch (error) {
+        console.error('Error creating embed attachments:', error);
+        alert('Error creating some attachments. Please try again.');
+    }
+}
+
 async function sendMessage(sessionId, replyToId = null) {
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
@@ -850,24 +989,30 @@ async function sendMessage(sessionId, replyToId = null) {
         
         if (data.success) {
             const messageId = data.message.id;
-            
-            // UPLOAD ATTACHMENTS if any are pending
-            if (pendingAttachments.length > 0) {
+
+            // UPLOAD FILE ATTACHMENTS if any are pending
+            if (pendingAttachments.some(a => !a.isEmbed)) {
                 await uploadPendingAttachments(messageId);
             }
-            
+
+            // CREATE EMBED ATTACHMENTS (bookings, courses) if any are pending
+            if (pendingAttachments.some(a => a.isEmbed)) {
+                await createEmbedAttachments(messageId);
+            }
+
             messageInput.value = '';
             messageInput.style.height = 'auto';
             clearReplyContext();
-            
-            const messagesContainer = document.getElementById('messages-list');
-            const messageHtml = createMessageItem({
-                ...data.message,
-                is_sent_by_me: true
-            });
-            messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
-            scrollToBottom();
-            
+
+            // Remove query parameters from URL
+            if (window.history.replaceState) {
+                const url = new URL(window.location);
+                url.search = '';
+                window.history.replaceState({}, '', url.toString());
+            }
+
+            // Always reload messages from server to avoid duplicates
+            await loadMessages(selectedSessionId);
             // Refresh sessions to update last message and clear unread badges
             await loadSessions();
         } else {
@@ -973,6 +1118,7 @@ function setupMobileNavigation() {
         });
     }
 }
+
 
 function scrollToBottom() {
     const container = document.getElementById('messages-container');

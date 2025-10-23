@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from courses_and_coach.models import Category, Course
+from booking.models import Booking
 from user_profile.models import CoachProfile
 import random
 
@@ -396,6 +397,7 @@ class Command(BaseCommand):
             },
         ]
 
+        courses = []
         for course_data in courses_data:
             # Get category and coach
             try:
@@ -415,6 +417,7 @@ class Command(BaseCommand):
                         "thumbnail_url": course_data["thumbnail_url"],
                     },
                 )
+                courses.append(course)
 
                 if created:
                     self.stdout.write(
@@ -431,3 +434,10 @@ class Command(BaseCommand):
                         f"✗ Error creating course {course_data['title']}: {e}"
                     )
                 )
+        
+        u=User.objects.create(username="student1", first_name="Student", last_name="One", email="a@gmail.com")
+        u.set_password("password123")
+        u.save()
+        
+        chosen_course=random.choice(courses)
+        Booking.objects.create(user=u, course=chosen_course, coach=chosen_course.coach, status="completed")

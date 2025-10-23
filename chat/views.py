@@ -17,6 +17,8 @@ except ImportError:
 
 from .models import ChatSession, ChatMessage, ChatAttachment
 from user_profile.models import CoachProfile
+from booking.models import Booking
+from courses_and_coach.models import Course
 
 # Create your views here.
 @login_required(login_url="/login")
@@ -27,6 +29,8 @@ def chat_index(request):
 @login_required(login_url="/login")
 def chat_detail(request, session_id):
     """Individual chat session page"""
+    import json as json_module
+    
     session = get_object_or_404(ChatSession, id=session_id)
     
     # Check if user is part of this chat session
@@ -38,6 +42,23 @@ def chat_detail(request, session_id):
         'selected_session_id': str(session_id),
         'other_user': session.get_other_user(request.user)
     }
+    
+    # Handle pre-attachment data from URL parameters
+    pre_attachment_type = request.GET.get('pre_attachment_type')
+    pre_attachment_data = request.GET.get('pre_attachment_data')
+    
+    if pre_attachment_type and pre_attachment_data:
+        try:
+            attachment_data = json_module.loads(pre_attachment_data)
+            
+            # Pass pre-attachment data to template for adding to pending attachments
+            context['pre_attachment'] = {
+                'type': pre_attachment_type,
+                'data': attachment_data
+            }
+        except (json_module.JSONDecodeError, Exception):
+            pass
+    
     return render(request, "pages/chat_interface.html", context)
 
 @login_required(login_url="/login")
@@ -294,12 +315,7 @@ def _serialize_message(message, is_current_user=None):
         'id': message.pk,
         'content': message.content,
         'timestamp': message.timestamp.isoformat(),
-        'sender': {
-            'id': message.sender.id,
-            'username': message.sender.username,
-            'first_name': message.sender.first_name,
-            'last_name': message.sender.last_name,
-        },
+        'sender': _serialize_user(message.sender),
         'is_sent_by_me': is_current_user if is_current_user is not None else False,
         'read': message.read,
         'attachments': attachments,
@@ -309,7 +325,7 @@ def _serialize_message(message, is_current_user=None):
 
 def _serialize_attachment(attachment):
     """Serialize a ChatAttachment object to dictionary"""
-    return {
+    data = {
         'id': str(attachment.id),
         'type': attachment.attachment_type,
         'file_url': attachment.file.url if attachment.file else None,
@@ -317,17 +333,79 @@ def _serialize_attachment(attachment):
         'file_name': attachment.file_name or 'Attachment',
         'file_size': attachment.file_size,
         'uploaded_at': attachment.uploaded_at.isoformat(),
-        'course_id': attachment.course_id,
-        'course_name': attachment.course_name,
     }
+    
+    # Add type-specific data
+    if attachment.attachment_type == 'course' and attachment.course_id:
+        data['course_id'] = attachment.course_id
+        data['course_name'] = attachment.course_name
+        
+        # Fetch and include full course data
+        try:
+            course = Course.objects.get(id=attachment.course_id)
+            data['data'] = {
+                'id': course.id,
+                'title': course.title,
+                'description': course.description,
+                'location': course.location,
+                'price': course.price,
+                'duration': course.duration,
+                'thumbnail_url': course.thumbnail_url,
+                'coach': {
+                    'username': course.coach.user.username,
+                    'first_name': course.coach.user.first_name,
+                    'last_name': course.coach.user.last_name,
+                }
+            }
+        except Course.DoesNotExist:
+            pass
+    
+    elif attachment.attachment_type == 'booking' and attachment.booking_id:
+        data['booking_id'] = attachment.booking_id
+        
+        # Fetch and include full booking data
+        try:
+            booking = Booking.objects.get(id=attachment.booking_id)
+            data['data'] = {
+                'id': booking.id,
+                'course_title': booking.course.title,
+                'start_datetime': booking.start_datetime.isoformat() if booking.start_datetime else None,
+                'end_datetime': booking.end_datetime.isoformat() if booking.end_datetime else None,
+                'status': booking.status,
+                'location': booking.course.location,
+                'price': booking.course.price,
+            }
+        except Booking.DoesNotExist:
+            pass
+    
+    return data
 
 
 def _serialize_user(user):
     """Serialize a User object for chat purposes"""
+    # Get profile image from UserProfile or CoachProfile
+    profile_image_url = None
+    try:
+        from user_profile.models import UserProfile, CoachProfile
+        
+        # Try to get from CoachProfile first
+        coach_profile = CoachProfile.objects.filter(user=user).first()
+        if coach_profile and coach_profile.profile_image:
+            profile_image_url = coach_profile.profile_image.url
+        else:
+            # Fall back to UserProfile
+            user_profile = UserProfile.objects.filter(user=user).first()
+            if user_profile and user_profile.profile_image:
+                profile_image_url = user_profile.profile_image.url
+    except Exception:
+        pass
+    
     return {
+        'id': user.id,
         'username': user.username,
         'first_name': user.first_name,
         'last_name': user.last_name,
+        'profile_image_url': profile_image_url,
     }
 
 
@@ -394,5 +472,181 @@ def upload_attachment(request, session_id):
     
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@require_POST
+@login_required(login_url="/login")
+def create_attachment(request, session_id):
+    """AJAX endpoint to create an embed attachment (booking or course) to a message"""
+    try:
+        session = get_object_or_404(ChatSession, id=session_id)
+        
+        # Check if user is part of this chat session
+        if not _user_in_session(request.user, session):
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+        import json
+        body = json.loads(request.body)
+        
+        attachment_type = body.get('type')  # 'booking' or 'course'
+        message_id = body.get('message_id')
+        
+        if not message_id:
+            return JsonResponse({'error': 'Message ID is required'}, status=400)
+        
+        if attachment_type not in ['booking', 'course']:
+            return JsonResponse({'error': f'Invalid attachment type: {attachment_type}'}, status=400)
+        
+        try:
+            message = ChatMessage.objects.get(id=message_id, session=session, sender=request.user)
+        except ChatMessage.DoesNotExist:
+            return JsonResponse({'error': 'Invalid message'}, status=400)
+        
+        # Prepare attachment data based on type
+        attachment_data = {
+            'message': message,
+            'attachment_type': attachment_type,
+        }
+        
+        if attachment_type == 'booking':
+            booking_id = body.get('booking_id')
+            if not booking_id:
+                return JsonResponse({'error': 'Booking ID is required'}, status=400)
+            attachment_data['booking_id'] = booking_id
+        
+        elif attachment_type == 'course':
+            course_id = body.get('course_id')
+            if not course_id:
+                return JsonResponse({'error': 'Course ID is required'}, status=400)
+            attachment_data['course_id'] = course_id
+        
+        # Create attachment
+        attachment = ChatAttachment.objects.create(**attachment_data)
+        
+        return JsonResponse({
+            'success': True,
+            'attachment': _serialize_attachment(attachment)
+        })
+    
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required(login_url="/login")
+def presend_booking(request, booking_id):
+    """
+    Create or redirect to a chat session with a booking pre-selected.
+    Handles creating an embed-style message with booking details.
+    Redirects to chat/<session_id>/ with pre-attachment data in URL params.
+    """
+    from django.shortcuts import redirect
+    from urllib.parse import urlencode
+    
+    try:
+        booking = get_object_or_404(Booking, id=booking_id)
+        
+        # Verify that the user is either the user or coach in this booking
+        if request.user != booking.user and request.user != booking.coach.user:
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+        # Check or create chat session
+        existing_session = ChatSession.objects.filter(
+            user=booking.user,
+            coach=booking.coach.user
+        ).first()
+        
+        if existing_session:
+            session_id = existing_session.id
+        else:
+            # Create new session
+            session = ChatSession.objects.create(
+                user=booking.user,
+                coach=booking.coach.user
+            )
+            session_id = session.id
+        
+        # Build redirect URL with pre-attachment data
+        booking_data = {
+            'id': booking.id,
+            'course_title': booking.course.title,
+            'start_datetime': booking.start_datetime.isoformat() if booking.start_datetime else None,
+            'end_datetime': booking.end_datetime.isoformat() if booking.end_datetime else None,
+            'status': booking.status,
+            'location': booking.course.location,
+            'price': booking.course.price,
+        }
+        
+        params = urlencode({
+            'pre_attachment_type': 'booking',
+            'pre_attachment_data': json.dumps(booking_data)
+        })
+        
+        return redirect(f'/chat/{session_id}/?{params}')
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required(login_url="/login")
+def presend_course(request, course_id):
+    """
+    Create or redirect to a chat session with a course pre-selected.
+    Handles creating an embed-style message with course details.
+    Redirects to chat/<session_id>/ with pre-attachment data in URL params.
+    """
+    from django.shortcuts import redirect
+    from urllib.parse import urlencode
+    
+    try:
+        course = get_object_or_404(Course, id=course_id)
+        coach = course.coach
+        
+        # Verify that the user is not the coach (can't chat with themselves)
+        if request.user == coach.user:
+            return JsonResponse({'error': 'Cannot create chat with yourself'}, status=400)
+        
+        # Check or create chat session
+        existing_session = ChatSession.objects.filter(
+            user=request.user,
+            coach=coach.user
+        ).first()
+        
+        if existing_session:
+            session_id = existing_session.id
+        else:
+            # Create new session
+            session = ChatSession.objects.create(
+                user=request.user,
+                coach=coach.user
+            )
+            session_id = session.id
+        
+        # Build redirect URL with pre-attachment data
+        course_data = {
+            'id': course.id,
+            'title': course.title,
+            'description': course.description,
+            'location': course.location,
+            'price': course.price,
+            'duration': course.duration,
+            'thumbnail_url': course.thumbnail_url,
+            'coach': {
+                'username': coach.user.username,
+                'first_name': coach.user.first_name,
+                'last_name': coach.user.last_name,
+            }
+        }
+        
+        params = urlencode({
+            'pre_attachment_type': 'course',
+            'pre_attachment_data': json.dumps(course_data)
+        })
+        
+        return redirect(f'/chat/{session_id}/?{params}')
+    
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

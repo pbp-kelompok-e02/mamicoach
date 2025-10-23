@@ -55,19 +55,21 @@ class ChatAttachment(models.Model):
         ('image', 'Image'),
         ('file', 'File'),
         ('course', 'Course'),
+        ('booking', 'Booking'),
         ('other', 'Other'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     message = models.ForeignKey(ChatMessage, related_name='attachments', on_delete=models.CASCADE)
     attachment_type = models.CharField(max_length=20, choices=ATTACHMENT_TYPE_CHOICES, default='file')
-    file = models.FileField(upload_to='chat_attachments/%Y/%m/%d/')
+    file = models.FileField(upload_to='chat_attachments/%Y/%m/%d/', null=True, blank=True)
     thumbnail = models.ImageField(upload_to='chat_attachments/thumbnails/%Y/%m/%d/', null=True, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     # Metadata for different attachment types
     course_id = models.IntegerField(null=True, blank=True)  # For course attachments
     course_name = models.CharField(max_length=255, null=True, blank=True)  # For course attachments
+    booking_id = models.IntegerField(null=True, blank=True)  # For booking attachments
     file_name = models.CharField(max_length=255, null=True, blank=True)
     file_size = models.BigIntegerField(null=True, blank=True)  # Size in bytes
 
