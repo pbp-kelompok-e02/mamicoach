@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .forms import TraineeRegistrationForm, CoachRegistrationForm
-from .models import CoachProfile, Certification
+from .models import CoachProfile, Certification, UserProfile
 
 
 def register_user(request):
@@ -15,6 +15,9 @@ def register_user(request):
         form = TraineeRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            
+            # Create UserProfile for the new user
+            UserProfile.objects.create(user=user)
             
             # Ajax Request
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -47,7 +50,7 @@ def register_coach(request):
     from courses_and_coach.models import Category
     
     if request.method == "POST":
-        form = CoachRegistrationForm(request.POST)
+        form = CoachRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             expertise_list = request.POST.getlist('expertise[]')
             
@@ -69,7 +72,7 @@ def register_coach(request):
                 user=user,
                 bio=form.cleaned_data['bio'],
                 expertise=expertise_list,
-                image_url=form.cleaned_data.get('image_url', '')
+                profile_image=form.cleaned_data.get('profile_image')
             )
             
             cert_names = request.POST.getlist('certification_name[]')
@@ -210,8 +213,11 @@ def dashboard_user(request):
     except CoachProfile.DoesNotExist:
         pass
     
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
     context = {
         'user': request.user,
+        'user_profile': user_profile,
     }
     return render(request, 'dashboard_user.html', context)
 

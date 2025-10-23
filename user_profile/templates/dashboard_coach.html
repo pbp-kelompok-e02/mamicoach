@@ -11,8 +11,8 @@
                 <div class="flex gap-4 flex-grow">
                     <!-- Profile Image -->
                     <div class="flex-shrink-0">
-                        {% if coach_profile.image_url %}
-                        <img src="{{ coach_profile.image_url }}" 
+                        {% if coach_profile.profile_image %}
+                        <img src="{{ coach_profile.profile_image.url }}" 
                              alt="{{ user.get_full_name }}" 
                              class="w-16 h-16 rounded-full object-cover bg-gray-300">
                         {% else %}
