@@ -1,74 +1,75 @@
 <a 
-href="{% url 'courses_and_coach:coach_details' coach.id %}"
-class="coach-card group"
+    href="{% url 'courses_and_coach:coach_details' coach.id %}"
+    class="coach-card group"
 >
-<div class="relative overflow-hidden rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 h-full hover:-translate-y-2">
-    <div class="relative h-64 overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/20">
-        {% if coach.profile_image %}
-        <img 
-            src="{{ coach.profile_image.url }}" 
-            alt="{{ coach.user.get_full_name|default:coach.user.username }}"
-            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-        {% else %}
-        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-secondary">
-            <svg class="w-24 h-24 text-white opacity-50" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
-            </svg>
-        </div>
-        {% endif %}
-        
-        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
-        
-        {% if coach.verified %}
-        <div class="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg">
-            <svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"></path>
-            </svg>
-        </div>
-        {% endif %}
-        
-        <div class="absolute bottom-4 left-4 bg-white bg-opacity-95 rounded-full px-3 py-1 flex items-center gap-1 shadow-lg">
-            <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"></path>
-            </svg>
-            <span class="font-bold text-gray-900">{{ coach.rating|default:0 }}</span>
-        </div>
-    </div>
-    
-    <div class="p-6 space-y-4">
-        <div>
-            <h3 class="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors duration-300">
-                {{ coach.user.get_full_name|default:coach.user.username }}
-            </h3>
-            <p class="text-sm text-gray-500">@{{ coach.user.username }}</p>
-        </div>
-        
-        {% if coach.bio %}
-        <p class="text-gray-600 text-sm line-clamp-2">
-            {{ coach.bio }}
-        </p>
-        {% endif %}
-        {% if coach.expertise %}
-        <div class="flex flex-wrap gap-2">
-            {% for skill in coach.expertise|slice:":3" %}
-            <span class="inline-block bg-primary/10 text-primary text-xs px-3 py-1 rounded-full font-medium">
-                {{ skill }}
-            </span>
-            {% endfor %}
-            {% if coach.expertise|length > 3 %}
-            <span class="inline-block bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full font-medium">
-                +{{ coach.expertise|length|add:"-3" }} lebih
-            </span>
+    <div class="relative overflow-hidden rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 h-full hover:-translate-y-2">
+        <div class="relative h-56 overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/20">
+            {% if coach.profile_image %}
+            <img 
+                src="{{ coach.profile_image.url }}" 
+                alt="{{ coach.user.get_full_name|default:coach.user.username }}"
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            />
+            {% else %}
+            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-secondary">
+                <svg class="w-20 h-20 text-white opacity-50" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+                </svg>
+            </div>
             {% endif %}
+            
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+            
+            <div class="absolute inset-0 flex items-end justify-between p-3">
+                {% if coach.verified %}
+                <div class="bg-white rounded-full p-1.5 shadow-lg">
+                    <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"></path>
+                    </svg>
+                </div>
+                {% endif %}
+                
+                <div class="bg-white/95 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1 shadow-lg">
+                    <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"></path>
+                    </svg>
+                    <span class="font-bold text-gray-900 text-sm">{{ coach.rating|default:0 }}</span>
+                </div>
+            </div>
         </div>
-        {% endif %}
         
-        <div class="pt-4 border-t border-gray-100">
-            <button class="w-full bg-gradient-to-r from-primary to-green-600 hover:from-green-600 hover:to-primary text-white py-2 rounded-xl font-semibold transition-all duration-300 transform group-hover:scale-105">
+        <div class="p-5 space-y-3">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors duration-300 truncate">
+                    {{ coach.user.get_full_name|default:coach.user.username }}
+                </h3>
+                <p class="text-xs text-gray-500 truncate">@{{ coach.user.username }}</p>
+            </div>
+            
+            {% if coach.bio %}
+            <p class="text-gray-600 text-xs line-clamp-1 leading-relaxed">
+                {{ coach.bio }}
+            </p>
+            {% endif %}
+            
+            {% if coach.expertise %}
+            <div class="flex flex-wrap gap-1">
+                {% for skill in coach.expertise|slice:":2" %}
+                <span class="inline-block bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium truncate">
+                    {{ skill }}
+                </span>
+                {% endfor %}
+                {% if coach.expertise|length > 2 %}
+                <span class="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-medium">
+                    +{{ coach.expertise|length|add:"-2" }}
+                </span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <button class="w-full bg-gradient-to-r from-primary to-green-600 hover:from-green-600 hover:to-primary text-white py-2 rounded-xl font-semibold text-sm transition-all duration-300 transform group-hover:scale-105 mt-2">
                 Lihat Detail
             </button>
         </div>
     </div>
-</div>
 </a>
