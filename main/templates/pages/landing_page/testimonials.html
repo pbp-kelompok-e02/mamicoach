@@ -1,4 +1,4 @@
-<section class="py-16 bg-gray-50">
+<section class="py-16 bg-gradient-to-br from-green-50 to-blue-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="text-center mb-12">
@@ -16,7 +16,7 @@
             <!-- Carousel Wrapper with Navigation Buttons -->
             <div class="flex items-center gap-2 md:gap-6">
                 <!-- Left Navigation Button -->
-                <button id="scroll-left" class="flex-shrink-0 bg-primary text-white rounded-full p-2 md:p-3 hover:bg-green-600 transition-colors shadow-lg z-10" aria-label="Previous testimonials">
+                <button id="scroll-left" class="flex-shrink-0 cursor-pointer bg-primary text-white rounded-full p-2 md:p-3 hover:bg-green-600 transition-colors shadow-lg z-10" aria-label="Previous testimonials">
                     <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
@@ -43,7 +43,7 @@
                 </div>
 
                 <!-- Right Navigation Button -->
-                <button id="scroll-right" class="flex-shrink-0 bg-primary text-white rounded-full p-2 md:p-3 hover:bg-green-600 transition-colors shadow-lg z-10" aria-label="Next testimonials">
+                <button id="scroll-right" class="flex-shrink-0 cursor-pointer  bg-primary text-white rounded-full p-2 md:p-3 hover:bg-green-600 transition-colors shadow-lg z-10" aria-label="Next testimonials">
                     <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
@@ -53,7 +53,7 @@
             <!-- Pagination Dots -->
             <div class="flex justify-center gap-2 md:gap-3 mt-6 md:mt-8">
                 {% for review in top_reviews %}
-                <button class="testimonial-dot w-2 h-2 md:w-3 md:h-3 rounded-full bg-gray-300 hover:bg-primary transition-colors" data-index="{{ forloop.counter0 }}" aria-label="Go to testimonial {{ forloop.counter }}"></button>
+                <button class="testimonial-dot w-2 h-2 md:w-3 md:h-3 rounded-full cursor-pointer transition-transform bg-gray-300 hover:bg-primary" data-index="{{ forloop.counter0 }}" aria-label="Go to testimonial {{ forloop.counter }}"></button>
                 {% endfor %}
             </div>
 
@@ -117,7 +117,9 @@
                 
                 dots.forEach((dot, index) => {
                     dot.classList.toggle('bg-primary', index === validIndex);
+                    dot.classList.toggle('scale-125', index === validIndex);
                     dot.classList.toggle('bg-gray-300', index !== validIndex);
+                    dot.classList.toggle('scale-100', index !== validIndex);
                 });
             }
 
