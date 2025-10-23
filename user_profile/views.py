@@ -178,7 +178,6 @@ def dashboard_coach(request):
         messages.error(request, "You don't have a coach profile. Please register as a coach.")
         return redirect('main:show_main')
     
-    # Get all certifications for this coach
     certifications = Certification.objects.filter(coach=coach_profile)
     
     context = {
@@ -196,8 +195,37 @@ def coach_profile(request):
         messages.error(request, "You don't have a coach profile. Please register as a coach.")
         return redirect('main:show_main')
     
-    # TODO: Implement profile editing functionality
     context = {
         'coach_profile': coach_profile,
     }
     return render(request, 'coach_profile.html', context)
+
+
+@login_required
+def dashboard_user(request):
+    try:
+        coach_profile = CoachProfile.objects.get(user=request.user)
+        messages.info(request, "You are registered as a coach. Redirecting to coach dashboard.")
+        return redirect('user_profile:dashboard_coach')
+    except CoachProfile.DoesNotExist:
+        pass
+    
+    context = {
+        'user': request.user,
+    }
+    return render(request, 'dashboard_user.html', context)
+
+
+@login_required
+def user_profile(request):
+    try:
+        coach_profile = CoachProfile.objects.get(user=request.user)
+        messages.info(request, "You are registered as a coach. Please use coach profile.")
+        return redirect('user_profile:coach_profile')
+    except CoachProfile.DoesNotExist:
+        pass
+    
+    context = {
+        'user': request.user,
+    }
+    return render(request, 'user_profile.html', context)
