@@ -16,4 +16,8 @@ urlpatterns = [
     path('api/booking/<int:booking_id>/status/', views.api_booking_update_status, name='api_booking_update_status'),
     path('api/booking/<int:booking_id>/mark-paid/', views.api_booking_mark_as_paid, name='api_booking_mark_paid'),
     path('api/booking/<int:booking_id>/cancel/', views.api_booking_cancel, name='api_booking_cancel'),
+    
+    # Page views
+    path('confirm/<int:course_id>/', views.booking_confirmation, name='booking_confirmation'),
+    path('success/<int:booking_id>/', views.booking_success, name='booking_success'),
 ]

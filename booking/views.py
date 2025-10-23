@@ -654,3 +654,39 @@ def api_coach_available_times_legacy(request, coach_id):
             'error': str(e),
             'available_times': []
         }, status=500)
+
+
+@login_required
+def booking_confirmation(request, course_id):
+    """
+    Halaman konfirmasi booking sebelum payment
+    User sudah pilih tanggal dan waktu dari calendar
+    """
+    course = get_object_or_404(Course, id=course_id)
+    
+    # Get date and time from query parameters
+    booking_date = request.GET.get('date')
+    booking_time = request.GET.get('time')
+    
+    context = {
+        'course': course,
+        'booking_date': booking_date,
+        'booking_time': booking_time,
+    }
+    
+    return render(request, 'booking/confirmation.html', context)
+
+
+@login_required
+def booking_success(request, booking_id):
+    """
+    Halaman success setelah booking berhasil dibuat
+    Menampilkan detail booking dan next steps
+    """
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    
+    context = {
+        'booking': booking,
+    }
+    
+    return render(request, 'booking/success.html', context)

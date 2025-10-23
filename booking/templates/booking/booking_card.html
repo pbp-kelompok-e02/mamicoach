@@ -184,7 +184,7 @@
     let currentYear = new Date().getFullYear();
     let currentMonth = new Date().getMonth() + 1;
     let selectedDate = null;
-    let selectedSlotId = null;
+    let selectedTime = null; // Changed from selectedSlotId to selectedTime
     let availableDates = [];
 
     function getCookie(name) {
@@ -335,13 +335,14 @@
             const button = document.createElement('button');
             button.className = 'w-full text-center px-6 py-4 rounded-xl border-2 border-gray-200 hover:border-primary hover:bg-primary/5 transition-all font-medium text-gray-900';
             button.textContent = slot.display;
-            button.onclick = () => selectTimeSlot(slot.slot_id, button);
+            // Changed: pass time string instead of slot_id
+            button.onclick = () => selectTimeSlot(slot.start_time, button);
             
             timeSlotsList.appendChild(button);
         });
     }
 
-    function selectTimeSlot(slotId, button) {
+    function selectTimeSlot(timeStr, button) {
         // Remove previous selection
         document.querySelectorAll('#timeSlotsList button').forEach(btn => {
             btn.classList.remove('border-primary', 'bg-primary/10', 'border-green-500', 'bg-green-50');
@@ -352,7 +353,7 @@
         button.classList.add('border-green-500', 'bg-green-50');
         button.classList.remove('border-gray-200');
         
-        selectedSlotId = slotId;
+        selectedTime = timeStr; // Changed from selectedSlotId
         
         // Show next button
         document.getElementById('nextButton').classList.remove('hidden');
@@ -362,7 +363,7 @@
         document.getElementById('timeSlotsSection').classList.add('hidden');
         document.getElementById('calendarSection').classList.remove('hidden');
         document.getElementById('nextButton').classList.add('hidden');
-        selectedSlotId = null;
+        selectedTime = null; // Changed from selectedSlotId
     }
 
     function previousMonth() {
@@ -386,45 +387,13 @@
     }
 
     function confirmBooking() {
-        if (!selectedDate || !selectedSlotId) {
+        if (!selectedDate || !selectedTime) {
             alert('Please select a date and time slot');
             return;
         }
 
-        const nextButton = document.getElementById('nextButton');
-        const originalText = nextButton.textContent;
-        nextButton.textContent = 'Processing...';
-        nextButton.disabled = true;
-
-        fetch(`/api/create/${courseId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({
-                schedule_id: selectedSlotId,
-                date: selectedDate
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Booking created successfully! Redirecting to payment...');
-                closeBookingModal();
-                // Uncomment untuk redirect ke payment nanti
-                // window.location.href = data.redirect_url;
-            } else {
-                alert('Error: ' + data.message);
-                nextButton.textContent = originalText;
-                nextButton.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error('Error creating booking:', error);
-            alert('Failed to create booking. Please try again.');
-            nextButton.textContent = originalText;
-            nextButton.disabled = false;
-        });
+        // Redirect to confirmation page with date and time parameters
+        const confirmUrl = `/booking/confirm/${courseId}/?date=${selectedDate}&time=${selectedTime}`;
+        window.location.href = confirmUrl;
     }
 </script>
