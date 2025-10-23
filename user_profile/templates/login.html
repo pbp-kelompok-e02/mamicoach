@@ -1,52 +1,93 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block meta %}
 <title>Login MamiCoach</title>
 {% endblock meta %}
 
 {% block content %}
-<div style="max-width: 500px; margin: 50px auto; padding: 20px; border: 1px solid #ccc;">
-    <h1>Login to MamiCoach</h1>
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        <!-- Card -->
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <!-- Header -->
+            <div class="p-8 pb-6">
+                <div class="text-center mb-6">
+                    <div class="flex justify-center mb-4">
+                        <img src="{% static 'images/logo.png' %}" alt="MamiCoach Logo" class="h-16 w-auto">
+                    </div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Selamat Datang</h1>
+                    <p class="text-gray-500">Masuk ke akun MamiCoach Anda</p>
+                </div>
 
-    {% if messages %}
-    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 20px;">
-        {% for message in messages %}
-        <p style="margin: 0; color: #721c24;">{{ message }}</p>
-        {% endfor %}
-    </div>
-    {% endif %}
+                <!-- Login Form -->
+                <form id="login-form" method="POST" action="{% url 'user_profile:login' %}">
+                    {% csrf_token %}
+                    
+                    <!-- Username Field -->
+                    <div class="mb-4">
+                        <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Username
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </div>
+                            {{ form.username }}
+                        </div>
+                        {% if form.username.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.username.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
 
-    <form method="POST">
-        {% csrf_token %}
-        
-        <div style="margin-bottom: 15px;">
-            <label for="{{ form.username.id_for_label }}" style="display: block; font-weight: bold;">{{ form.username.label }}</label>
-            {{ form.username }}
-            {% if form.username.errors %}
-                <span style="color: red; font-size: 12px;">{{ form.username.errors|join:", " }}</span>
-            {% endif %}
-        </div>
+                    <!-- Password Field -->
+                    <div class="mb-6">
+                        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Password
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                            </div>
+                            {{ form.password }}
+                            <button type="button" id="togglePasswordPage" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <svg id="eyeIconPage" class="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.password.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
 
-        <div style="margin-bottom: 15px;">
-            <label for="{{ form.password.id_for_label }}" style="display: block; font-weight: bold;">{{ form.password.label }}</label>
-            {{ form.password }}
-            {% if form.password.errors %}
-                <span style="color: red; font-size: 12px;">{{ form.password.errors|join:", " }}</span>
-            {% endif %}
-        </div>
+                    <!-- Submit Button -->
+                    <button id="login-submit" type="submit" 
+                            class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed">
+                        Masuk
+                    </button>
+                </form>
+            </div>
 
-        <button type="submit" style="background-color: #35A753; color: white; padding: 10px 20px; border: none; cursor: pointer; font-size: 16px; width: 100%;">Login</button>
-    </form>
-
-    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-        <p style="font-weight: bold; margin-bottom: 10px;">Don't have an account? Register as:</p>
-        <div style="display: flex; gap: 10px;">
-            <a href="{% url 'user_profile:register' %}" style="flex: 1; text-decoration: none;">
-                <button type="button" style="width: 100%; padding: 10px; background-color: white; color: #35A753; border: 2px solid #35A753; cursor: pointer; font-weight: bold;">Register as Trainee</button>
-            </a>
-            <a href="{% url 'user_profile:register_coach' %}" style="flex: 1; text-decoration: none;">
-                <button type="button" style="width: 100%; padding: 10px; background-color: white; color: #35A753; border: 2px solid #35A753; cursor: pointer; font-weight: bold;">Register as Coach</button>
-            </a>
+            <!-- Footer -->
+            <div class="bg-gray-50 px-8 py-6">
+                <p class="text-center text-sm text-gray-600 mb-3">Belum punya akun?</p>
+                <div class="flex gap-3">
+                    <a href="{% url 'user_profile:register' %}" 
+                       class="flex-1 text-center px-4 py-2.5 border-2 border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-all duration-200">
+                        Daftar sebagai Trainee
+                    </a>
+                    <a href="{% url 'user_profile:register_coach' %}" 
+                       class="flex-1 text-center px-4 py-2.5 border-2 border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-all duration-200">
+                        Daftar sebagai Coach
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -55,13 +96,100 @@
     input[type="text"], 
     input[type="password"] {
         width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        box-sizing: border-box;
+        padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
     }
     
-    button:hover {
-        opacity: 0.9;
+    input[type="text"]:focus, 
+    input[type="password"]:focus {
+        outline: none;
+        border-color: #35A753;
+        box-shadow: 0 0 0 2px rgba(53, 167, 83, 0.1);
     }
 </style>
+
+<script>
+    // Handle password visibility toggle
+    const togglePasswordPageBtn = document.getElementById('togglePasswordPage');
+    const passwordPageInput = document.getElementById('{{ form.password.id_for_label }}');
+    const eyeIconPage = document.getElementById('eyeIconPage');
+
+    if (togglePasswordPageBtn && passwordPageInput) {
+        togglePasswordPageBtn.addEventListener('click', function() {
+            const type = passwordPageInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordPageInput.setAttribute('type', type);
+            
+            if (type === 'text') {
+                eyeIconPage.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>`;
+            } else {
+                eyeIconPage.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>`;
+            }
+        });
+    }
+
+    // AJAX Login with toast notifications
+    (function() {
+        const form = document.getElementById('login-form');
+        const submitBtn = document.getElementById('login-submit');
+
+        if (!form) return;
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Prepare
+            submitBtn.disabled = true;
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Loading...';
+
+            try {
+                const formData = new FormData(form);
+                // Mark this as non-modal form (for backend logic parity)
+                formData.append('from_modal', 'false');
+
+                const res = await fetch(form.action || window.location.href, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok && data.success) {
+                    // Success toast then redirect
+                    if (window.showToast) {
+                        window.showToast(data.message || 'Login berhasil!', 'success');
+                    }
+                    const redirectUrl = data.redirect_url || '/';
+                    setTimeout(() => {
+                        window.location.href = redirectUrl;
+                    }, 700);
+                } else {
+                    // Error toast, no redirect
+                    const msg = (data && (data.message || data.error)) || 'Username atau password salah.';
+                    if (window.showToast) {
+                        window.showToast(msg, 'error');
+                    } else {
+                        alert(msg);
+                    }
+                }
+            } catch (err) {
+                if (window.showToast) {
+                    window.showToast('Terjadi kesalahan jaringan. Coba lagi.', 'error');
+                } else {
+                    alert('Terjadi kesalahan jaringan. Coba lagi.');
+                }
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+    })();
+</script>
 {% endblock content %}

@@ -80,21 +80,24 @@
                                 <a href="{% url 'courses_and_coach:create_course' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     Buat Kelas
                                 </a>
+                                <a href="{% url 'courses_and_coach:create_course' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    Buat Kelas Baru
+                                </a>
                             {% else %}
                                 <a href="{% url 'user_profile:register_coach' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     Bergabung Jadi Coach
                                 </a>
                             {% endif %}
                             <div class="border-t border-gray-100"></div>
-                            <a href="{% url 'user_profile:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <a href="{% url 'user_profile:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 logout-btn">
                                 Keluar
                             </a>
                         </div>
                     </div>
                 {% else %}
-                    <a href="{% url 'user_profile:login' %}" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
+                    <button id="openLoginModal" class="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium transition-colors duration-200">
                         Masuk
-                    </a>
+                    </button>
                     <a href="{% url 'user_profile:register' %}" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors duration-200">
                         Mulai Sekarang
                     </a>
@@ -168,15 +171,15 @@
                             Bergabung Jadi Coach
                         </a>
                     {% endif %}
-                    <a href="{% url 'user_profile:logout' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+                    <a href="{% url 'user_profile:logout' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium logout-btn">
                         Keluar
                     </a>
                 </div>
             {% else %}
                 <div class="border-t border-gray-200 pt-4 space-y-1">
-                    <a href="{% url 'user_profile:login' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+                    <button id="openLoginModalMobile" class="w-full text-left block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                         Masuk
-                    </a>
+                    </button>
                     <a href="{% url 'user_profile:register' %}" class="block px-3 py-2 bg-primary text-white hover:bg-green-600 rounded-md text-base font-medium text-center">
                         Mulai Sekarang
                     </a>
@@ -185,6 +188,115 @@
         </div>
     </div>
 </nav>
+
+<!-- Login Modal -->
+<div id="loginModal" class="fixed inset-0 z-[60] hidden justify-center items-center p-4" style="display: none; background-color: rgba(0, 0, 0, 0.25);">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full relative overflow-hidden" id="loginModalContent" style="transform: scale(0.95); opacity: 0; transition: all 0.3s ease; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);">
+        <!-- Close Button -->
+        <button type="button" id="closeLoginModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <!-- Modal Header -->
+        <div class="p-8 pb-6">
+            <div class="text-center mb-6">
+                <div class="flex justify-center mb-4">
+                    <img src="{% static 'images/logo.png' %}" alt="MamiCoach Logo" class="h-16 w-auto">
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Selamat Datang</h2>
+                <p class="text-gray-500">Masuk ke akun MamiCoach Anda</p>
+            </div>
+
+            <!-- Login Form -->
+            <form method="POST" action="{% url 'user_profile:login' %}" id="loginForm">
+                {% csrf_token %}
+                <input type="hidden" name="from_modal" value="true">
+                
+                <!-- Error Messages -->
+                {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                    <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-3">
+                        <p class="text-red-800 text-sm font-medium">{{ message }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Username Field -->
+                <div class="mb-4">
+                    <label for="id_username_modal" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <input type="text" 
+                               name="username" 
+                               id="id_username_modal"
+                               class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm"
+                               placeholder="Masukkan username Anda"
+                               required>
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="mb-6">
+                    <label for="id_password_modal" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                        <input type="password" 
+                               name="password" 
+                               id="id_password_modal"
+                               class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-sm"
+                               placeholder="Masukkan password Anda"
+                               required>
+                        <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <svg id="eyeIcon" class="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+                    Masuk
+                </button>
+            </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-gray-50 px-8 py-6 rounded-b-2xl">
+            <p class="text-center text-sm text-gray-600 mb-3">Belum punya akun?</p>
+            <div class="flex gap-3">
+                <a href="{% url 'user_profile:register' %}" 
+                   class="flex-1 text-center px-4 py-2.5 border-2 rounded-lg font-medium transition-all duration-200"
+                   style="border-color: #35A753; color: #35A753;"
+                   onmouseover="this.style.backgroundColor='#35A753'; this.style.color='white';"
+                   onmouseout="this.style.backgroundColor='transparent'; this.style.color='#35A753';">
+                    Daftar sebagai Trainee
+                </a>
+                <a href="{% url 'user_profile:register_coach' %}" 
+                   class="flex-1 text-center px-4 py-2.5 border-2 rounded-lg font-medium transition-all duration-200"
+                   style="border-color: #35A753; color: #35A753;"
+                   onmouseover="this.style.backgroundColor='#35A753'; this.style.color='white';"
+                   onmouseout="this.style.backgroundColor='transparent'; this.style.color='#35A753';">
+                    Daftar sebagai Coach
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Mobile Menu Toggle Script -->
 <script>
@@ -197,5 +309,181 @@ document.addEventListener('DOMContentLoaded', function() {
             mobileMenu.classList.toggle('hidden');
         });
     }
+
+    // Login Modal functionality
+    const loginModal = document.getElementById('loginModal');
+    const loginModalContent = document.getElementById('loginModalContent');
+    const openLoginModalBtn = document.getElementById('openLoginModal');
+    const openLoginModalMobileBtn = document.getElementById('openLoginModalMobile');
+    const closeLoginModalBtn = document.getElementById('closeLoginModal');
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('id_password_modal');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    // Open modal
+    function openModal() {
+        loginModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => {
+            loginModalContent.style.transform = 'scale(1)';
+            loginModalContent.style.opacity = '1';
+        }, 10);
+    }
+
+    // Close modal
+    function closeModal() {
+        loginModalContent.style.transform = 'scale(0.95)';
+        loginModalContent.style.opacity = '0';
+        setTimeout(() => {
+            loginModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }, 300);
+    }
+
+    // Event listeners
+    if (openLoginModalBtn) {
+        openLoginModalBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            openModal();
+        });
+    }
+    
+    if (openLoginModalMobileBtn) {
+        openLoginModalMobileBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (mobileMenu) {
+                mobileMenu.classList.add('hidden');
+            }
+            openModal();
+        });
+    }
+
+    if (closeLoginModalBtn) {
+        closeLoginModalBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeModal();
+        });
+    }
+
+    // Close modal when clicking outside
+    if (loginModal) {
+        loginModal.addEventListener('click', function(e) {
+            if (e.target === loginModal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Close modal on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && loginModal.style.display === 'flex') {
+            closeModal();
+        }
+    });
+
+    if (togglePasswordBtn && passwordInput) {
+        togglePasswordBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            if (type === 'text') {
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>`;
+            } else {
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>`;
+            }
+        });
+    }
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('login_error') === '1') {
+        openModal();
+        const newUrl = window.location.pathname + window.location.search.replace(/[?&]login_error=1/, '').replace(/^&/, '?');
+        window.history.replaceState({}, '', newUrl || window.location.pathname);
+    }
+
+    // AJAX Login Form Submission
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(loginForm);
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+            submitBtn.style.cursor = 'not-allowed';
+            submitBtn.textContent = 'Loading...';
+            
+            fetch(loginForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    
+                    closeModal();
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 1000);
+                } else {
+                    showToast(data.message, 'error');
+                    
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                    submitBtn.style.cursor = 'pointer';
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+                
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+                submitBtn.innerHTML = originalBtnText;
+            });
+        });
+    }
+    
+    // AJAX Logout
+    const logoutBtns = document.querySelectorAll('.logout-btn');
+    logoutBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const logoutUrl = this.href;
+            
+            fetch(logoutUrl, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'info');
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                window.location.href = logoutUrl;
+            });
+        });
+    });
 });
 </script>

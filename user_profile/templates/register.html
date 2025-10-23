@@ -1,83 +1,323 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block meta %}
-<title>Register MamiCoach</title>
+<title>Daftar Sebagai Trainee - MamiCoach</title>
+<style>
+    body {
+        font-family: 'Quicksand', sans-serif;
+    }
+    .gradient-bg {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+    }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .floating-animation {
+        animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+    .password-toggle {
+        cursor: pointer;
+        user-select: none;
+    }
+</style>
 {% endblock meta %}
 
 {% block content %}
-<div style="max-width: 600px; margin: 50px auto; padding: 20px; border: 1px solid #ccc;">
-    <h1>Register as Trainee</h1>
+<div class="min-h-screen gradient-bg relative overflow-hidden">
+    <!-- Decorative Elements -->
+    <div class="absolute top-10 left-10 w-32 h-32 bg-green-400 rounded-full opacity-20 blur-3xl"></div>
+    <div class="absolute bottom-20 right-20 w-40 h-40 bg-emerald-400 rounded-full opacity-20 blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-lime-400 rounded-full opacity-10 blur-2xl"></div>
     
-    {% if messages %}
-    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 20px;">
-        {% for message in messages %}
-        <p style="margin: 0; color: #721c24;">{{ message }}</p>
-        {% endfor %}
-    </div>
-    {% endif %}
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8 md:py-12 lg:py-8 min-h-screen flex items-center">
+        <div class="w-full max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                
+                <!-- Left Side - Form Section -->
+                <div class="order-1 lg:order-1">
+                    <!-- Back Button -->
+                    <a href="/" class="inline-flex items-center text-gray-700 hover:text-green-600 font-medium mb-6 transition-all group">
+                        <svg class="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/>
+                        </svg>
+                        Kembali
+                    </a>
 
-    <form method="POST">
-        {% csrf_token %}
-        
-        <div style="margin-bottom: 15px;">
-            <label for="{{ form.username.id_for_label }}" style="display: block; font-weight: bold;">{{ form.username.label }}</label>
-            {{ form.username }}
-            {% if form.username.errors %}
-                <span style="color: red; font-size: 12px;">{{ form.username.errors|join:", " }}</span>
-            {% endif %}
+                    <!-- Glass Card -->
+                    <div class="glass-card rounded-3xl shadow-2xl p-6 sm:p-8 lg:p-10">
+                        <!-- Header -->
+                        <div class="mb-8">
+                            <div class="inline-block mb-4">
+                                <img src="{% static 'images/logo.png' %}" alt="MamiCoach Logo" class="h-12 w-auto">
+                            </div>
+                            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Daftar Sekarang!</h1>
+                            <p class="text-gray-600">Mulai transformasi hidup sehat bersama coach profesional</p>
+                        </div>
+
+                        <!-- Messages -->
+                        {% if messages %}
+                        <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-6">
+                            {% for message in messages %}
+                            <p class="text-red-800 text-sm font-medium">{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Form -->
+                        <form method="POST" class="space-y-5" id="registerForm">
+                            {% csrf_token %}
+                            
+                            <!-- Username -->
+                            <div>
+                                <label for="{{ form.username.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">
+                                    Username <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}" 
+                                       class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                                       value="{{ form.username.value|default:'' }}" required>
+                                {% if form.username.errors %}
+                                    <span class="text-red-600 text-xs mt-1.5 block font-medium">{{ form.username.errors|join:", " }}</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Name Grid -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <!-- First Name -->
+                                <div>
+                                    <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">
+                                        Nama Depan <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" name="{{ form.first_name.name }}" id="{{ form.first_name.id_for_label }}" 
+                                           class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                                           value="{{ form.first_name.value|default:'' }}" required>
+                                    {% if form.first_name.errors %}
+                                        <span class="text-red-600 text-xs mt-1.5 block font-medium">{{ form.first_name.errors|join:", " }}</span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Last Name -->
+                                <div>
+                                    <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">
+                                        Nama Belakang <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}" 
+                                           class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
+                                           value="{{ form.last_name.value|default:'' }}" required>
+                                    {% if form.last_name.errors %}
+                                        <span class="text-red-600 text-xs mt-1.5 block font-medium">{{ form.last_name.errors|join:", " }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Password -->
+                            <div>
+                                <label for="{{ form.password1.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">
+                                    Password <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="password" name="{{ form.password1.name }}" id="{{ form.password1.id_for_label }}" 
+                                           class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all pr-12"
+                                           required>
+                                    <button type="button" onclick="togglePassword('{{ form.password1.id_for_label }}')" 
+                                            class="password-toggle absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <svg id="eye-{{ form.password1.id_for_label }}" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                {% if form.password1.errors %}
+                                    <span class="text-red-600 text-xs mt-1.5 block font-medium">{{ form.password1.errors|join:", " }}</span>
+                                {% endif %}
+                                {% if form.password1.help_text %}
+                                    <span class="text-gray-500 text-xs mt-1.5 block">{{ form.password1.help_text }}</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Confirm Password -->
+                            <div>
+                                <label for="{{ form.password2.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">
+                                    Konfirmasi Password <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="password" name="{{ form.password2.name }}" id="{{ form.password2.id_for_label }}" 
+                                           class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all pr-12"
+                                           required>
+                                    <button type="button" onclick="togglePassword('{{ form.password2.id_for_label }}')" 
+                                            class="password-toggle absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <svg id="eye-{{ form.password2.id_for_label }}" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                {% if form.password2.errors %}
+                                    <span class="text-red-600 text-xs mt-1.5 block font-medium">{{ form.password2.errors|join:", " }}</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-200 hover:shadow-xl hover:shadow-green-300 hover:-translate-y-1 transition-all duration-300 mt-6">
+                                <span class="flex items-center justify-center gap-2">
+                                    Daftar Sekarang
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </form>
+
+                        <!-- Footer -->
+                        <div class="mt-6 text-center">
+                            <p class="text-sm text-gray-600">
+                                Sudah punya akun? 
+                                <a href="{% url 'user_profile:login' %}" class="text-green-600 font-bold hover:text-green-700 hover:underline">
+                                    Masuk di sini
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side - Illustration -->
+                <div class="order-2 lg:order-2 flex items-center justify-center">
+                    <div class="relative w-full max-w-lg lg:max-w-xl">
+                        <!-- Decorative Elements -->
+                        <div class="absolute -top-4 -right-4 w-72 h-72 bg-gradient-to-br from-green-200 to-emerald-300 rounded-full opacity-20 blur-3xl"></div>
+                        <div class="absolute -bottom-8 -left-8 w-64 h-64 bg-gradient-to-tr from-lime-200 to-green-300 rounded-full opacity-20 blur-3xl"></div>
+                        
+                        <!-- Image Container -->
+                        <div class="relative floating-animation">
+                            <img src="{% static 'images/register1.png' %}" alt="MamiCoach Fitness" class="w-full h-auto relative z-10 drop-shadow-2xl">
+                        </div>
+
+                        <!-- Stats Cards -->
+                        <div class="hidden lg:flex absolute bottom-16 -right-8 glass-card rounded-2xl p-4 shadow-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-green-100 rounded-full p-3">
+                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold text-gray-800">500+</p>
+                                    <p class="text-xs text-gray-600">Active Trainee</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-
-        <div style="margin-bottom: 15px;">
-            <label for="{{ form.first_name.id_for_label }}" style="display: block; font-weight: bold;">{{ form.first_name.label }}</label>
-            {{ form.first_name }}
-            {% if form.first_name.errors %}
-                <span style="color: red; font-size: 12px;">{{ form.first_name.errors|join:", " }}</span>
-            {% endif %}
-        </div>
-
-        <div style="margin-bottom: 15px;">
-            <label for="{{ form.last_name.id_for_label }}" style="display: block; font-weight: bold;">{{ form.last_name.label }}</label>
-            {{ form.last_name }}
-            {% if form.last_name.errors %}
-                <span style="color: red; font-size: 12px;">{{ form.last_name.errors|join:", " }}</span>
-            {% endif %}
-        </div>
-
-        <div style="margin-bottom: 15px;">
-            <label for="{{ form.password1.id_for_label }}" style="display: block; font-weight: bold;">{{ form.password1.label }}</label>
-            {{ form.password1 }}
-            {% if form.password1.errors %}
-                <span style="color: red; font-size: 12px;">{{ form.password1.errors|join:", " }}</span>
-            {% endif %}
-            {% if form.password1.help_text %}
-                <small style="display: block; color: #666;">{{ form.password1.help_text }}</small>
-            {% endif %}
-        </div>
-
-        <div style="margin-bottom: 15px;">
-            <label for="{{ form.password2.id_for_label }}" style="display: block; font-weight: bold;">{{ form.password2.label }}</label>
-            {{ form.password2 }}
-            {% if form.password2.errors %}
-                <span style="color: red; font-size: 12px;">{{ form.password2.errors|join:", " }}</span>
-            {% endif %}
-        </div>
-
-        <button type="submit" style="background-color: #35A753; color: white; padding: 10px 20px; border: none; cursor: pointer; font-size: 16px;">Register as Trainee</button>
-    </form>
-
-    <div style="margin-top: 20px;">
-        <p>Already have an account? <a href="{% url 'user_profile:login' %}" style="color: #35A753;">Login here</a></p>
-        <p>Want to register as a coach? <a href="{% url 'user_profile:register_coach' %}" style="color: #35A753;">Register as Coach</a></p>
     </div>
 </div>
 
-<style>
-    input[type="text"], 
-    input[type="password"] {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        box-sizing: border-box;
+<script>
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const eyeIcon = document.getElementById('eye-' + fieldId);
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        eyeIcon.innerHTML = `
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+        `;
+    } else {
+        field.type = 'password';
+        eyeIcon.innerHTML = `
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        `;
     }
-</style>
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('registerForm');
+    if (!registerForm) {
+        console.error('Register form not found!');
+        return;
+    }
+    
+    registerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log('Form submitted via AJAX');
+        
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const btnSpan = submitBtn.querySelector('span');
+        const originalSpanContent = btnSpan.innerHTML;
+        
+        submitBtn.disabled = true;
+        submitBtn.style.cssText = 'opacity: 0.8 !important; background: linear-gradient(to right, rgb(34, 197, 94), rgb(5, 150, 105)) !important; cursor: not-allowed !important;';
+        btnSpan.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span style="margin-left: 8px;">Mendaftar...</span>';
+        
+        fetch(this.action || window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                return response.json().then(err => Promise.reject(err));
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Success response:', data);
+            if (data.success) {
+                console.log('Calling showToast...');
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'success');
+                } else {
+                    console.error('showToast is not a function!');
+                    alert(data.message);
+                }
+                
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 1500);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            
+            // Show error messages
+            if (error.errors) {
+                let errorMessages = [];
+                for (const [field, errors] of Object.entries(error.errors)) {
+                    errorMessages.push(...errors);
+                }
+                const errorMsg = errorMessages.join(' ');
+                if (typeof showToast === 'function') {
+                    showToast(errorMsg, 'error');
+                } else {
+                    alert(errorMsg);
+                }
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
+                } else {
+                    alert('Terjadi kesalahan. Silakan coba lagi.');
+                }
+            }
+            
+            submitBtn.disabled = false;
+            submitBtn.style.cssText = '';
+            btnSpan.innerHTML = originalSpanContent;
+        });
+    });
+});
+</script>
 {% endblock content %}
