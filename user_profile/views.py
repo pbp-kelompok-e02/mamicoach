@@ -164,3 +164,36 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse('main:show_main'))
     response.delete_cookie('last_login')
     return response
+
+
+@login_required
+def dashboard_coach(request):
+    try:
+        coach_profile = CoachProfile.objects.get(user=request.user)
+    except CoachProfile.DoesNotExist:
+        messages.error(request, "You don't have a coach profile. Please register as a coach.")
+        return redirect('main:show_main')
+    
+    # Get all certifications for this coach
+    certifications = Certification.objects.filter(coach=coach_profile)
+    
+    context = {
+        'coach_profile': coach_profile,
+        'certifications': certifications,
+    }
+    return render(request, 'dashboard_coach.html', context)
+
+
+@login_required
+def coach_profile(request):
+    try:
+        coach_profile = CoachProfile.objects.get(user=request.user)
+    except CoachProfile.DoesNotExist:
+        messages.error(request, "You don't have a coach profile. Please register as a coach.")
+        return redirect('main:show_main')
+    
+    # TODO: Implement profile editing functionality
+    context = {
+        'coach_profile': coach_profile,
+    }
+    return render(request, 'coach_profile.html', context)
