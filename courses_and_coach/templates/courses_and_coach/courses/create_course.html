@@ -13,7 +13,15 @@
         </div>
 
         <div class="bg-white rounded-3xl shadow-xl p-8">
-            <form method="post" class="space-y-6">
+            <style>
+                .create-course-form ::placeholder {
+                    color: #bcc1c9;
+                    opacity: 1;
+                }
+                .create-course-form:-ms-input-placeholder { color: #374151; }
+                .create-course-form::-ms-input-placeholder { color: #374151; }
+            </style>
+            <form method="post" class="space-y-6 create-course-form">
                 {% csrf_token %}
                 
                 <div>

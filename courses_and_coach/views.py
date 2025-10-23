@@ -196,3 +196,61 @@ def courses_by_id_ajax(request, course_id):
     }
 
     return JsonResponse({"course": data})
+
+
+@login_required(login_url="user_profile:login")
+def edit_course(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+
+    # Ensure the logged-in user is the coach who created the course
+    try:
+        coach_profile = request.user.coachprofile
+    except CoachProfile.DoesNotExist:
+        messages.error(request, "Anda bukan coach terverifikasi.")
+        return redirect("courses_and_coach:show_courses")
+
+    if course.coach != coach_profile:
+        messages.error(request, "Anda tidak berwenang mengedit kelas ini.")
+        return redirect("courses_and_coach:course_details", course_id=course.id)
+
+    if request.method == "POST":
+        form = CourseForm(request.POST, instance=course)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Kelas berhasil diperbarui.")
+            return redirect("courses_and_coach:course_details", course_id=course.id)
+    else:
+        form = CourseForm(instance=course)
+
+    context = {"form": form, "course": course}
+    return render(request, "courses_and_coach/courses/edit_course.html", context)
+
+
+@login_required(login_url="user_profile:login")
+def delete_course(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+
+    try:
+        coach_profile = request.user.coachprofile
+    except CoachProfile.DoesNotExist:
+        messages.error(request, "Anda bukan coach terverifikasi.")
+        return redirect("courses_and_coach:show_courses")
+
+    if course.coach != coach_profile:
+        messages.error(request, "Anda tidak berwenang menghapus kelas ini.")
+        return redirect("courses_and_coach:course_details", course_id=course.id)
+
+    if request.method == "POST":
+        course.delete()
+        messages.success(request, "Kelas berhasil dihapus.")
+        # If request is AJAX, return JSON
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            from django.urls import reverse
+
+            return JsonResponse(
+                {"success": True, "redirect": reverse("courses_and_coach:my_courses")}
+            )
+        return redirect("courses_and_coach:my_courses")
+
+    context = {"course": course}
+    return render(request, "courses_and_coach/courses/confirm_delete.html", context)

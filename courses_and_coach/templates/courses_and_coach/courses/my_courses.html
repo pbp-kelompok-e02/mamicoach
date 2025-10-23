@@ -28,33 +28,33 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <h2 class="text-xl font-semibold text-gray-900">Daftar Kelas</h2>
             </div>
-            
+
             <div class="divide-y divide-gray-200">
                 {% for course in courses %}
-                <div class="p-6 hover:bg-gray-50 transition-colors duration-200">
-                    <div class="flex items-center space-x-4">
+                <div class="p-4 sm:p-6 hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
                         <!-- Course Image -->
-                        <div class="flex-shrink-0">
+                        <div class="flex-shrink-0 self-center sm:self-start">
                             <img 
-                                src="{{ course.thumbnail_url|default:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80' }}" 
+                                src="{{ course.thumbnail_url|default:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' }}" 
                                 alt="{{ course.title }}"
-                                class="w-20 h-20 rounded-xl object-cover"
+                                class="w-full h-full sm:w-24 sm:h-24 rounded-xl object-cover"
                             >
                         </div>
-                        
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-900 truncate">{{ course.title }}</h3>
-                                    <p class="text-sm text-gray-500 mt-1">{{ course.category.name }}</p>
-                                    <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+
+                        <div class="flex-1 mt-3 sm:mt-0 min-w-0">
+                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                                <div class="pr-2">
+                                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 truncate">{{ course.title }}</h3>
+                                    <p class="text-sm text-gray-500 mt-1 truncate">{{ course.category.name }}</p>
+                                    <div class="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-600">
                                         <span class="flex items-center space-x-1">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
-                                            <span>{{ course.duration_formatted }}</span>
+                                            <span class="truncate">{{ course.duration_formatted }}</span>
                                         </span>
-                                        <span class="flex items-center space-x-1">
+                                        <span class="flex items-center space-x-1 max-w-xs">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -69,18 +69,18 @@
                                         </span>
                                     </div>
                                 </div>
-                                
-                                <div class="text-right">
-                                    <p class="text-xl font-bold text-primary">{{ course.price_formatted }}</p>
+
+                                <div class="mt-3 sm:mt-0 sm:text-right flex-shrink-0">
+                                    <p class="text-lg sm:text-xl font-bold text-primary">{{ course.price_formatted }}</p>
                                     <p class="text-sm text-gray-500">per sesi</p>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="flex items-center space-x-2">
+
+                        <div class="mt-4 sm:mt-0 sm:ml-4 flex flex-col sm:flex-row items-stretch sm:items-center sm:space-x-2 space-y-2 sm:space-y-0 w-full sm:w-auto">
                             <a 
                                 href="{% url 'courses_and_coach:course_details' course.id %}" 
-                                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
+                                class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-2xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200 w-full sm:w-auto"
                             >
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -88,12 +88,14 @@
                                 </svg>
                                 Lihat
                             </a>
-                            <button class="inline-flex items-center px-4 py-2 border border-primary text-primary rounded-xl text-sm font-medium hover:bg-primary hover:text-white transition-colors duration-200">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                                Edit
-                            </button>
+                            <a href="{% url 'courses_and_coach:edit_course' course.id %}" class="w-full sm:w-auto">
+                                <button type="button" class="inline-flex justify-center cursor-pointer items-center w-full sm:w-auto px-4 py-2 border border-primary text-primary rounded-2xl text-sm font-medium hover:bg-primary hover:text-white transition-colors duration-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Edit
+                                </button>
+                            </a>
                         </div>
                     </div>
                 </div>
