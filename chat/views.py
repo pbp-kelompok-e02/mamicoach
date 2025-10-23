@@ -4,8 +4,18 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.views.decorators.http import require_POST
+from django.core.files.storage import default_storage
+from io import BytesIO
 import json
-from .models import ChatSession, ChatMessage
+import os
+
+try:
+    from PIL import Image
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
+
+from .models import ChatSession, ChatMessage, ChatAttachment
 from user_profile.models import CoachProfile
 
 # Create your views here.
@@ -123,11 +133,12 @@ def get_messages(request, session_id):
 @require_POST
 @login_required(login_url="/login")
 def send_message(request):
-    """AJAX endpoint to send a new message"""
+    """AJAX endpoint to send a new message (text only)"""
     try:
         data = json.loads(request.body)
         session_id = data.get('session_id')
         content = data.get('content', '').strip()
+        reply_to_id = data.get('reply_to_id')
         
         if not session_id:
             return JsonResponse({'error': 'Session ID is required'}, status=400)
@@ -148,16 +159,25 @@ def send_message(request):
         if not _user_in_session(request.user, session):
             return JsonResponse({'error': 'Unauthorized'}, status=403)
         
+        # Handle reply_to if provided
+        reply_to = None
+        if reply_to_id:
+            try:
+                reply_to = ChatMessage.objects.get(id=reply_to_id, session=session)
+            except ChatMessage.DoesNotExist:
+                return JsonResponse({'error': 'Invalid reply_to message'}, status=400)
+        
         # Create new message
         message = ChatMessage.objects.create(
             session=session,
             sender=request.user,
-            content=content
+            content=content,
+            reply_to=reply_to
         )
         
         # Update session's last activity timestamp
-        session.started_at = timezone.now()
-        session.save(update_fields=['started_at'])
+        session.last_message_at = timezone.now()
+        session.save(update_fields=['last_message_at'])
         
         return JsonResponse({
             'success': True,
@@ -260,17 +280,45 @@ def _user_in_session(user, session):
 
 def _serialize_message(message, is_current_user=None):
     """Serialize a ChatMessage object to dictionary"""
+    attachments = [_serialize_attachment(att) for att in message.attachments.all()]
+    
+    reply_data = None
+    if message.reply_to:
+        reply_data = {
+            'id': message.reply_to.id,
+            'content': message.reply_to.content,
+            'sender_username': message.reply_to.sender.username,
+        }
+    
     return {
         'id': message.pk,
         'content': message.content,
         'timestamp': message.timestamp.isoformat(),
         'sender': {
+            'id': message.sender.id,
             'username': message.sender.username,
             'first_name': message.sender.first_name,
             'last_name': message.sender.last_name,
         },
         'is_sent_by_me': is_current_user if is_current_user is not None else False,
-        'read': message.read
+        'read': message.read,
+        'attachments': attachments,
+        'reply_to': reply_data
+    }
+
+
+def _serialize_attachment(attachment):
+    """Serialize a ChatAttachment object to dictionary"""
+    return {
+        'id': str(attachment.id),
+        'type': attachment.attachment_type,
+        'file_url': attachment.file.url if attachment.file else None,
+        'thumbnail_url': attachment.thumbnail.url if attachment.thumbnail else None,
+        'file_name': attachment.file_name or 'Attachment',
+        'file_size': attachment.file_size,
+        'uploaded_at': attachment.uploaded_at.isoformat(),
+        'course_id': attachment.course_id,
+        'course_name': attachment.course_name,
     }
 
 
@@ -281,3 +329,70 @@ def _serialize_user(user):
         'first_name': user.first_name,
         'last_name': user.last_name,
     }
+
+
+@require_POST
+@login_required(login_url="/login")
+def upload_attachment(request, session_id):
+    """AJAX endpoint to upload attachment to a message"""
+    try:
+        session = get_object_or_404(ChatSession, id=session_id)
+        
+        # Check if user is part of this chat session
+        if not _user_in_session(request.user, session):
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+        if 'file' not in request.FILES:
+            return JsonResponse({'error': 'No file provided'}, status=400)
+        
+        uploaded_file = request.FILES['file']
+        attachment_type = request.POST.get('type', 'file')
+        message_id = request.POST.get('message_id')
+        
+        # Validate file size (max 10MB)
+        MAX_FILE_SIZE = 10 * 1024 * 1024
+        if uploaded_file.size > MAX_FILE_SIZE:
+            return JsonResponse({'error': 'File size exceeds 10MB limit'}, status=400)
+        
+        if not message_id:
+            return JsonResponse({'error': 'Message ID is required'}, status=400)
+        
+        try:
+            message = ChatMessage.objects.get(id=message_id, session=session, sender=request.user)
+        except ChatMessage.DoesNotExist:
+            return JsonResponse({'error': 'Invalid message'}, status=400)
+        
+        # Create attachment
+        attachment = ChatAttachment.objects.create(
+            message=message,
+            attachment_type=attachment_type,
+            file=uploaded_file,
+            file_name=uploaded_file.name,
+            file_size=uploaded_file.size
+        )
+        
+        # Generate thumbnail for images
+        if attachment_type == 'image' and HAS_PIL and uploaded_file.content_type.startswith('image/'):
+            try:
+                uploaded_file.seek(0)  # Reset file pointer
+                img = Image.open(uploaded_file)
+                img.thumbnail((200, 200))
+                thumb_io = BytesIO()
+                img.save(thumb_io, format='JPEG')
+                thumb_io.seek(0)
+                from django.core.files.base import ContentFile
+                thumbnail_name = f"thumb_{uploaded_file.name}"
+                attachment.thumbnail.save(thumbnail_name, ContentFile(thumb_io.read()))
+            except Exception as e:
+                # If thumbnail generation fails, continue without it
+                pass
+        
+        return JsonResponse({
+            'success': True,
+            'attachment': _serialize_attachment(attachment)
+        })
+    
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
