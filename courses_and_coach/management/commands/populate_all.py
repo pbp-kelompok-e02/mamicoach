@@ -14,8 +14,55 @@ class Command(BaseCommand):
         self.create_coaches()
         self.create_courses()
         self.create_bookings()
+        self.create_reviews()
 
         self.stdout.write(self.style.SUCCESS("Successfully populated all sample data!"))
+    def create_reviews(self):
+        """Create sample reviews based on some bookings"""
+        from reviews.models import Review
+        from booking.models import Booking
+        from django.utils import timezone
+        import random
+
+        # Get all bookings
+        bookings = list(Booking.objects.all())
+        if not bookings:
+            self.stdout.write(self.style.WARNING("No bookings found to seed reviews."))
+            return
+
+        # Select 8 random bookings to review
+        num_reviews = min(8, len(bookings))
+        sampled_bookings = random.sample(bookings, num_reviews)
+
+        review_contents = [
+            "Pelatihnya ramah dan profesional! Saya belajar banyak.",
+            "Kelasnya seru dan bermanfaat, recommended banget.",
+            "Materi yang diajarkan sangat jelas dan mudah diikuti.",
+            "Sangat membantu untuk pemula seperti saya.",
+            "Tempatnya nyaman dan pelatihnya berpengalaman.",
+            "Saya suka metode pengajarannya, tidak membosankan.",
+            "Kelasnya intens tapi hasilnya terasa!",
+            "Akan ikut lagi di kelas berikutnya!",
+        ]
+
+        for i, booking in enumerate(sampled_bookings):
+            # Avoid duplicate reviews for same user/course
+            if Review.objects.filter(user=booking.user, course=booking.course).exists():
+                continue
+            content = review_contents[i % len(review_contents)]
+            rating = random.randint(4, 5)
+            is_anonymous = random.choice([True, False])
+            review = Review.objects.create(
+                user=booking.user,
+                course=booking.course,
+                coach=booking.coach,
+                booking=booking,
+                content=content,
+                rating=rating,
+                is_anonymous=is_anonymous,
+                created_at=timezone.now(),
+            )
+            self.stdout.write(self.style.SUCCESS(f"✓ Created review for {booking.user.username} - {booking.course.title} (Rating: {rating})"))
     def create_bookings(self):
         """Create sample bookings"""
         from booking.models import Booking
