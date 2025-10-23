@@ -7,6 +7,7 @@ from .forms import CourseForm
 from user_profile.models import CoachProfile
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from reviews.models import Review
 
 
 def show_courses(request):
@@ -40,12 +41,18 @@ def show_courses(request):
 def course_details(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     related_courses = Course.objects.filter(category=course.category).exclude(
-        id=course.id
+        id=course.pk
     )[:4]
+    
+    # Fetch reviews for this course
+    reviews = Review.objects.filter(course=course).select_related(
+        'user', 'coach', 'coach__user'
+    ).order_by('-created_at')
 
     context = {
         "course": course,
         "related_courses": related_courses,
+        "reviews": reviews,
     }
     return render(request, "courses_and_coach/courses/courses_details.html", context)
 

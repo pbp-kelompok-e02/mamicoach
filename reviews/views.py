@@ -1,93 +1,106 @@
-from django.shortcuts import render
-from datetime import datetime
+from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
+from booking.models import Booking
+from .models import Review
+from .forms import ReviewForm
 # Create your views here.
 
 def show_sample_review(request):
-    # Sample hardcoded reviews data
-    sample_reviews = [
-        {
-            'reviewer_name': 'Jenny Wilson',
-            'reviewer_role': 'Ibu Rumah Tangga',
-            'reviewer_avatar': 'https://i.pravatar.cc/100?img=1',
-            'rating': 4,
-            'comment': 'Ut pharetra ipsum nec leo blandit, sit amet tincidunt eros pharetra. Nam sed imperdiet turpis. In hac habitasse platea dictumst. Praesent nulla massa, hendrerit vestibulum gravida in, feugiat auctor felis.\n\nUt pharetra ipsum nec leo blandit, sit amet tincidunt eros pharetra. Nam sed imperdiet turpis. In hac habitasse platea dictumst.',
-            'created_at': datetime(2024, 10, 15),
-            'is_anonymous': False,
-            'course_name': 'Kelas Yoga Chi Space Studio',
-            'show_course_info': True,
-        },
-        {
-            'reviewer_name': 'Sarah Johnson',
-            'reviewer_role': 'Working Professional',
-            'reviewer_avatar': 'https://i.pravatar.cc/100?img=2',
-            'rating': 5,
-            'comment': 'Amazing experience! The coach was very professional and patient. I learned so much in just one session. The techniques were easy to follow and I can already see improvements in my flexibility.',
-            'created_at': datetime(2024, 10, 12),
-            'is_anonymous': False,
-            'course_name': 'Advanced Pilates Studio',
-            'show_course_info': True,
-        },
-        {
-            'reviewer_name': 'Anonymous',
-            'reviewer_role': 'Student',
-            'reviewer_avatar': 'https://i.pravatar.cc/100?img=3',
-            'rating': 3,
-            'comment': 'Good class overall, but I think the pace could be a bit slower for beginners. The coach knows what they are doing but sometimes goes too fast.',
-            'created_at': datetime(2024, 10, 10),
-            'is_anonymous': True,
-            'course_name': 'Cardio Fitness Pro',
-            'show_course_info': True,
-        },
-        {
-            'reviewer_name': 'Michael Chen',
-            'reviewer_role': 'Fitness Enthusiast',
-            'reviewer_avatar': 'https://i.pravatar.cc/100?img=4',
-            'rating': 5,
-            'comment': 'Excellent coaching! Very detailed explanations and personalized feedback. The coach really cares about proper form and safety. Highly recommend this class to anyone looking to improve their fitness.',
-            'created_at': datetime(2024, 10, 8),
-            'is_anonymous': False,
-            'course_name': 'Strength Training',
-            'show_course_info': True,
-        },
-        {
-            'reviewer_name': 'Lisa Rodriguez',
-            'reviewer_role': 'Yoga Instructor',
-            'reviewer_avatar': 'https://i.pravatar.cc/100?img=5',
-            'rating': 4,
-            'comment': 'Great class with good energy. The coach has a nice teaching style and creates a welcoming environment. Would definitely come back for more sessions.',
-            'created_at': datetime(2024, 10, 5),
-            'is_anonymous': False,
-            'course_name': 'Meditation & Mindfulness',
-            'show_course_info': True,
-        },
-    ]
+    # Fetch all reviews from database, ordered by most recent
+    reviews = Review.objects.select_related(
+        'user', 'course', 'coach', 'coach__user'
+    ).order_by('-created_at')
     
     ctx = {
-        'reviews': sample_reviews
+        'reviews': reviews
     }
     return render(request, "pages/sample_review.html", context=ctx)
 
-
-def create_review(request):
+@login_required(login_url='/login')
+def create_review(request, booking_id):
+    try:
+        booking = Booking.objects.get(pk=booking_id)
+    except Booking.DoesNotExist:
+        messages.error(request, "Booking not found.")
+        return redirect('main:show_main')
+    
+    # Permission check: only the user who made the booking can review it
+    if booking.user != request.user:
+        messages.error(request, "You do not have permission to create a review for this booking.")
+        return redirect('main:show_main')
+    
+    # Check if review already exists for this booking
+    if Review.objects.filter(booking=booking).exists():
+        messages.error(request, "A review already exists for this booking. Please edit the existing review instead.")
+        return redirect('main:show_main')
+    
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.booking = booking
+            review.course = booking.course
+            review.user = request.user
+            review.coach = booking.coach
+            review.save()
+            messages.success(request, "Review created successfully!")
+            return redirect('main:show_main')  # Redirect to appropriate page
+        else:
+            # Debug: log form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        form = ReviewForm()
+    
     ctx = {
-        'bookingId': "123",
-        'courseName': "Class A",
-        'courseImageUrl': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcTY50AnR35-aKaONIPoeLNh_KrvAq9bwD7A&s",
-        'coachName': "Coach B",
-        'bookedDate': "17:39 at 20 May 2024",
-        'duration': "60 minutes",
+        'booking': booking,
+        'form': form,
+        'is_edit': False,
     }
     return render(request, "pages/create_review.html", context=ctx)
 
-
-def edit_review(request):
+@login_required(login_url='/login')
+def edit_review(request, review_id):
+    try:
+        review = Review.objects.get(pk=review_id)
+    except Review.DoesNotExist:
+        messages.error(request, "Review not found.")
+        return redirect('main:show_main')
+    
+    # Permission check: only the user who created the review can edit it
+    if review.user != request.user:
+        messages.error(request, "You do not have permission to edit this review.")
+        return redirect('main:show_main')
+    
+    # Get callback URL from query params
+    callback_url = request.GET.get('next', 'main:show_main')
+    
+    if request.method == 'POST':
+        form = ReviewForm(request.POST, instance=review)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Review updated successfully!")
+            # Redirect to callback URL or default
+            if callback_url.startswith('/'):
+                return redirect(callback_url)
+            else:
+                return redirect(callback_url)
+        else:
+            # Debug: log form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        form = ReviewForm(instance=review)
+    
     ctx = {
-        'bookingId': "123",
-        'courseName': "Class A",
-        'courseImageUrl': "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcTY50AnR35-aKaONIPoeLNh_KrvAq9bwD7A&s",
-        'coachName': "Coach B",
-        'bookedDate': "17:39 at 20 May 2024",
-        'duration': "60 minutes",
+        'review': review,
+        'booking': review.booking,
+        'form': form,
+        'is_edit': True,
+        'callback_url': callback_url,
     }
     return render(request, "pages/edit_review.html", context=ctx)

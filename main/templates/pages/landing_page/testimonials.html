@@ -1,0 +1,170 @@
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+                Baca <span class="text-primary underline decoration-secondary">Ulasannya!</span>
+            </h2>
+            <p class="text-lg text-gray-500">
+                Keputusan Anda, Didukung Bukti Nyata.
+            </p>
+        </div>
+
+        <!-- Testimonials Carousel -->
+        <div class="relative">
+            {% if top_reviews %}
+            <!-- Carousel Wrapper with Navigation Buttons -->
+            <div class="flex items-center gap-2 md:gap-6">
+                <!-- Left Navigation Button -->
+                <button id="scroll-left" class="flex-shrink-0 bg-primary text-white rounded-full p-2 md:p-3 hover:bg-green-600 transition-colors shadow-lg z-10" aria-label="Previous testimonials">
+                    <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+
+                <!-- Carousel Container with Fade Effects -->
+                <div class="flex-1 overflow-hidden relative">
+                    <!-- Left Fade Overlay -->
+                    <div class="absolute left-0 top-0 bottom-0 w-12 md:w-24 bg-gradient-to-r from-gray-50 to-transparent z-5 pointer-events-none"></div>
+                    
+                    <!-- Carousel -->
+                    <div class="flex gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory" id="testimonials-container" style="scroll-behavior: smooth; scrollbar-width: none; -ms-overflow-style: none;">
+                        <div class="flex-shrink-0 w-8 md:w-16"></div>
+                        {% for review in top_reviews %}
+                        <div class="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 snap-start">
+                            {% include 'partials/_review_card_styled.html' with review=review %}
+                        </div>
+                        {% endfor %}
+                        <div class="flex-shrink-0 w-8 md:w-16"></div>
+                    </div>
+                    
+                    <!-- Right Fade Overlay -->
+                    <div class="absolute right-0 top-0 bottom-0 w-12 md:w-24 bg-gradient-to-l from-gray-50 to-transparent z-5 pointer-events-none"></div>
+                </div>
+
+                <!-- Right Navigation Button -->
+                <button id="scroll-right" class="flex-shrink-0 bg-primary text-white rounded-full p-2 md:p-3 hover:bg-green-600 transition-colors shadow-lg z-10" aria-label="Next testimonials">
+                    <svg class="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Pagination Dots -->
+            <div class="flex justify-center gap-2 md:gap-3 mt-6 md:mt-8">
+                {% for review in top_reviews %}
+                <button class="testimonial-dot w-2 h-2 md:w-3 md:h-3 rounded-full bg-gray-300 hover:bg-primary transition-colors" data-index="{{ forloop.counter0 }}" aria-label="Go to testimonial {{ forloop.counter }}"></button>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <div class="text-center py-12">
+                <p class="text-gray-500 text-lg">Belum ada ulasan tersedia</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('testimonials-container');
+        const leftBtn = document.getElementById('scroll-left');
+        const rightBtn = document.getElementById('scroll-right');
+        const dots = document.querySelectorAll('.testimonial-dot');
+
+        if (container) {
+            // Calculate responsive values
+            function getScrollValues() {
+                // Get actual review cards (skip padding divs - they are empty)
+                const allDivs = Array.from(container.querySelectorAll('div'));
+                const reviewCards = allDivs.filter(div => div.querySelector('[class*="review"]') || div.innerHTML.trim() !== '');
+                
+                if (reviewCards.length === 0) return { cardWidth: 0, cardsPerPage: 1, pageWidth: 0 };
+                
+                const firstCard = reviewCards[0];
+                const gap = parseFloat(window.getComputedStyle(container).gap) || 16;
+                const cardWidth = firstCard.offsetWidth + gap;
+                
+                // Determine cards per page based on screen width
+                let cardsPerPage = 1;
+                if (window.innerWidth >= 640) { // sm
+                    cardsPerPage = 2;
+                }
+                if (window.innerWidth >= 1024) { // lg
+                    cardsPerPage = 3;
+                }
+                
+                return {
+                    cardWidth: cardWidth,
+                    cardsPerPage: cardsPerPage,
+                    pageWidth: cardWidth * cardsPerPage
+                };
+            }
+
+            function updateDots() {
+                const { cardWidth } = getScrollValues();
+                const scrollLeft = container.scrollLeft;
+                
+                // Account for initial padding
+                const paddingDiv = container.querySelector('div:first-child');
+                const initialPadding = paddingDiv ? paddingDiv.offsetWidth : 0;
+                
+                // Adjust scroll position by subtracting padding, then calculate index
+                const adjustedScroll = Math.max(0, scrollLeft - initialPadding);
+                const activeIndex = Math.round(adjustedScroll / cardWidth);
+                
+                // Clamp to valid range
+                const validIndex = Math.min(activeIndex, dots.length - 1);
+                
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('bg-primary', index === validIndex);
+                    dot.classList.toggle('bg-gray-300', index !== validIndex);
+                });
+            }
+
+            leftBtn.addEventListener('click', () => {
+                const { pageWidth } = getScrollValues();
+                container.scrollBy({ left: -pageWidth, behavior: 'smooth' });
+                setTimeout(updateDots, 150);
+            });
+
+            rightBtn.addEventListener('click', () => {
+                const { pageWidth } = getScrollValues();
+                container.scrollBy({ left: pageWidth, behavior: 'smooth' });
+                setTimeout(updateDots, 150);
+            });
+
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    const { cardWidth } = getScrollValues();
+                    const paddingDiv = container.querySelector('div:first-child');
+                    const initialPadding = paddingDiv ? paddingDiv.offsetWidth : 0;
+                    const gap = parseFloat(window.getComputedStyle(container).gap) || 16;
+                    
+                    container.scrollTo({ left: initialPadding + cardWidth * index, behavior: 'smooth' });
+                    setTimeout(updateDots, 150);
+                });
+            });
+
+            // Handle scroll event for continuous dot updates
+            let scrollTimeout;
+            container.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(updateDots, 50);
+            });
+
+            // Update on window resize
+            window.addEventListener('resize', () => {
+                updateDots();
+            });
+
+            // Initial update
+            setTimeout(updateDots, 100);
+        }
+    </script>
+
+    <style>
+        #testimonials-container::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</section>

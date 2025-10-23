@@ -13,8 +13,62 @@ class Command(BaseCommand):
         self.create_categories()
         self.create_coaches()
         self.create_courses()
+        self.create_bookings()
 
         self.stdout.write(self.style.SUCCESS("Successfully populated all sample data!"))
+    def create_bookings(self):
+        """Create sample bookings"""
+        from booking.models import Booking
+        from django.utils import timezone
+        # Get all users except coaches
+        coach_usernames = [
+            "sarah_yoga", "mike_fitness", "diana_pilates", "alex_zumba", "lisa_swim"
+        ]
+        users = User.objects.exclude(username__in=coach_usernames)
+        # If no non-coach users, create some
+        if users.count() == 0:
+            for i in range(1, 6):
+                user, created = User.objects.get_or_create(
+                    username=f"user{i}",
+                    defaults={
+                        "first_name": f"User{i}",
+                        "last_name": "Test",
+                        "email": f"user{i}@mamicoach.com",
+                    },
+                )
+                if created:
+                    user.set_password("password123")
+                    user.save()
+            users = User.objects.exclude(username__in=coach_usernames)
+
+        courses = Course.objects.all()
+
+        # Create 20 bookings
+        status_choices = [choice[0] for choice in Booking.STATUS_CHOICES]
+        for i in range(20):
+            user = random.choice(list(users))
+            course = random.choice(list(courses))
+            coach = course.coach  # Always use the course's coach
+            # Generate random start and end datetime
+            start_datetime = timezone.now() + timezone.timedelta(days=random.randint(1, 30), hours=random.randint(6, 18))
+            duration_minutes = course.duration if hasattr(course, 'duration') and course.duration else random.choice([45, 60, 90])
+            end_datetime = start_datetime + timezone.timedelta(minutes=duration_minutes)
+            status = random.choice(status_choices)
+
+            booking, created = Booking.objects.get_or_create(
+                user=user,
+                course=course,
+                coach=coach,
+                start_datetime=start_datetime,
+                end_datetime=end_datetime,
+                defaults={
+                    "status": status,
+                },
+            )
+            if created:
+                self.stdout.write(
+                    self.style.SUCCESS(f"Created booking (ID: {booking.pk}) for {user.username} - {course.title} ({status}) [{start_datetime} - {end_datetime}]")
+                )
 
     def create_categories(self):
         """Create sample categories"""

@@ -36,7 +36,7 @@
 		<!-- Original Reviews Grid -->
 		<div id="original-reviews" class="space-y-6">
 			{% for review in reviews %}
-				{% include 'partials/_review_card.html' with reviewer_name=review.reviewer_name reviewer_role=review.reviewer_role reviewer_avatar=review.reviewer_avatar rating=review.rating comment=review.comment created_at=review.created_at is_anonymous=review.is_anonymous course_name=review.course_name show_course_info=review.show_course_info %}
+				{% include 'partials/_review_card.html' with review=review %}
 			{% empty %}
 				<div class="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-black/5">
 					<svg class="mx-auto h-12 w-12 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +51,7 @@
 		<!-- Styled Reviews Grid -->
 		<div id="styled-reviews" class="space-y-6 hidden">
 			{% for review in reviews %}
-				{% include 'partials/_review_card_styled.html' with reviewer_name=review.reviewer_name reviewer_role=review.reviewer_role reviewer_avatar=review.reviewer_avatar rating=review.rating comment=review.comment created_at=review.created_at is_anonymous=review.is_anonymous course_name=review.course_name show_course_info=review.show_course_info %}
+				{% include 'partials/_review_card_styled.html' with review=review %}
 			{% empty %}
 				<div class="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-black/5">
 					<svg class="mx-auto h-12 w-12 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

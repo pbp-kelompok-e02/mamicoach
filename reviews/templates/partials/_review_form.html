@@ -3,15 +3,21 @@
 	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 		<!-- Header -->
 		<div class="mb-8 text-center lg:text-left">
-			<p class="text-sm font-medium text-neutral-500 sm:text-base">Course Review Booking#{{ bookingId }}</p>
+			<p class="text-sm font-medium text-neutral-500 sm:text-base">Course Review Booking#{{ booking.id }}</p>
 			<h1 class="mt-2 text-2xl font-bold text-neutral-900 sm:text-3xl lg:text-4xl">
 				{% if is_edit %}
-					Edit your review for <span class="text-primary">{{ coachName }}</span>
+					Edit your review for <span class="text-primary">{{ review.coach.user.first_name|default:review.coach.user.username }}</span>
 				{% else %}
-					Review your experience with <span class="text-primary">{{ coachName }}</span>
+					Review your experience with <span class="text-primary">{{ booking.coach.user.first_name|default:booking.coach.user.username }}</span>
 				{% endif %}
 			</h1>
-			<p class="mt-2 text-lg text-neutral-600 font-semibold">{{ courseName }}</p>
+			<p class="mt-2 text-lg text-neutral-600 font-semibold">
+				{% if is_edit %}
+					{{ review.course.title }}
+				{% else %}
+					{{ booking.course.title }}
+				{% endif %}
+			</p>
 		</div>
 
 		<!-- Main Content Grid -->
@@ -24,20 +30,42 @@
 							<svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m-6 0h6m-6 0V3m6 4v10a1 1 0 01-1 1H9a1 1 0 01-1-1V7"></path>
 							</svg>
-							<span><span class="font-semibold text-neutral-800">Booked:</span> {{ bookedDate }}</span>
+							<span><span class="font-semibold text-neutral-800">Booked:</span>
+								{% if is_edit %}
+									{{ review.booking.start_datetime|date:"H:i \a\t d M Y" }}
+								{% else %}
+									{{ booking.start_datetime|date:"H:i \a\t d M Y" }}
+								{% endif %}
+							</span>
 						</div>
 						<div class="flex items-center gap-3 text-sm text-neutral-600 sm:text-base">
 							<svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 							</svg>
-							<span><span class="font-semibold text-neutral-800">Duration:</span> {{ duration }}</span>
+							<span><span class="font-semibold text-neutral-800">Duration:</span>
+								{% if is_edit %}
+									{% with booking=review.booking %}
+										{% if booking.start_datetime and booking.end_datetime %}
+											{{ booking.end_datetime|timeuntil:booking.start_datetime }}
+										{% else %}
+											Unknown duration
+										{% endif %}
+									{% endwith %}
+								{% else %}
+									{% if booking.start_datetime and booking.end_datetime %}
+										{{ booking.end_datetime|timeuntil:booking.start_datetime }}
+									{% else %}
+										Unknown duration
+									{% endif %}
+								{% endif %}
+							</span>
 						</div>
 					</div>
 					
 					<div class="overflow-hidden rounded-xl">
 						<img 
-							src="{{ courseImageUrl }}" 
-							alt="{{ courseName }}" 
+							src="{% if is_edit %}{{ review.course.thumbnail_url|default:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcTY50AnR35-aKaONIPoeLNh_KrvAq9bwD7A&s' }}{% else %}{{ booking.course.thumbnail_url|default:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcTY50AnR35-aKaONIPoeLNh_KrvAq9bwD7A&s' }}{% endif %}" 
+							alt="{% if is_edit %}{{ review.course.title }}{% else %}{{ booking.course.title }}{% endif %}" 
 							class="h-48 w-full object-cover transition-transform hover:scale-105 sm:h-64 lg:h-72" 
 						/>
 					</div>
@@ -46,8 +74,23 @@
 
 			<!-- Review Form -->
 			<div class="lg:col-span-7">
-				<form action="{{ form_action }}" method="post" class="rounded-2xl bg-white p-6 shadow-lg ring-1 ring-black/5 sm:p-8">
+				<form method="post" id="review-form" class="rounded-2xl bg-white p-6 shadow-lg ring-1 ring-black/5 sm:p-8">
 					{% csrf_token %}
+					
+					<!-- Form Errors -->
+					{% if form.non_field_errors %}
+						<div class="mb-6 rounded-lg bg-red-50 p-4 border border-red-200">
+							{% for error in form.non_field_errors %}
+								<p class="text-sm text-red-600">{{ error }}</p>
+							{% endfor %}
+						</div>
+					{% endif %}
+					
+					<!-- General Error Alert -->
+					<div id="form-error-alert" class="mb-6 rounded-lg bg-red-50 p-4 border border-red-200 hidden">
+						<p class="text-sm font-semibold text-red-700 mb-2">Please fix the following errors:</p>
+						<ul id="error-list" class="text-sm text-red-600 space-y-1"></ul>
+					</div>
 					
 					<!-- Reviewer Info & Rating -->
 					<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -56,65 +99,81 @@
 								<img src="https://i.pravatar.cc/100" alt="Reviewer avatar" class="h-full w-full object-cover" />
 							</div>
 							<div>
-								<p class="text-lg font-semibold text-neutral-900 sm:text-xl">{{ user_name|default:"Jenny Wilson" }}</p>
-								<p class="text-sm text-neutral-500 sm:text-base">{{ user_role|default:"Ibu Rumah Tangga" }}</p>
+								<p class="text-lg font-semibold text-neutral-900 sm:text-xl">
+									{% if is_edit %}
+										{{ review.user.first_name|default:review.user.username }}
+									{% else %}
+										{{ request.user.first_name|default:request.user.username }}
+									{% endif %}
+								</p>
+								<p class="text-sm text-neutral-500 sm:text-base">
+									{% if is_edit %}
+										{{ review.user.profile.role|default:"User" }}
+									{% else %}
+										{{ request.user.profile.role|default:"User" }}
+									{% endif %}
+								</p>
 							</div>
 						</div>
 						
 						<!-- Rating Stars -->
-						<div class="flex items-center gap-2" role="group" aria-label="Rating">
-							<input type="hidden" name="rating" id="rating-value" value="{{ rating|default:4 }}">
-							<div class="flex gap-1">
-								{% for star in "12345" %}
-								<button
-									type="button"
-									data-role="rating-star"
-									data-value="{{ forloop.counter }}"
-									class="flex h-8 w-8 items-center justify-center text-neutral-300 transition hover:scale-110 sm:h-10 sm:w-10 rounded-full"
-									aria-label="Rate {{ forloop.counter }} star{% if not forloop.last %}s{% endif %}"
-								>
-									<svg viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6 sm:h-8 sm:w-8">
-										<path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-									</svg>
-								</button>
-								{% endfor %}
+						<div class="flex flex-col gap-2">
+							<div class="flex items-center gap-2" role="group" aria-label="Rating">
+								{{ form.rating }}
+								<div class="flex gap-1" id="star-group">
+									{% for star in "12345" %}
+									<button
+										type="button"
+										data-role="rating-star"
+										data-value="{{ forloop.counter }}"
+										class="flex h-8 w-8 items-center justify-center text-neutral-300 transition hover:scale-110 sm:h-10 sm:w-10 rounded-full"
+										aria-label="Rate {{ forloop.counter }} star{% if not forloop.last %}s{% endif %}"
+									>
+										<svg viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6 sm:h-8 sm:w-8">
+											<path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+										</svg>
+									</button>
+									{% endfor %}
+								</div>
 							</div>
+							<!-- Rating Error Message -->
+							{% if form.rating.errors %}
+								<div class="text-sm text-red-600 mt-1">
+									{% for error in form.rating.errors %}
+										{{ error }}
+									{% endfor %}
+								</div>
+							{% endif %}
 						</div>
 					</div>
 
 					<!-- Comment Section -->
 					<div class="mb-6">
-						<label for="comment" class="mb-3 block text-base font-semibold text-neutral-700 sm:text-lg">
-							Share your thoughts
+						<label for="{{ form.content.id_for_label }}" class="mb-3 block text-base font-semibold text-neutral-700 sm:text-lg">
+							{{ form.content.label }}
 						</label>
-						<textarea
-							id="comment"
-							name="comment"
-							rows="6"
-							placeholder="Ceritakan pengalaman Anda mengikuti kelas ini. Bagaimana cara mengajar coach? Apakah materi mudah dipahami? Apa yang bisa diperbaiki?"
-							class="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-4 text-neutral-700 placeholder-neutral-400 transition focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 sm:text-base"
-						>{{ comment|default:"" }}</textarea>
+						{{ form.content }}
+						{% if form.content.errors %}
+							<p class="mt-2 text-sm text-red-600">{{ form.content.errors.0 }}</p>
+						{% endif %}
 					</div>
 
 					<!-- Anonymous Checkbox -->
 					<div class="mb-8">
 						<label class="inline-flex cursor-pointer items-center gap-4 text-neutral-600">
 							<div class="relative flex h-6 w-6 items-center justify-center">
-								<input
-									type="checkbox"
-									id="is_anonymous_input"
-									name="is_anonymous"
-									{% if is_anonymous %}checked{% endif %}
-									class="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-md bg-[#E6E6E6] transition duration-150 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2"
-								>
+								{{ form.is_anonymous }}
 								<div class="pointer-events-none absolute inset-0 flex h-6 w-6 items-center justify-center rounded-md bg-[#E6E6E6]">
-									<svg id="checkbox-checkmark" viewBox="0 0 20 20" fill="none" class="h-6 w-6 text-[#39A35E] {% if is_anonymous %}opacity-100{% else %}opacity-0{% endif %} transition-opacity duration-150">
+									<svg id="checkbox-checkmark" viewBox="0 0 20 20" fill="none" class="h-6 w-6 text-[#39A35E] {% if form.is_anonymous.value %}opacity-100{% else %}opacity-0{% endif %} transition-opacity duration-150">
 										<path d="M16.707 5.293a1 1 0 0 0-1.414 0L8.5 12.086 6.207 9.793a1 1 0 0 0-1.414 1.414l3 3a1 1 0 0 0 1.414 0l7-7a1 1 0 0 0 0-1.414Z" fill="currentColor" />
 									</svg>
 								</div>
 							</div>
 							<span class="text-sm sm:text-base font-semibold">Post anonymously</span>
 						</label>
+						{% if form.is_anonymous.errors %}
+							<p class="mt-2 text-sm text-red-600">{{ form.is_anonymous.errors.0 }}</p>
+						{% endif %}
 					</div>
 
 					<!-- Action Buttons -->
@@ -123,7 +182,8 @@
 							<!-- Edit Mode: Submit and Delete buttons -->
 							<button
 								type="submit"
-								class="flex-1 rounded-xl bg-primary px-6 py-4 text-base font-semibold text-white shadow-md transition hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 active:scale-[0.98] sm:text-lg"
+								id="submit-btn"
+								class="flex-1 rounded-xl bg-primary px-6 py-4 text-base font-semibold text-white shadow-md transition hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 active:scale-[0.98] sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
 							>
 								Update Review
 							</button>
@@ -138,7 +198,8 @@
 							<!-- Create Mode: Submit button only -->
 							<button
 								type="submit"
-								class="w-full rounded-xl bg-primary px-6 py-4 text-base font-semibold text-white shadow-md transition hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 active:scale-[0.98] sm:text-lg"
+								id="submit-btn"
+								class="w-full rounded-xl bg-primary px-6 py-4 text-base font-semibold text-white shadow-md transition hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 active:scale-[0.98] sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
 							>
 								Submit Review
 							</button>
@@ -197,6 +258,11 @@
 document.addEventListener('DOMContentLoaded', function () {
 	const stars = document.querySelectorAll('[data-role="rating-star"]');
 	const ratingInput = document.getElementById('rating-value');
+	const form = document.getElementById('review-form');
+	const submitBtn = document.getElementById('submit-btn');
+	const contentInput = document.getElementById('comment');
+	const errorAlert = document.getElementById('form-error-alert');
+	const errorList = document.getElementById('error-list');
 	
 	function syncStars(value) {
 		stars.forEach(function (star) {
@@ -211,11 +277,78 @@ document.addEventListener('DOMContentLoaded', function () {
 		});
 	}
 	
+	function validateForm() {
+		const errors = [];
+		
+		// Check rating
+		const rating = parseInt(ratingInput.value, 10);
+		if (!rating || rating < 1 || rating > 5) {
+			errors.push('Please select a rating (1-5 stars)');
+		}
+		
+		// Check content
+		const content = contentInput.value.trim();
+		if (!content) {
+			errors.push('Please write your review');
+		} else if (content.length < 10) {
+			errors.push('Your review must be at least 10 characters long');
+		} else if (content.length > 5000) {
+			errors.push('Your review cannot exceed 5000 characters');
+		}
+		
+		return errors;
+	}
+	
+	function displayErrors(errors) {
+		if (errors.length > 0) {
+			errorList.innerHTML = '';
+			errors.forEach(function(error) {
+				const li = document.createElement('li');
+				li.textContent = '- ' + error;
+				errorList.appendChild(li);
+			});
+			errorAlert.classList.remove('hidden');
+			return false;
+		} else {
+			errorAlert.classList.add('hidden');
+			return true;
+		}
+	}
+	
+	// Add form submission validation
+	form.addEventListener('submit', function(e) {
+		const errors = validateForm();
+		if (!displayErrors(errors)) {
+			e.preventDefault();
+			// Scroll to error
+			errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		}
+	});
+	
+	// Real-time validation feedback
+	contentInput.addEventListener('input', function() {
+		const content = contentInput.value.trim();
+		let feedback = '';
+		
+		if (content.length === 0) {
+			feedback = '0/5000 characters';
+		} else if (content.length < 10) {
+			feedback = content.length + '/5000 (minimum 10 characters)';
+		} else {
+			feedback = content.length + '/5000 characters';
+		}
+		
+		// Update character counter (can be displayed near the textarea)
+		console.log('Content length:', feedback);
+	});
+	
 	stars.forEach(function (star) {
 		star.addEventListener('click', function () {
 			const value = parseInt(star.dataset.value, 10);
 			ratingInput.value = value;
 			syncStars(value);
+			// Clear rating error when a rating is selected
+			errorAlert.classList.add('hidden');
 		});
 		star.addEventListener('keydown', function (event) {
 			if (event.key === 'Enter' || event.key === ' ') {
