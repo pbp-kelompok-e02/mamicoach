@@ -20,8 +20,14 @@ class AdminVerification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 class Certification(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('verified', 'Verified'),
+        ('declined', 'Declined'),
+    ]
+    
     coach = models.ForeignKey(CoachProfile, on_delete=models.CASCADE)
     certificate_name = models.CharField(max_length=255)
     file_url = models.CharField(max_length=255)
-    verified = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     uploaded_at = models.DateTimeField(auto_now_add=True)

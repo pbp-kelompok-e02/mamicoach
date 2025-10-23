@@ -81,7 +81,7 @@ def register_coach(request):
                         coach=coach_profile,
                         certificate_name=name.strip(),
                         file_url=url.strip(),
-                        verified=False
+                        status='pending'
                     )
             
             # Ajax Request
