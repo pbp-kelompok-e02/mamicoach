@@ -59,9 +59,18 @@
                     <div class="relative group">
                         <button class="flex items-center space-x-2 text-gray-700 hover:text-primary focus:outline-none">
                             <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                                <span class="text-gray-600 font-medium text-sm">
-                                    {{ user.first_name|first|default:user.username|first|upper }}
-                                </span>
+                               <img 
+                                     src="{% if user.coachprofile and user.coachprofile.profile_image %}
+                                    {{ user.coachprofile.profile_image.url}}
+                                    {% elif user.userprofile and user.userprofile.profile_image %}
+                                    {{ user.userprofile.profile_image.url }}
+                                    {% else %}
+                                    {% static 'images/logo.png' %}
+                                    {% endif %}"
+                                    alt="Profile Picture" 
+                                    class="w-8 h-8 rounded-full object-cover"
+                                    onerror="this.onerror=null;this.src='{% static 'images/logo.png' %}';"
+                                >
                             </div>
                             <span class="text-sm font-medium">{{ user.first_name|default:user.username }}</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
