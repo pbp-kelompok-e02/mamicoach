@@ -107,9 +107,12 @@ def my_courses(request):
         messages.error(request, "Access denied. Only coaches can view this page.")
         return redirect("courses_and_coach:show_courses")
 
+    from datetime import date
+
     context = {
         "courses": courses,
         "coach_profile": coach_profile,
+        "today": date.today(),  # Add today for modal date picker min value
     }
     return render(request, "courses_and_coach/courses/my_courses.html", context)
 
@@ -252,3 +255,23 @@ def delete_course(request, course_id):
 
     context = {"course": course}
     return render(request, "courses_and_coach/courses/confirm_delete.html", context)
+
+
+def show_coaches(request):
+    coaches = CoachProfile.objects.all()
+
+    context = {
+        "coaches": coaches,
+    }
+    return render(request, "courses_and_coach/coaches_list.html", context)
+
+
+def coach_details(request, coach_id):
+    coach = get_object_or_404(CoachProfile, id=coach_id)
+    courses = Course.objects.filter(coach=coach)
+
+    context = {
+        "coach": coach,
+        "courses": courses,
+    }
+    return render(request, "courses_and_coach/coaches/coach_details.html", context)
