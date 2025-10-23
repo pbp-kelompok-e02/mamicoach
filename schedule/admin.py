@@ -1,5 +1,29 @@
 from django.contrib import admin
-from .models import ScheduleSlot
+from .models import ScheduleSlot, CoachAvailability
+
+
+@admin.register(CoachAvailability)
+class CoachAvailabilityAdmin(admin.ModelAdmin):
+    list_display = ['id', 'coach', 'date', 'start_time', 'end_time', 'created_at']
+    list_filter = ['date', 'coach']
+    search_fields = ['coach__user__username', 'coach__user__first_name', 'coach__user__last_name']
+    ordering = ['-date', 'start_time']
+    date_hierarchy = 'date'
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Coach', {
+            'fields': ('coach',)
+        }),
+        ('Availability', {
+            'fields': ('date', 'start_time', 'end_time')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
 
 @admin.register(ScheduleSlot)
 class ScheduleSlotAdmin(admin.ModelAdmin):

@@ -31,11 +31,20 @@
         <div class="mt-6 pt-6 border-t border-gray-200">
             <div class="flex items-center space-x-4">
                 <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
-                    <img 
-                        src="{{ course.coach.image_url|default:'https://ui-avatars.com/api/?name='|add:course.coach.user.get_full_name|urlencode:'&background=35A753&color=ffffff' }}" 
-                        alt="{{ course.coach.user.get_full_name }}"
-                        class="w-full h-full object-cover"
-                    >
+                    {% if course.coach.image_url %}
+                        <img 
+                            src="{{ course.coach.image_url }}" 
+                            alt="{{ course.coach.user.get_full_name }}"
+                            class="w-full h-full object-cover"
+                            onerror="this.src='https://ui-avatars.com/api/?name={{ course.coach.user.get_full_name|urlencode }}&background=35A753&color=ffffff'"
+                        >
+                    {% else %}
+                        <img 
+                            src="https://ui-avatars.com/api/?name={{ course.coach.user.get_full_name|urlencode }}&background=35A753&color=ffffff" 
+                            alt="{{ course.coach.user.get_full_name }}"
+                            class="w-full h-full object-cover"
+                        >
+                    {% endif %}
                 </div>
                 <div class="flex-1">
                     <h4 class="font-semibold text-gray-900">{{ course.coach.user.get_full_name }}</h4>

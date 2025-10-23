@@ -11,15 +11,29 @@
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelas Saya</h1>
                 <p class="text-gray-600">Kelola semua kelas yang Anda buat</p>
             </div>
-            <a 
-                href="{% url 'courses_and_coach:create_course' %}" 
-                class="inline-flex items-center space-x-2 bg-primary text-white px-6 py-3 rounded-2xl font-semibold hover:bg-green-600 transition-colors duration-200 mt-4 sm:mt-0"
-            >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                <span>Buat Kelas Baru</span>
-            </a>
+            <div class="flex items-center gap-3 mt-4 sm:mt-0">
+                <!-- Tombol Atur Ketersediaan -->
+                <button
+                    onclick="openAvailabilityModal()"
+                    class="inline-flex items-center space-x-2 bg-white border-2 border-primary text-primary px-6 py-3 rounded-2xl font-semibold hover:bg-primary hover:text-white transition-colors duration-200"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Atur Ketersediaan</span>
+                </button>
+                
+                <!-- Tombol Buat Kelas Baru -->
+                <a 
+                    href="{% url 'courses_and_coach:create_course' %}" 
+                    class="inline-flex items-center space-x-2 bg-primary text-white px-6 py-3 rounded-2xl font-semibold hover:bg-green-600 transition-colors duration-200"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    <span>Buat Kelas Baru</span>
+                </a>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -172,4 +186,10 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Include Availability Modal -->
+{% include 'schedule/_availability_modal.html' with today=today %}
+
+<!-- Load Availability JavaScript -->
+<script src="{% static 'schedule/availability.js' %}"></script>
 {% endblock %}
