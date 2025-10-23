@@ -5,106 +5,13 @@
 {% block content %}
 <div class="bg-gray-50 min-h-screen py-8">
     <div class="max-w-4xl mx-auto px-4">
-        <!-- Coach Profile Card -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex gap-4 flex-grow">
-                    <!-- Profile Image -->
-                    <div class="flex-shrink-0">
-                        {% if coach_profile.profile_image %}
-                        <img src="{{ coach_profile.profile_image.url }}" 
-                             alt="{{ user.get_full_name }}" 
-                             class="w-16 h-16 rounded-full object-cover bg-gray-300">
-                        {% else %}
-                        <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-white text-2xl font-bold">
-                            {{ user.first_name|first }}{{ user.last_name|first }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Profile Info -->
-                    <div class="flex-grow">
-                        <div class="flex items-center justify-between mb-3">
-                            <!-- Name and Expertise -->
-                            <div>
-                                <h1 class="text-xl font-bold text-gray-800 mb-1">{{ user.get_full_name }}</h1>
-                                {% if coach_profile.expertise %}
-                                    <p class="text-sm text-gray-600">
-                                        {% for exp in coach_profile.expertise %}{{ exp }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                                    </p>
-                                {% else %}
-                                    <p class="text-sm text-gray-400">No expertise listed</p>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Rating -->
-                            <div class="flex items-center gap-1">
-                                {% if coach_profile.rating > 0 %}
-                                    {% for i in "12345"|make_list %}
-                                        {% if forloop.counter <= coach_profile.rating %}
-                                        <span class="text-primary text-lg">★</span>
-                                        {% else %}
-                                        <span class="text-gray-300 text-lg">★</span>
-                                        {% endif %}
-                                    {% endfor %}
-                                {% else %}
-                                <span class="text-gray-400 text-sm">No ratings yet</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Bio -->
-                        <div class="mb-3">
-                            <h3 class="text-sm font-semibold text-gray-700 mb-1">Bio</h3>
-                            <p class="text-sm text-gray-600 leading-relaxed break-words text-justify">
-                                {{ coach_profile.bio }}
-                            </p>
-                        </div>
-                        
-                        <!-- Certificates -->
-                        <div class="mb-3">
-                            <h3 class="text-sm font-semibold text-gray-700 mb-2">Certifications</h3>
-                            <div class="flex flex-col gap-2.5">
-                                {% if certifications %}
-                                    {% for cert in certifications %}
-                                    <div class="flex items-center gap-3">
-                                        {% if cert.status == 'verified' %}
-                                        <span class="w-4 h-4 rounded-full bg-primary flex-shrink-0"></span>
-                                        {% elif cert.status == 'declined' %}
-                                        <span class="w-4 h-4 rounded-full bg-red-500 flex-shrink-0"></span>
-                                        {% else %}
-                                        <span class="w-4 h-4 rounded-full bg-blue-500 flex-shrink-0"></span>
-                                        {% endif %}
-                                        <span class="text-sm text-gray-800 flex-grow">{{ cert.certificate_name }}</span>
-                                        {% if cert.status == 'verified' %}
-                                        <span class="bg-primary text-white text-xs px-3 py-1 rounded-md font-medium flex-shrink-0">Verified</span>
-                                        {% elif cert.status == 'declined' %}
-                                        <span class="bg-red-500 text-white text-xs px-3 py-1 rounded-md font-medium flex-shrink-0">Declined</span>
-                                        {% else %}
-                                        <span class="bg-blue-500 text-white text-xs px-3 py-1 rounded-md font-medium flex-shrink-0">Pending</span>
-                                        {% endif %}
-                                        <a href="{{ cert.file_url }}" target="_blank" class="text-gray-600 hover:text-gray-800 flex-shrink-0 ml-1">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                            </svg>
-                                        </a>
-                                    </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <span class="text-sm text-gray-400">No certificates added yet</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Edit Profile Button -->
-                        <div>
-                            <a href="{% url 'user_profile:coach_profile' %}" 
-                               class="inline-block bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
-                                Edit Profile
-                            </a>
-                        </div>
-                    </div>
-                </div>
+        <div id="coach-profile-card" class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <!-- Loading State -->
+            <div class="flex items-center justify-center py-12">
+                <svg class="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
             </div>
         </div>
         
@@ -240,4 +147,174 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetchCoachProfile();
+});
+
+function fetchCoachProfile() {
+    fetch('{% url "user_profile:get_coach_profile" %}', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            renderCoachProfile(data.profile);
+        } else {
+            showError(data.message || 'Failed to load profile');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError('An error occurred while loading profile');
+    });
+}
+
+function renderCoachProfile(profile) {
+    const profileCard = document.getElementById('coach-profile-card');
+    
+    let expertiseHTML = '';
+    if (profile.expertise && profile.expertise.length > 0) {
+        expertiseHTML = profile.expertise.join(', ');
+    } else {
+        expertiseHTML = '<span class="text-gray-400">No expertise listed</span>';
+    }
+    
+    let ratingHTML = '';
+    if (profile.rating > 0) {
+        for (let i = 1; i <= 5; i++) {
+            if (i <= profile.rating) {
+                ratingHTML += '<span class="text-primary text-lg">★</span>';
+            } else {
+                ratingHTML += '<span class="text-gray-300 text-lg">★</span>';
+            }
+        }
+    } else {
+        ratingHTML = '<span class="text-gray-400 text-sm">No ratings yet</span>';
+    }
+    
+    let profileImageHTML = '';
+    if (profile.profile_image) {
+        profileImageHTML = `
+            <img src="${profile.profile_image}" 
+                 alt="${profile.full_name}" 
+                 class="w-16 h-16 rounded-full object-cover bg-gray-300">
+        `;
+    } else {
+        profileImageHTML = `
+            <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-white text-2xl font-bold">
+                ${profile.initials}
+            </div>
+        `;
+    }
+    
+    let certificationsHTML = '';
+    if (profile.certifications && profile.certifications.length > 0) {
+        certificationsHTML = profile.certifications.map(cert => {
+            let statusColor = '';
+            let statusBg = '';
+            let statusText = '';
+            
+            if (cert.status === 'verified') {
+                statusColor = 'bg-primary';
+                statusBg = 'bg-primary';
+                statusText = 'Verified';
+            } else if (cert.status === 'declined') {
+                statusColor = 'bg-red-500';
+                statusBg = 'bg-red-500';
+                statusText = 'Declined';
+            } else {
+                statusColor = 'bg-blue-500';
+                statusBg = 'bg-blue-500';
+                statusText = 'Pending';
+            }
+            
+            return `
+                <div class="flex items-center gap-3">
+                    <span class="w-4 h-4 rounded-full ${statusColor} flex-shrink-0"></span>
+                    <span class="text-sm text-gray-800 flex-grow">${cert.name}</span>
+                    <span class="${statusBg} text-white text-xs px-3 py-1 rounded-md font-medium flex-shrink-0">${statusText}</span>
+                    <a href="${cert.url}" target="_blank" class="text-gray-600 hover:text-gray-800 flex-shrink-0 ml-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                    </a>
+                </div>
+            `;
+        }).join('');
+    } else {
+        certificationsHTML = '<span class="text-sm text-gray-400">No certificates added yet</span>';
+    }
+    
+    profileCard.innerHTML = `
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex gap-4 flex-grow">
+                <!-- Profile Image -->
+                <div class="flex-shrink-0">
+                    ${profileImageHTML}
+                </div>
+                
+                <!-- Profile Info -->
+                <div class="flex-grow">
+                    <div class="flex items-center justify-between mb-3">
+                        <!-- Name and Expertise -->
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-800 mb-1">${profile.full_name}</h1>
+                            <p class="text-sm text-gray-600">${expertiseHTML}</p>
+                        </div>
+                        
+                        <!-- Rating -->
+                        <div class="flex items-center gap-1">
+                            ${ratingHTML}
+                        </div>
+                    </div>
+                    
+                    <!-- Bio -->
+                    <div class="mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-1">Bio</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed break-words text-justify">
+                            ${profile.bio}
+                        </p>
+                    </div>
+                    
+                    <!-- Certificates -->
+                    <div class="mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Certifications</h3>
+                        <div class="flex flex-col gap-2.5">
+                            ${certificationsHTML}
+                        </div>
+                    </div>
+                    
+                    <!-- Edit Profile Button -->
+                    <div>
+                        <a href="{% url 'user_profile:coach_profile' %}" 
+                           class="inline-block bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                            Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function showError(message) {
+    const profileCard = document.getElementById('coach-profile-card');
+    profileCard.innerHTML = `
+        <div class="text-center py-12">
+            <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-gray-600 mb-4">${message}</p>
+            <button onclick="fetchCoachProfile()" class="bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                Retry
+            </button>
+        </div>
+    `;
+}
+</script>
 {% endblock %}

@@ -191,6 +191,49 @@ def dashboard_coach(request):
 
 
 @login_required
+def get_coach_profile(request):
+    try:
+        coach_profile = CoachProfile.objects.get(user=request.user)
+        certifications = Certification.objects.filter(coach=coach_profile)
+        
+        # Build profile data
+        profile_data = {
+            'success': True,
+            'profile': {
+                'full_name': request.user.get_full_name(),
+                'initials': f"{request.user.first_name[0]}{request.user.last_name[0]}" if request.user.first_name and request.user.last_name else "??",
+                'profile_image': coach_profile.profile_image.url if coach_profile.profile_image else None,
+                'expertise': coach_profile.expertise if coach_profile.expertise else [],
+                'rating': coach_profile.rating,
+                'bio': coach_profile.bio,
+                'verified': coach_profile.verified,
+                'certifications': [
+                    {
+                        'id': cert.id,
+                        'name': cert.certificate_name,
+                        'url': cert.file_url,
+                        'status': cert.status
+                    }
+                    for cert in certifications
+                ]
+            }
+        }
+        
+        return JsonResponse(profile_data)
+        
+    except CoachProfile.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': "You don't have a coach profile."
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+@login_required
 def coach_profile(request):
     from courses_and_coach.models import Category
     
