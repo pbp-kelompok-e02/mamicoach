@@ -108,52 +108,7 @@
             </div>
 
             <div class="lg:col-span-1">
-                <div class="sticky top-24">
-                    <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
-                        <div class="text-center mb-6">
-                            <div class="text-3xl font-bold text-gray-900 mb-1">
-                                {{ course.price_formatted }}<span class="text-sm font-normal text-gray-500">/sesi</span>
-                            </div>
-                        </div>
-
-                        <button class="w-full bg-primary text-white py-4 rounded-2xl font-semibold text-lg hover:bg-green-600 transition-colors duration-200 flex items-center justify-center space-x-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <span>Jadwalkan Sesi</span>
-                        </button>
-
-                        <div class="mt-6 pt-6 border-t border-gray-200">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
-                                    <img 
-                                        src="{{ course.coach.image_url|default:'https://ui-avatars.com/api/?name='|add:course.coach.user.get_full_name|urlencode:'&background=35A753&color=ffffff' }}" 
-                                        alt="{{ course.coach.user.get_full_name }}"
-                                        class="w-full h-full object-cover"
-                                    >
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="font-semibold text-gray-900">{{ course.coach.user.get_full_name }}</h4>
-                                    <p class="text-sm text-gray-600">{{ course.category.name }}, {{ course.coach.expertise|join:", " }}</p>
-                                    <div class="flex items-center space-x-1 mt-1">
-                                        <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
-                                        </svg>
-                                        <span class="text-sm font-medium text-gray-900">{{ course.coach.rating|floatformat:1 }}</span>
-                                        <span class="text-sm text-gray-500">(284,3 rb)</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button class="w-full mt-4 text-primary border border-primary py-3 rounded-2xl font-semibold hover:bg-primary hover:text-white transition-colors duration-200 flex items-center justify-center space-x-2">
-                                <span>Lihat profil coach</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                {% include 'booking/booking_card.html' with course=course %}
             </div>
         </div>
 
