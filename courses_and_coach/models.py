@@ -38,7 +38,6 @@ class Course(models.Model):
         Category,
         on_delete=models.SET_NULL,
         null=True,
-        blank=True,
         related_name="courses",
     )
     title = models.CharField(max_length=255)
