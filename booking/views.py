@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
+from django.utils import timezone
 from django.db import transaction
 from .models import Booking
 from user_profile.models import CoachProfile
@@ -9,8 +10,7 @@ from schedule.models import ScheduleSlot
 from courses_and_coach.models import Course
 from booking.services.availability import get_available_start_times
 from datetime import datetime, timedelta
-import calendar
-import json
+import calendar, pytz, json
 
 @login_required
 def get_available_dates(request, coach_id):
@@ -256,64 +256,52 @@ def api_course_start_times(request, course_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
 @login_required
-@require_POST
+@require_http_methods(["POST"])
 def api_booking_create(request, course_id):
-    """
-    Create a new booking for a course at a specific date and time.
-    
-    POST /booking/api/course/<course_id>/create/
-    Body: {
-        "date": "YYYY-MM-DD",
-        "start_time": "HH:MM"
-    }
-    """
+    """Create new booking with overlap detection"""
     try:
-        course = get_object_or_404(Course, id=course_id)
-        
-        # Parse request body
         data = json.loads(request.body)
-        date_str = data.get('date')
-        start_time_str = data.get('start_time')
+        date_str = data.get('date')  # "2025-10-24"
+        start_time_str = data.get('start_time')  # "13:27"
         
         if not date_str or not start_time_str:
-            return JsonResponse({
-                'error': 'Date and start_time are required'
-            }, status=400)
+            return JsonResponse({'success': False, 'error': 'Date and start time required'}, status=400)
         
-        # Parse date and time
-        try:
-            target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-            start_time = datetime.strptime(start_time_str, '%H:%M').time()
-        except ValueError:
-            return JsonResponse({
-                'error': 'Invalid date or time format'
-            }, status=400)
+        course = get_object_or_404(Course, id=course_id)
+        coach = course.coach
         
-        # Create start_datetime and end_datetime
-        start_datetime = datetime.combine(target_date, start_time)
+        # ✅ Parse dengan timezone awareness
+        # Combine date + time
+        naive_datetime = datetime.strptime(f"{date_str} {start_time_str}", "%Y-%m-%d %H:%M")
+        
+        # Make timezone-aware (using Jakarta timezone UTC+7)
+        jakarta_tz = pytz.timezone('Asia/Jakarta')
+        start_datetime = jakarta_tz.localize(naive_datetime)
+        
+        # Calculate end datetime
         end_datetime = start_datetime + timedelta(minutes=course.duration)
         
-        # Check for overlapping bookings using transaction and select_for_update
+        # Check overlap with transaction
         with transaction.atomic():
-            # Lock active bookings for this coach on this date
+            # Lock existing bookings
             overlapping = Booking.objects.select_for_update().filter(
-                coach=course.coach,
-                status__in=['pending', 'confirmed'],
+                coach=coach,
+                status__in=['pending', 'paid', 'confirmed'],
                 start_datetime__lt=end_datetime,
                 end_datetime__gt=start_datetime
-            ).exists()
+            )
             
-            if overlapping:
+            if overlapping.exists():
                 return JsonResponse({
-                    'error': 'This time slot conflicts with an existing booking'
-                }, status=409)  # HTTP 409 Conflict
+                    'success': False,
+                    'error': 'Time slot not available. Please choose another time.'
+                }, status=409)
             
-            # Create the booking
+            # Create booking
             booking = Booking.objects.create(
                 user=request.user,
-                coach=course.coach,
+                coach=coach,
                 course=course,
                 start_datetime=start_datetime,
                 end_datetime=end_datetime,
@@ -322,16 +310,12 @@ def api_booking_create(request, course_id):
         
         return JsonResponse({
             'success': True,
-            'message': 'Booking created successfully',
             'booking_id': booking.id,
-            'start_datetime': booking.start_datetime.isoformat(),
-            'end_datetime': booking.end_datetime.isoformat()
+            'message': 'Booking created successfully'
         })
         
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @login_required
@@ -604,6 +588,7 @@ def api_coach_available_times_legacy(request, coach_id):
     
     GET /api/coach/<coach_id>/available-times/?date=YYYY-MM-DD&course_id=123
     """
+    print("A")
     try:
         coach = get_object_or_404(CoachProfile, id=coach_id)
         date_str = request.GET.get('date')
@@ -642,7 +627,7 @@ def api_coach_available_times_legacy(request, coach_id):
                 'display': start_time_str,
                 'available': True
             })
-        
+        print(available_times)
         return JsonResponse({
             'available_times': available_times,
             'date': date_str,

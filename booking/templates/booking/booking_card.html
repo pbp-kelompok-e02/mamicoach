@@ -221,7 +221,7 @@
         calendarDays.innerHTML = '<div class="col-span-7 text-center py-8 text-gray-500">Loading calendar...</div>';
 
         // Fetch available dates
-        fetch(`/api/coach/${coachId}/available-dates/?year=${currentYear}&month=${currentMonth}`)
+        fetch(`/booking/api/coach/${coachId}/available-dates/?year=${currentYear}&month=${currentMonth}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -299,7 +299,7 @@
         document.getElementById('timeSlotsList').innerHTML = '<div class="text-center py-8 text-gray-500">Loading available times...</div>';
         
         // Fetch available times
-        fetch(`/api/coach/${coachId}/available-times/?date=${dateStr}`)
+        fetch(`/booking/api/coach/${coachId}/available-times/?date=${dateStr}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');

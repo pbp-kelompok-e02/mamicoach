@@ -188,18 +188,26 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex flex-col sm:flex-row gap-4 mt-8">
             {% if booking.status == 'pending' %}
             <button onclick="proceedToPayment({{ booking.id }})" 
-                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="flex-1 bg-primary text-white py-4 rounded-2xl font-semibold text-center hover:bg-green-600 transition-colors duration-200 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                 </svg>
-                Lanjut ke Pembayaran
+                <span>Lanjut ke Pembayaran</span>
             </button>
+            {% comment %} <a href="{% url 'payment:method_selection' booking_id=booking.id %}" 
+            class="flex-1 bg-primary text-white py-4 rounded-2xl font-semibold text-center hover:bg-green-600 transition-colors duration-200 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                <span>Lanjut ke Pembayaran</span>
+            </a> {% endcomment %}
             {% endif %}
-            <a href="{% url 'main:show_main' %}" 
-               class="flex-1 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-lg border border-gray-300 transition-colors text-center">
+
+            <a href="/" 
+            class="flex-1 border-2 border-gray-300 text-gray-700 py-4 rounded-2xl font-semibold text-center hover:bg-gray-50 transition-colors duration-200">
                 Kembali ke Beranda
             </a>
         </div>

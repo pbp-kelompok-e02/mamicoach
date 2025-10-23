@@ -26,8 +26,4 @@ urlpatterns = [
     path("", include("user_profile.urls")),
     path("booking/", include("booking.urls")),
     path("schedule/", include("schedule.urls")),
-    
-    # Legacy API endpoints (without prefix) for old booking UI
-    path("api/coach/<int:coach_id>/available-dates/", booking_views.api_coach_available_dates_legacy, name='legacy_available_dates'),
-    path("api/coach/<int:coach_id>/available-times/", booking_views.api_coach_available_times_legacy, name='legacy_available_times'),
 ]
