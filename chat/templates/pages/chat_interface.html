@@ -447,32 +447,6 @@ function updateMessagesIncrementally(container, newMessages) {
     }
 }
 
-/*
- * ============================================================================
- * MESSAGE RENDERING - WITH ATTACHMENTS & REPLIES
- * ============================================================================
- * 
- * Renders a single message bubble with:
- * 1. Reply context (if replying to another message)
- * 2. Message content (sanitized with DOMPurify)
- * 3. Attachments (images as thumbnails, documents as download links)
- * 4. Read status indicator (double checkmark for sent/read)
- * 5. Reply button (appears on hover)
- * 
- * Structure:
- * Message Container
- * ├── Reply Context (if applicable)
- * ├── Message Content
- * ├── Attachments
- * │   ├── Images (as thumbnails, clickable for full size)
- * │   └── Files (as download links with size)
- * ├── Timestamp
- * ├── Read indicator
- * └── Reply button (on hover)
- * 
- * @param {object} message - Message object from API
- * @returns {string} HTML for message bubble
- */
 function createMessageItem(message) {
     const isOwn = message.is_sent_by_me;
     const messageTime = formatMessageTime(message.timestamp);
@@ -751,15 +725,6 @@ async function handleFileUpload(file) {
     }
 }
 
-/*
- * Updates the UI preview list of pending attachments
- * Shows:
- * - File names (truncated if long)
- * - Remove button (×) for each file
- * - Scrollable container if many files
- * 
- * Creates container dynamically if it doesn't exist
- */
 function updatePendingAttachmentsUI() {
     let attachmentsList = document.getElementById('pending-attachments-list');
     
@@ -799,27 +764,6 @@ function removePendingAttachment(index) {
     updatePendingAttachmentsUI();
 }
 
-/*
- * ============================================================================
- * UPLOAD PENDING ATTACHMENTS
- * ============================================================================
- * 
- * Uploads all files in pendingAttachments queue to server
- * Called AFTER message is successfully created
- * 
- * For each file:
- * 1. Create FormData with file + metadata
- * 2. POST to /chat/api/<session_id>/upload/ endpoint
- * 3. Backend validates, generates thumbnail, saves file
- * 4. Returns attachment object with URLs
- * 
- * After all uploads:
- * - Clear pending queue
- * - Reload messages to display files
- * - Show file previews inline in chat
- * 
- * @param {number} messageId - ID of message to attach files to
- */
 async function uploadPendingAttachments(messageId) {
     if (pendingAttachments.length === 0) {
         return;
@@ -870,24 +814,6 @@ async function uploadPendingAttachments(messageId) {
     }
 }
 
-/*
- * ============================================================================
- * SEND MESSAGE FUNCTION - WITH ATTACHMENTS & REPLY SUPPORT
- * ============================================================================
- * 
- * Sends a text message with optional:
- * - Attachments (images, documents, etc from pendingAttachments queue)
- * - Reply context (quoted message via currentReplyToMessageId)
- * 
- * Flow:
- * 1. Create text message via API (content + optional reply_to_id)
- * 2. If attachments pending, upload each file to that message
- * 3. Clear input, reload messages
- * 4. Reset reply context
- * 
- * @param {string} sessionId - UUID of current chat session
- * @param {string|null} replyToId - Optional ID of message to reply to
- */
 async function sendMessage(sessionId, replyToId = null) {
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
