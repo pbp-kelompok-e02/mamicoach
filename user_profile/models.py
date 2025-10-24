@@ -4,8 +4,17 @@ from django.contrib.auth.models import User
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    profile_image_url = models.URLField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def image_url(self):
+        if self.profile_image and hasattr(self.profile_image, 'url'):
+            return self.profile_image.url
+        if self.profile_image_url:
+            return self.profile_image_url
+        return f'https://ui-avatars.com/api/?name={self.user.get_full_name() or self.user.username}&background=35A753&color=ffffff'
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
@@ -15,11 +24,20 @@ class CoachProfile(models.Model):
     bio = models.TextField()
     expertise = models.JSONField(default=list) 
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    profile_image_url = models.URLField(max_length=255, blank=True, null=True)
     rating = models.FloatField(default=0.0)
     rating_count = models.PositiveIntegerField(default=0)
     verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def image_url(self):
+        if self.profile_image and hasattr(self.profile_image, 'url'):
+            return self.profile_image.url
+        if self.profile_image_url:
+            return self.profile_image_url
+        return f'https://ui-avatars.com/api/?name={self.user.get_full_name() or self.user.username}&background=35A753&color=ffffff'
 
     def __str__(self):
         return f"{self.user.username} - Coach"
