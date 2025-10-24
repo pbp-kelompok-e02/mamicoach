@@ -91,6 +91,9 @@ class MidtransService:
             'Authorization': self._get_auth_header()
         }
         
+        # Get base URL from settings
+        base_url = getattr(settings, 'BASE_URL', 'https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id')
+        
         payload = {
             'transaction_details': {
                 'order_id': order_id,
@@ -98,6 +101,11 @@ class MidtransService:
             },
             'customer_details': customer_details,
             'item_details': item_details,
+            'callbacks': {
+                'finish': f"{base_url}/payment/callback/",
+                'unfinish': f"{base_url}/payment/unfinish/",
+                'error': f"{base_url}/payment/error/",
+            }
         }
         
         # If specific payment method is chosen, enable only that

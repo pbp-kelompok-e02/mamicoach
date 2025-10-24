@@ -1,0 +1,103 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block page_title %}System Settings{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Add New Setting -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Add New Setting</h3>
+        <form method="post" action="{% url 'admin_panel:settings' %}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Module</label>
+                <select name="module" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option value="payment">Payment</option>
+                    <option value="booking">Booking</option>
+                    <option value="course">Course</option>
+                    <option value="user">User</option>
+                    <option value="coach">Coach</option>
+                    <option value="schedule">Schedule</option>
+                    <option value="general">General</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Setting Key</label>
+                <input type="text" name="key" required placeholder="e.g., auto_confirm_payment" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Value</label>
+                <div class="flex gap-2">
+                    <input type="text" name="value" required placeholder="Setting value" 
+                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <button type="submit" class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium">
+                        Add
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Settings by Module -->
+    {% regroup settings by module as module_settings %}
+    {% for module_group in module_settings %}
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-900 capitalize">{{ module_group.grouper }} Module Settings</h3>
+        </div>
+        <div class="p-6">
+            <div class="space-y-4">
+                {% for setting in module_group.list %}
+                <form method="post" action="{% url 'admin_panel:settings' %}" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update">
+                    <input type="hidden" name="setting_id" value="{{ setting.id }}">
+                    <div class="flex-1 grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Key</label>
+                            <input type="text" value="{{ setting.key }}" disabled 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-600">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Value</label>
+                            <input type="text" name="value" value="{{ setting.value }}" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    <div class="ml-4 flex gap-2">
+                        <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm">
+                            Update
+                        </button>
+                        <button type="submit" formaction="{% url 'admin_panel:settings' %}" 
+                                onclick="this.form.action.value='delete'" 
+                                class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded text-sm">
+                            Delete
+                        </button>
+                    </div>
+                </form>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <p class="text-center text-gray-500">No settings configured yet. Add your first setting above.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+// Prevent double submission
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            setTimeout(() => submitBtn.disabled = false, 2000);
+        }
+    });
+});
+</script>
+{% endblock %}

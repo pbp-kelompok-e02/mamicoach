@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - MamiCoach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-md p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">MamiCoach</h1>
+            <p class="text-gray-600">Admin Panel Login</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="mb-4 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-100 border-red-500 text-red-800{% else %}bg-blue-100 border-blue-500 text-blue-800{% endif %} border-l-4">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    required 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                    placeholder="Enter your username"
+                >
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                    placeholder="Enter your password"
+                >
+            </div>
+
+            <button 
+                type="submit" 
+                class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
+            >
+                Login
+            </button>
+        </form>
+
+        <div class="mt-6 text-center text-sm text-gray-600">
+            <p>Superuser access only</p>
+        </div>
+    </div>
+</body>
+</html>
