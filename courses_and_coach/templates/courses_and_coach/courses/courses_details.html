@@ -201,12 +201,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success && data.redirect) {
                 window.location.href = data.redirect;
             } else {
-                alert('Gagal menghapus kelas.');
+                showToast('Gagal menghapus kelas.', 'error');
                 modalEl.classList.add('hidden');
             }
         } catch (err) {
             console.error(err);
-            alert('Terjadi kesalahan. Silakan coba lagi.');
+            showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
             modalEl.classList.add('hidden');
         } finally {
             confirmBtn.disabled = false;

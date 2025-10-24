@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import create_review, edit_review, delete_review, show_sample_review
+from .views import create_review, edit_review, delete_review
 
 app_name = "reviews"
 

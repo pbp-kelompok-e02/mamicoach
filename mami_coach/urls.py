@@ -34,16 +34,8 @@ urlpatterns = [
     path("", include("chat.urls")),
     path("booking/", include("booking.urls")),
     path("schedule/", include("schedule.urls")),
-    path(
-        "api/coach/<int:coach_id>/available-dates/",
-        booking_views.api_coach_available_dates_legacy,
-        name="legacy_available_dates",
-    ),
-    path(
-        "api/coach/<int:coach_id>/available-times/",
-        booking_views.api_coach_available_times_legacy,
-        name="legacy_available_times",
-    ),
+    path("payment/", include("payment.urls")),
+    path("admin/", include("admin_panel.urls")),  # New admin panel
 ]
 
 if settings.DEBUG:

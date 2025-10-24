@@ -84,6 +84,20 @@
                         {% endif %}
                     </div>
 
+                    <!-- Chat with Coach Button -->
+                    <div class="mt-6">
+                        <button 
+                            type="button"
+                            onclick="startChatWithCoach({{ coach.user.id }})"
+                            class="bg-white text-primary font-semibold px-6 py-3 rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle">
+                                <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>
+                            </svg>
+                            Mulai Chat
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -202,6 +216,34 @@
             activeButton.classList.remove('border-transparent', 'text-gray-600');
             activeButton.classList.add('border-primary', 'text-gray-900');
         }
+    }
+
+    function startChatWithCoach(coachId) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                         document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+        
+        fetch(`/chat/api/create-chat-with-coach/${coachId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Chat session started successfully', 'success');
+                setTimeout(() => {
+                    window.location.href = `/chat/${data.session_id}/`;
+                }, 1000);
+            } else {
+                showToast(data.error || 'Failed to create chat session', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('An error occurred while creating chat session', 'error');
+        });
     }
 </script>
 {% endblock %}
