@@ -5,8 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
-
     initial = True
 
     dependencies = []
@@ -86,13 +84,13 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                'verbose_name': 'Admin Setting',
-                'verbose_name_plural': 'Admin Settings',
-                'ordering': ['module', 'key'],
+                "verbose_name": "Admin Setting",
+                "verbose_name_plural": "Admin Settings",
+                "ordering": ["module", "key"],
             },
         ),
         migrations.CreateModel(
-            name='AdminActivityLog',
+            name="AdminActivityLog",
             fields=[
                 (
                     "id",
