@@ -26,7 +26,7 @@ def show_courses(request):
 
     # Pagination
     paginator = Paginator(courses, 12)
-    page_number = request.GET.get("page")
+    page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 
     context = {
@@ -34,6 +34,8 @@ def show_courses(request):
         "categories": categories,
         "selected_category": category_filter,
         "search_query": search_query,
+        "current_page": page_obj.number,
+        "total_pages": paginator.num_pages,
     }
     return render(request, "courses_and_coach/courses_list.html", context)
 
@@ -185,6 +187,10 @@ def courses_card_ajax(request):
             "total_count": paginator.count,
             "count": len(page_obj),
             "html": html,
+            "current_page": page_obj.number,
+            "total_pages": paginator.num_pages,
+            "has_next": page_obj.has_next(),
+            "has_previous": page_obj.has_previous(),
         }
     )
 
@@ -266,9 +272,16 @@ def delete_course(request, course_id):
 
 def show_coaches(request):
     coaches = CoachProfile.objects.all()
+    
+    # Pagination
+    paginator = Paginator(coaches, 12)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        "coaches": coaches,
+        "coaches": page_obj,
+        "current_page": page_obj.number,
+        "total_pages": paginator.num_pages,
     }
     return render(request, "courses_and_coach/coaches_list.html", context)
 
