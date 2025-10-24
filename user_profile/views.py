@@ -11,6 +11,8 @@ from .models import CoachProfile, Certification, UserProfile
 
 
 def register_user(request):
+    if request.user.is_authenticated:
+        return redirect('main:show_main')
     if request.method == "POST":
         form = TraineeRegistrationForm(request.POST)
         if form.is_valid():
@@ -47,6 +49,8 @@ def register_user(request):
 
 
 def register_coach(request):
+    if request.user.is_authenticated:
+        return redirect('main:show_main')
     from courses_and_coach.models import Category
     
     if request.method == "POST":
@@ -116,6 +120,8 @@ def register_coach(request):
 
 
 def login_user(request):
+    if request.user.is_authenticated:
+        return redirect('main:show_main')
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         from_modal = request.POST.get('from_modal', 'false') == 'true'

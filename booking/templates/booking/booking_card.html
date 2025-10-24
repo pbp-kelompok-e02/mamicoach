@@ -205,6 +205,7 @@
     function openBookingModal() {
         // Check if user is authenticated
         const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+        const isCoach = {% if request.user.coachprofile %}true{% else %}false{% endif %};
         
         if (!isAuthenticated) {
             // Show toast notification
@@ -219,6 +220,14 @@
             }, 1500);
             return;
         }
+
+        if (isCoach) {
+            if (typeof showToast === 'function') {
+                showToast('Hanya trainee yang dapat melakukan booking.', 'error');
+            }
+            return;
+        }
+
         
         document.getElementById('bookingModal').classList.remove('hidden');
         loadCalendar();
