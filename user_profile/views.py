@@ -192,9 +192,50 @@ def dashboard_coach(request):
 
 @login_required
 def get_coach_profile(request):
+    from booking.models import Booking
+    from chat.models import ChatSession
+    from django.utils import timezone
+    
     try:
         coach_profile = CoachProfile.objects.get(user=request.user)
         certifications = Certification.objects.filter(coach=coach_profile)
+        
+        # Get bookings with different statuses
+        confirmed_bookings = Booking.objects.filter(
+            coach=coach_profile,
+            status='confirmed'
+        ).select_related('user', 'course', 'schedule')
+        
+        # Pending bookings include both 'pending' and 'paid' statuses
+        pending_bookings = Booking.objects.filter(
+            coach=coach_profile,
+            status__in=['paid']
+        ).select_related('user', 'course', 'schedule')
+        
+        completed_bookings = Booking.objects.filter(
+            coach=coach_profile,
+            status='done'
+        ).select_related('user', 'course', 'schedule')
+        
+        # Helper function to format booking data
+        def format_booking(booking):
+            # Format datetime strings
+            start_dt = booking.start_datetime if booking.start_datetime else None
+            end_dt = booking.end_datetime if booking.end_datetime else None
+            
+            start_str = start_dt.strftime('%d %b %H:%M') if start_dt else 'N/A'
+            end_str = end_dt.strftime('%d %b %H:%M') if end_dt else 'N/A'
+            
+            return {
+                'id': booking.id,
+                'booking_id': booking.id,
+                'course_title': booking.course.title,
+                'trainee_name': booking.user.get_full_name() or booking.user.username,
+                'booking_datetime': f"{start_str} - {end_str}",
+                'start_datetime': start_str,
+                'end_datetime': end_str,
+                'status': booking.status
+            }
         
         # Build profile data
         profile_data = {
@@ -209,13 +250,16 @@ def get_coach_profile(request):
                 'verified': coach_profile.verified,
                 'certifications': [
                     {
-                        'id': cert.id,
+                        'id': cert.pk,
                         'name': cert.certificate_name,
                         'url': cert.file_url,
                         'status': cert.status
                     }
                     for cert in certifications
-                ]
+                ],
+                'confirmed_bookings': [format_booking(b) for b in confirmed_bookings],
+                'pending_bookings': [format_booking(b) for b in pending_bookings],
+                'completed_bookings': [format_booking(b) for b in completed_bookings]
             }
         }
         
@@ -324,12 +368,84 @@ def get_user_profile(request):
         
         user_profile, created = UserProfile.objects.get_or_create(user=request.user)
         
+        # Import models for bookings and reviews
+        from booking.models import Booking
+        from chat.models import ChatSession
+        from reviews.models import Review
+        
+        # Get bookings with different statuses
+        confirmed_bookings = Booking.objects.filter(
+            user=request.user,
+            status='confirmed'
+        ).select_related('user', 'course', 'schedule', 'coach')
+        
+        paid_bookings = Booking.objects.filter(
+            user=request.user,
+            status='paid'
+        ).select_related('user', 'course', 'schedule', 'coach')
+        
+        pending_bookings = Booking.objects.filter(
+            user=request.user,
+            status='pending'
+        ).select_related('user', 'course', 'schedule', 'coach')
+        
+        completed_bookings = Booking.objects.filter(
+            user=request.user,
+            status='done'
+        ).select_related('user', 'course', 'schedule', 'coach')
+        
+        # Helper function to format booking data
+        def format_booking(booking):
+            # Format datetime strings
+            start_dt = booking.start_datetime if booking.start_datetime else None
+            end_dt = booking.end_datetime if booking.end_datetime else None
+            
+            start_str = start_dt.strftime('%d %b %H:%M') if start_dt else 'N/A'
+            end_str = end_dt.strftime('%d %b %H:%M') if end_dt else 'N/A'
+            
+            # Get or create chat session
+            chat_session = ChatSession.objects.filter(
+                user=request.user,
+                coach=booking.coach.user
+            ).first()
+            
+            chat_session_id = str(chat_session.id) if chat_session else None
+            
+            return {
+                'id': booking.id,
+                'booking_id': booking.id,
+                'course_title': booking.course.title,
+                'coach_name': booking.coach.user.get_full_name() or booking.coach.user.username,
+                'booking_datetime': f"{start_str} - {end_str}",
+                'start_datetime': start_str,
+                'end_datetime': end_str,
+                'status': booking.status,
+                'chat_session_id': chat_session_id
+            }
+        
+        # Helper function to format completed booking with review info
+        def format_completed_booking(booking):
+            formatted = format_booking(booking)
+            
+            # Check if review exists
+            review = Review.objects.filter(booking=booking).first()
+            formatted['has_review'] = review is not None
+            if review:
+                formatted['review_id'] = review.id
+            
+            return formatted
+        
+        # Build profile data
         profile_data = {
             'success': True,
             'profile': {
                 'full_name': request.user.get_full_name(),
                 'initials': f"{request.user.first_name[0]}{request.user.last_name[0]}" if request.user.first_name and request.user.last_name else "??",
                 'profile_image': user_profile.profile_image.url if user_profile.profile_image else None,
+                'confirmed_bookings': [format_booking(b) for b in confirmed_bookings],
+                'paid_bookings': [format_booking(b) for b in paid_bookings],
+                'pending_bookings': [format_booking(b) for b in pending_bookings],
+                'completed_bookings': [format_completed_booking(b) for b in completed_bookings]
             }
         }
         

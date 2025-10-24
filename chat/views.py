@@ -368,6 +368,8 @@ def _serialize_attachment(attachment):
             booking = Booking.objects.get(id=attachment.booking_id)
             data['data'] = {
                 'id': booking.id,
+                'booking_id': booking.id,
+                'course_id': booking.course.id,
                 'course_title': booking.course.title,
                 'start_datetime': booking.start_datetime.isoformat() if booking.start_datetime else None,
                 'end_datetime': booking.end_datetime.isoformat() if booking.end_datetime else None,
@@ -572,6 +574,8 @@ def presend_booking(request, booking_id):
         # Build redirect URL with pre-attachment data
         booking_data = {
             'id': booking.id,
+            'booking_id': booking.id,
+            'course_id': booking.course.id,
             'course_title': booking.course.title,
             'start_datetime': booking.start_datetime.isoformat() if booking.start_datetime else None,
             'end_datetime': booking.end_datetime.isoformat() if booking.end_datetime else None,
