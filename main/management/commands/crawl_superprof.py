@@ -1,3 +1,27 @@
+"""
+Superprof Crawler for MamiCoach
+
+This script crawls course data from Superprof.co.id and populates the database
+with coaches and courses for a specific category.
+
+IMPORTANT: Cookie Management
+-----------------------------
+The cookies in DEFAULT_COOKIES may expire. If you get 401/403 errors:
+
+1. Open https://www.superprof.co.id in your browser
+2. Open DevTools (F12) → Network tab
+3. Perform a search for any category
+4. Find the /a/search/ XHR request
+5. Copy the Cookie header value
+6. Update DEFAULT_COOKIES dictionary below with new values
+
+Example curl to get fresh cookies:
+  curl 'https://www.superprof.co.id/a/search/?...' \
+    -H 'cookie: YOUR_COOKIES_HERE'
+
+Last updated: 2025-10-24
+"""
+
 import json
 import re
 import time
@@ -11,14 +35,38 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils.text import slugify
 
-from main.models import Coach, Course, Category  # ← adjust app label
+from courses_and_coach.models import Course, Category
+from user_profile.models import CoachProfile
 
 # ---- HTTP / crawler config ----
 DEFAULT_HEADERS = {
-    "Accept": "application/json, text/plain, */*",
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome Safari",
+    "Accept": "*/*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
     "Referer": "https://www.superprof.co.id/",
+    "X-Requested-With": "XMLHttpRequest",
+    "sec-ch-ua": '"Google Chrome";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "priority": "u=1, i",
 }
+
+DEFAULT_COOKIES = {
+    "_ga": "GA1.1.593887945.1759888737",
+    "FPAU": "1.3.707295259.1759888735",
+    "_gcl_au": "1.1.1728353881.1759888739",
+    "axeptio_cookies": '{"$$token":"1gwvc4m0dj7dnxbwexatv","$$date":"2025-10-08T01:59:00.712Z","$$cookiesVersion":{},"$$completed":false}',
+    "axeptio_authorized_vendors": ",,",
+    "axeptio_all_vendors": ",,",
+    "PHPSESSID": "5215867079ad989e5ee2f1c5f728b160",
+    "first_referrer": "direct",
+    "datadome": "TmyxX8TNTZETE9ZmGcdnmqcRFNNHGvLWGk2SNpZ863ugM~gC9vxscFJCaeJXH_8jhhkAFC7d~m4eQ8Pjc6mluA3~k0CMvMNIcnaoO_Li7YR3rNW0YkAUHYTUhsBMO9Vq",
+    "_ga_S08FDGF6K5": "GS2.1.s1761322099$o5$g1$t1761322112$j47$l0$h396286546",
+}
+
 REQUEST_TIMEOUT = 20  # seconds
 MAX_RETRIES_DEFAULT = 3
 SLEEP_DEFAULT = 1.0
@@ -180,13 +228,21 @@ def ingest_rows(rows: List[Dict[str, Any]], category: Category) -> Tuple[int, in
         # 1) User (reuse by same name)
         user = get_or_create_user_by_name(row["coach_name"])
 
-        # 2) Coach 1:1 with User, set rating + image_url (seed)
-        coach, _ = Coach.objects.get_or_create(user=user)
+        # 2) CoachProfile 1:1 with User, set rating + image_url (seed)
+        coach, created = CoachProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                "bio": f"Pelatih profesional di bidang {category.name}",
+                "expertise": [category.name],
+            }
+        )
         # Seed/refresh rating & image
         coach.rating = row["coach_rating"] or Decimal("0.00")
         if row.get("coach_image_url"):
-            coach.image_url = row["coach_image_url"]
-        coach.save(update_fields=["rating", "image_url"] if row.get("coach_image_url") else ["rating"])
+            coach.profile_image_url = row["coach_image_url"]
+            coach.save(update_fields=["rating", "profile_image_url"])
+        else:
+            coach.save(update_fields=["rating"])
         coach_touched += 1
 
         # 3) Course upsert by (coach, title), and force category for this run
@@ -236,7 +292,7 @@ def fetch_json(url: str, session: requests.Session, sleep: float, max_retries: i
     last_error = None
     for attempt in range(1, max_retries + 1):
         try:
-            resp = session.get(url, headers=DEFAULT_HEADERS, timeout=REQUEST_TIMEOUT)
+            resp = session.get(url, headers=DEFAULT_HEADERS, cookies=DEFAULT_COOKIES, timeout=REQUEST_TIMEOUT)
             if resp.status_code >= 500:
                 raise RuntimeError(f"HTTP {resp.status_code}")
             resp.raise_for_status()
