@@ -97,9 +97,9 @@
 						<div class="flex items-center gap-4">
 							<div class="h-12 w-12 overflow-hidden rounded-full ring-2 ring-primary/20 sm:h-16 sm:w-16">
 								{% if is_edit %}
-									<img src="{% if review.user.profile.profile_image %}{{ review.user.profile.profile_image.url }}{% else %}https://i.pravatar.cc/100?u={{ review.user.username }}{% endif %}" alt="Reviewer avatar" class="h-full w-full object-cover" />
+									<img src="{{ review.user.profile.image_url }}" alt="Reviewer avatar" class="h-full w-full object-cover" />
 								{% else %}
-									<img src="{% if request.user.profile.profile_image %}{{ request.user.profile.profile_image.url }}{% else %}https://i.pravatar.cc/100?u={{ request.user.username }}{% endif %}" alt="Reviewer avatar" class="h-full w-full object-cover" />
+									<img src="{{ request.user.profile.image_url }}" alt="Reviewer avatar" class="h-full w-full object-cover" />
 								{% endif %}
 							</div>
 							<div>

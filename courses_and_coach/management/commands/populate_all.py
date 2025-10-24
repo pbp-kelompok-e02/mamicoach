@@ -46,7 +46,7 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f"Created trainee user: {user.username}"))
             profile, _ = UserProfile.objects.get_or_create(
                 user=user,
-                profile_image=f"https://i.pravatar.cc/150?u={user.username}"
+                profile_image_url=f"https://i.pravatar.cc/150?u={user.username}"
             )
             self.trainee_users.append(user)
         self.stdout.write(self.style.SUCCESS(f"Total trainees created/used: {len(self.trainee_users)}"))
@@ -177,7 +177,7 @@ class Command(BaseCommand):
                 "expertise": ["Yoga", "Meditasi", "Prenatal Yoga"],
                 "rating": 4.9,
                 "verified": True,
-                "image_url": "https://images.unsplash.com/photo-1494790108755-2616b612b47c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                "profile_image_url": "https://images.unsplash.com/photo-1494790108755-2616b612b47c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
             },
             {
                 "username": "mike_fitness",
@@ -188,7 +188,7 @@ class Command(BaseCommand):
                 "expertise": ["Strength Training", "Cardio", "Weight Loss"],
                 "rating": 4.8,
                 "verified": True,
-                "image_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                "profile_image_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
             },
             {
                 "username": "diana_pilates",
@@ -199,7 +199,7 @@ class Command(BaseCommand):
                 "expertise": ["Pilates", "Rehabilitation", "Core Training"],
                 "rating": 4.9,
                 "verified": True,
-                "image_url": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                "profile_image_url": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
             },
             {
                 "username": "alex_zumba",
@@ -210,7 +210,7 @@ class Command(BaseCommand):
                 "expertise": ["Zumba", "Dance Fitness", "Cardio Dance"],
                 "rating": 4.7,
                 "verified": True,
-                "image_url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                "profile_image_url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
             },
             {
                 "username": "lisa_swim",
@@ -221,7 +221,7 @@ class Command(BaseCommand):
                 "expertise": ["Swimming", "Water Aerobics", "Technique Training"],
                 "rating": 4.8,
                 "verified": True,
-                "image_url": "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                "profile_image_url": "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
             },
         ]
 
@@ -246,6 +246,7 @@ class Command(BaseCommand):
             # Create coach profile if doesn't exist
             coach_profile, coach_created = CoachProfile.objects.get_or_create(
                 user=user,
+                profile_image_url=coach_data["profile_image_url"],
                 defaults={
                     "bio": coach_data["bio"],
                     "expertise": coach_data["expertise"],

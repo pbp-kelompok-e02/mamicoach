@@ -10,7 +10,7 @@
 			</div>
 		{% else %}
 			<div class="h-16 w-16 overflow-hidden rounded-full flex-shrink-0">
-				<img src="{% if review.user.profile.profile_image %}{{ review.user.profile.profile_image.url }}{% else %}https://i.pravatar.cc/100?u={{ review.user.username }}{% endif %}" alt="{{ review.user.username }} avatar" class="h-full w-full object-cover" />
+				<img src="{{ review.user.profile.image_url }}" class="h-full w-full object-cover" />
 			</div>
 		{% endif %}
 		

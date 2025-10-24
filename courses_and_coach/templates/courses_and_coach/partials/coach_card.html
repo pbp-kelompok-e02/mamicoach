@@ -4,21 +4,13 @@
 >
     <div class="relative overflow-hidden rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 h-full hover:-translate-y-2">
         <div class="relative h-56 overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/20">
-            {% if coach.profile_image %}
             <img 
-                src="{{ coach.profile_image.url }}" 
+                src="{{ coach.image_url }}" 
                 alt="{{ coach.user.get_full_name|default:coach.user.username }}"
                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             />
-            {% else %}
-            <div class="w-full h-full flex items-center justify-center bg-primary">
-                <svg class="w-20 h-20 text-white opacity-50" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
-                </svg>
-            </div>
-            {% endif %}
             
-            <div class="absolute inset-0 bg-primary opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
+            <div class="absolute inset-0  group-hover:opacity-60 transition-opacity duration-300"></div>
             
             <div class="absolute inset-0 flex items-end justify-between p-3">
                 {% if coach.verified %}
