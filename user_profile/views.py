@@ -224,6 +224,12 @@ def get_coach_profile(request):
             status='done'
         ).select_related('user', 'course', 'schedule')
         
+        # Get last 3 cancelled bookings
+        cancelled_bookings = Booking.objects.filter(
+            coach=coach_profile,
+            status='canceled'
+        ).select_related('user', 'course', 'schedule').order_by('-updated_at')[:3]
+        
         # Helper function to format booking data
         def format_booking(booking):
             # Format datetime strings
@@ -266,7 +272,8 @@ def get_coach_profile(request):
                 ],
                 'confirmed_bookings': [format_booking(b) for b in confirmed_bookings],
                 'pending_bookings': [format_booking(b) for b in pending_bookings],
-                'completed_bookings': [format_booking(b) for b in completed_bookings]
+                'completed_bookings': [format_booking(b) for b in completed_bookings],
+                'cancelled_bookings': [format_booking(b) for b in cancelled_bookings]
             }
         }
         
@@ -401,6 +408,12 @@ def get_user_profile(request):
             status='done'
         ).select_related('user', 'course', 'schedule', 'coach')
         
+        # Get last 3 cancelled bookings
+        cancelled_bookings = Booking.objects.filter(
+            user=request.user,
+            status='canceled'
+        ).select_related('user', 'course', 'schedule', 'coach').order_by('-updated_at')[:3]
+        
         # Helper function to format booking data
         def format_booking(booking):
             # Format datetime strings
@@ -452,7 +465,8 @@ def get_user_profile(request):
                 'confirmed_bookings': [format_booking(b) for b in confirmed_bookings],
                 'paid_bookings': [format_booking(b) for b in paid_bookings],
                 'pending_bookings': [format_booking(b) for b in pending_bookings],
-                'completed_bookings': [format_completed_booking(b) for b in completed_bookings]
+                'completed_bookings': [format_completed_booking(b) for b in completed_bookings],
+                'cancelled_bookings': [format_booking(b) for b in cancelled_bookings]
             }
         }
         
