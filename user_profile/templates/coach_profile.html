@@ -43,8 +43,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
                         </label>
+                        <button type="button" id="deletePhotoBtn" class="{% if not coach_profile.profile_image %}hidden{% endif %} absolute bottom-0 left-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 cursor-pointer transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
                     </div>
                     <input type="file" name="profile_image" id="profile_image" accept="image/*" class="hidden">
+                    <input type="hidden" name="delete_photo" id="delete_photo" value="false">
                     <p class="text-sm text-gray-500 mt-2">Click camera icon to change profile picture</p>
                 </div>
 
@@ -243,10 +249,48 @@ document.getElementById('profile_image').addEventListener('change', function(e) 
                 newImg.id = 'profileImagePreview';
                 preview.parentNode.replaceChild(newImg, preview);
             }
+            
+            // Show delete button when image is uploaded
+            document.getElementById('deletePhotoBtn').classList.remove('hidden');
+            // Reset delete flag
+            document.getElementById('delete_photo').value = 'false';
         };
         reader.readAsDataURL(file);
         formChanged = true;
     }
+});
+
+// Delete photo button
+document.getElementById('deletePhotoBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    showModal(
+        'Delete Profile Photo',
+        'Are you sure you want to delete your profile photo?',
+        function() {
+            // Mark for deletion
+            document.getElementById('delete_photo').value = 'true';
+            
+            // Reset to initials
+            const preview = document.getElementById('profileImagePreview');
+            const firstName = document.getElementById('first_name').value || '{{ user.first_name }}';
+            const lastName = document.getElementById('last_name').value || '{{ user.last_name }}';
+            const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+            
+            const initialsDiv = document.createElement('div');
+            initialsDiv.className = 'w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center text-white text-4xl font-bold mx-auto';
+            initialsDiv.id = 'profileImagePreview';
+            initialsDiv.textContent = initials;
+            preview.parentNode.replaceChild(initialsDiv, preview);
+            
+            // Hide delete button
+            document.getElementById('deletePhotoBtn').classList.add('hidden');
+            
+            // Clear file input
+            document.getElementById('profile_image').value = '';
+            
+            formChanged = true;
+        }
+    );
 });
 
 // Expertise dropdown
