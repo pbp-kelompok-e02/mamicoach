@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "user_profile",
     "schedule",
     "booking",
+    "payment",
 ]
 
 MIDDLEWARE = [

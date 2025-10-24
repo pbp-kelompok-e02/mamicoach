@@ -233,10 +233,9 @@
 function proceedToPayment(bookingId) {
     // TODO: Integrate with payment gateway
     // For now, just show alert
-    alert('Fitur pembayaran akan segera tersedia!\n\nBooking ID: ' + bookingId);
+    //alert('Fitur pembayaran akan segera tersedia!\n\nBooking ID: ' + bookingId);
     
-    // Redirect to payment page (to be implemented)
-    // window.location.href = `/payment/${bookingId}/`;
+    window.location.href = `/payment/booking/${bookingId}/method`;
 }
 </script>
 {% endblock content %}
