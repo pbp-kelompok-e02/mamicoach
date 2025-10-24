@@ -45,11 +45,13 @@ def course_details(request, course_id):
     related_courses = Course.objects.filter(category=course.category).exclude(
         id=course.pk
     )[:4]
-    
+
     # Fetch reviews for this course
-    reviews = Review.objects.filter(course=course).select_related(
-        'user', 'coach', 'coach__user'
-    ).order_by('-created_at')
+    reviews = (
+        Review.objects.filter(course=course)
+        .select_related("user", "coach", "coach__user")
+        .order_by("-created_at")
+    )
 
     context = {
         "course": course,
@@ -65,7 +67,9 @@ def create_course(request):
     try:
         coach_profile = request.user.coachprofile
     except CoachProfile.DoesNotExist:
-        messages.error(request, "Only coaches can create courses. Please create a coach account.")
+        messages.error(
+            request, "Only coaches can create courses. Please create a coach account."
+        )
         return redirect("courses_and_coach:show_courses")
 
     if request.method == "POST":
@@ -117,7 +121,7 @@ def my_courses(request):
         return redirect("courses_and_coach:show_courses")
 
     from datetime import date
-    
+
     context = {
         "courses": courses,
         "coach_profile": coach_profile,
@@ -272,7 +276,15 @@ def delete_course(request, course_id):
 
 def show_coaches(request):
     coaches = CoachProfile.objects.all()
-    
+
+    search_query = request.GET.get("search")
+    if search_query:
+        coaches = (
+            coaches.filter(user__first_name__icontains=search_query)
+            | coaches.filter(user__last_name__icontains=search_query)
+            | coaches.filter(user__username__icontains=search_query)
+        )
+
     # Pagination
     paginator = Paginator(coaches, 12)
     page_number = request.GET.get("page", 1)
@@ -282,8 +294,42 @@ def show_coaches(request):
         "coaches": page_obj,
         "current_page": page_obj.number,
         "total_pages": paginator.num_pages,
+        "search_query": search_query,
     }
     return render(request, "courses_and_coach/coaches_list.html", context)
+
+
+def coaches_card_ajax(request):
+    coaches_list = CoachProfile.objects.all()
+
+    search_query = request.GET.get("search")
+    if search_query:
+        coaches_list = (
+            coaches_list.filter(user__first_name__icontains=search_query)
+            | coaches_list.filter(user__last_name__icontains=search_query)
+            | coaches_list.filter(user__username__icontains=search_query)
+        )
+
+    page = request.GET.get("page", 1)
+    paginator = Paginator(coaches_list, 12)
+    page_obj = paginator.get_page(page)
+
+    html = "".join(
+        render_to_string("courses_and_coach/partials/coach_card.html", {"coach": coach})
+        for coach in page_obj
+    )
+
+    return JsonResponse(
+        {
+            "total_count": paginator.count,
+            "count": len(page_obj),
+            "html": html,
+            "current_page": page_obj.number,
+            "total_pages": paginator.num_pages,
+            "has_next": page_obj.has_next(),
+            "has_previous": page_obj.has_previous(),
+        }
+    )
 
 
 def coach_details(request, coach_id):
