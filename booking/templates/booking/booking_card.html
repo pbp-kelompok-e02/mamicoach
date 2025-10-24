@@ -1,7 +1,7 @@
 {% load static %}
 
 <!-- Booking Card -->
-<div class="sticky top-8">
+<div class="sticky top-8 ">
     <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
         <div class="text-center mb-6">
             <div class="text-3xl font-bold text-gray-900 mb-1">
@@ -81,7 +81,7 @@
 {% load static %}
 
 <!-- Modal Booking -->
-<div id="bookingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+<div id="bookingModal" class="hidden fixed inset-0 bg-black/50  z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-2xl w-full">
         <div class="p-6">
             <!-- Header Modal - Lebih compact -->
@@ -203,6 +203,23 @@
     }
 
     function openBookingModal() {
+        // Check if user is authenticated
+        const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+        
+        if (!isAuthenticated) {
+            // Show toast notification
+            if (typeof showToast === 'function') {
+                showToast('Silakan login terlebih dahulu untuk melakukan booking.', 'error');
+            }
+            
+            // Redirect to login with callback to current course details page after a brief delay
+            const currentUrl = window.location.pathname;
+            setTimeout(() => {
+                window.location.href = `/login?next=${encodeURIComponent(currentUrl)}`;
+            }, 1500);
+            return;
+        }
+        
         document.getElementById('bookingModal').classList.remove('hidden');
         loadCalendar();
     }
