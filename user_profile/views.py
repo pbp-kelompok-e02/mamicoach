@@ -308,7 +308,10 @@ def coach_profile(request):
         if expertise_list:
             coach_profile.expertise = expertise_list
         
-        if 'profile_image' in request.FILES:
+        # Handle profile image deletion
+        if request.POST.get('delete_photo') == 'true':
+            coach_profile.profile_image = None
+        elif 'profile_image' in request.FILES:
             coach_profile.profile_image = request.FILES['profile_image']
         
         coach_profile.save()
@@ -485,8 +488,11 @@ def user_profile(request):
         request.user.last_name = request.POST.get('last_name', '').strip()
         request.user.save()
         
-        # Update profile image if provided
-        if 'profile_image' in request.FILES:
+        # Handle profile image deletion
+        if request.POST.get('delete_photo') == 'true':
+            user_profile.profile_image = None
+            user_profile.save()
+        elif 'profile_image' in request.FILES:
             user_profile.profile_image = request.FILES['profile_image']
             user_profile.save()
         
