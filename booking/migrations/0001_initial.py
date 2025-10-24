@@ -14,15 +14,11 @@ class Migration(migrations.Migration):
         ('courses_and_coach', '0001_initial'),
         ('schedule', '0001_initial'),
         ('user_profile', '0001_initial'),
-        ('courses_and_coach', '0001_initial'),
-        ('schedule', '0001_initial'),
-        ('user_profile', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Booking',
             name='Booking',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -35,20 +31,8 @@ class Migration(migrations.Migration):
                 ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='course_bookings', to='courses_and_coach.course')),
                 ('schedule', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='schedule.scheduleslot')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to=settings.AUTH_USER_MODEL)),
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_datetime', models.DateTimeField(blank=True, help_text='Start date and time of the booking', null=True)),
-                ('end_datetime', models.DateTimeField(blank=True, help_text='End date and time of the booking', null=True)),
-                ('status', models.CharField(choices=[('pending', 'Pending Payment'), ('paid', 'Paid'), ('confirmed', 'Confirmed'), ('done', 'Done'), ('canceled', 'Canceled')], default='pending', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('coach', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='coach_bookings', to='user_profile.coachprofile')),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='course_bookings', to='courses_and_coach.course')),
-                ('schedule', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='schedule.scheduleslot')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['coach', 'start_datetime'], name='booking_boo_coach_i_a848cb_idx'), models.Index(fields=['coach', 'end_datetime'], name='booking_boo_coach_i_988833_idx'), models.Index(fields=['status'], name='booking_boo_status_e01616_idx'), models.Index(fields=['user'], name='booking_boo_user_id_d9826d_idx')],
                 'ordering': ['-created_at'],
                 'indexes': [models.Index(fields=['coach', 'start_datetime'], name='booking_boo_coach_i_a848cb_idx'), models.Index(fields=['coach', 'end_datetime'], name='booking_boo_coach_i_988833_idx'), models.Index(fields=['status'], name='booking_boo_status_e01616_idx'), models.Index(fields=['user'], name='booking_boo_user_id_d9826d_idx')],
             },

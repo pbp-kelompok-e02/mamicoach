@@ -17,16 +17,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.CreateModel(
             name='AdminSettings',
-            name='AdminSettings',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('key', models.CharField(help_text='Setting key', max_length=255, unique=True)),
-                ('value', models.TextField(help_text='Setting value (JSON, string, or number)')),
-                ('description', models.TextField(blank=True, help_text='Description of this setting')),
-                ('module', models.CharField(help_text="Module this setting belongs to (e.g., 'booking', 'payment', 'courses')", max_length=100)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('key', models.CharField(help_text='Setting key', max_length=255, unique=True)),
                 ('value', models.TextField(help_text='Setting value (JSON, string, or number)')),
@@ -37,9 +28,6 @@ class Migration(migrations.Migration):
                 ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'verbose_name': 'Admin Setting',
-                'verbose_name_plural': 'Admin Settings',
-                'ordering': ['module', 'key'],
                 'verbose_name': 'Admin Setting',
                 'verbose_name_plural': 'Admin Settings',
                 'ordering': ['module', 'key'],
@@ -47,16 +35,7 @@ class Migration(migrations.Migration):
         ),
         migrations.CreateModel(
             name='AdminActivityLog',
-            name='AdminActivityLog',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('action', models.CharField(choices=[('create', 'Create'), ('update', 'Update'), ('delete', 'Delete'), ('login', 'Login'), ('logout', 'Logout'), ('view', 'View'), ('export', 'Export'), ('import', 'Import')], max_length=20)),
-                ('module', models.CharField(help_text='Module where action was performed', max_length=100)),
-                ('description', models.TextField(help_text='Description of the action')),
-                ('ip_address', models.GenericIPAddressField(blank=True, null=True)),
-                ('user_agent', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='admin_activities', to=settings.AUTH_USER_MODEL)),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('action', models.CharField(choices=[('create', 'Create'), ('update', 'Update'), ('delete', 'Delete'), ('login', 'Login'), ('logout', 'Logout'), ('view', 'View'), ('export', 'Export'), ('import', 'Import')], max_length=20)),
                 ('module', models.CharField(help_text='Module where action was performed', max_length=100)),
@@ -67,10 +46,6 @@ class Migration(migrations.Migration):
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='admin_activities', to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'verbose_name': 'Admin Activity Log',
-                'verbose_name_plural': 'Admin Activity Logs',
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['user', '-created_at'], name='admin_panel_user_id_8f5816_idx'), models.Index(fields=['module', '-created_at'], name='admin_panel_module_5dea9e_idx'), models.Index(fields=['action', '-created_at'], name='admin_panel_action_8766a3_idx')],
                 'verbose_name': 'Admin Activity Log',
                 'verbose_name_plural': 'Admin Activity Logs',
                 'ordering': ['-created_at'],

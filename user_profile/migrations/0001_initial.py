@@ -17,7 +17,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.CreateModel(
             name='CoachProfile',
-            name='CoachProfile',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('bio', models.TextField()),
@@ -36,14 +35,7 @@ class Migration(migrations.Migration):
         ),
         migrations.CreateModel(
             name='Certification',
-            name='Certification',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('certificate_name', models.CharField(max_length=255)),
-                ('file_url', models.CharField(max_length=255)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('verified', 'Verified'), ('declined', 'Declined')], default='pending', max_length=20)),
-                ('uploaded_at', models.DateTimeField(auto_now_add=True)),
-                ('coach', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='user_profile.coachprofile')),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('certificate_name', models.CharField(max_length=255)),
                 ('file_url', models.CharField(max_length=255)),
@@ -54,14 +46,7 @@ class Migration(migrations.Migration):
         ),
         migrations.CreateModel(
             name='AdminVerification',
-            name='AdminVerification',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('certificate_url', models.CharField(max_length=255)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending', max_length=50)),
-                ('notes', models.TextField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('coach', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='user_profile.coachprofile')),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('certificate_url', models.CharField(max_length=255)),
                 ('status', models.CharField(choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending', max_length=50)),
@@ -71,7 +56,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='UserProfile',
             name='UserProfile',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),

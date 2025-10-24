@@ -18,14 +18,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.CreateModel(
             name='ChatMessage',
-            name='ChatMessage',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('content', models.TextField()),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('read', models.BooleanField(default=False)),
-                ('reply_to', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='replies', to='chat.chatmessage')),
-                ('sender', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('content', models.TextField()),
                 ('timestamp', models.DateTimeField(auto_now_add=True)),
@@ -35,24 +28,11 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ['timestamp'],
-                'ordering': ['timestamp'],
             },
         ),
         migrations.CreateModel(
             name='ChatAttachment',
-            name='ChatAttachment',
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('attachment_type', models.CharField(choices=[('image', 'Image'), ('file', 'File'), ('course', 'Course'), ('booking', 'Booking'), ('other', 'Other')], default='file', max_length=20)),
-                ('file', models.FileField(blank=True, null=True, upload_to='chat_attachments/%Y/%m/%d/')),
-                ('thumbnail', models.ImageField(blank=True, null=True, upload_to='chat_attachments/thumbnails/%Y/%m/%d/')),
-                ('uploaded_at', models.DateTimeField(auto_now_add=True)),
-                ('course_id', models.IntegerField(blank=True, null=True)),
-                ('course_name', models.CharField(blank=True, max_length=255, null=True)),
-                ('booking_id', models.IntegerField(blank=True, null=True)),
-                ('file_name', models.CharField(blank=True, max_length=255, null=True)),
-                ('file_size', models.BigIntegerField(blank=True, null=True)),
-                ('message', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attachments', to='chat.chatmessage')),
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('attachment_type', models.CharField(choices=[('image', 'Image'), ('file', 'File'), ('course', 'Course'), ('booking', 'Booking'), ('other', 'Other')], default='file', max_length=20)),
                 ('file', models.FileField(blank=True, null=True, upload_to='chat_attachments/%Y/%m/%d/')),
@@ -67,11 +47,9 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ['uploaded_at'],
-                'ordering': ['uploaded_at'],
             },
         ),
         migrations.CreateModel(
-            name='ChatSession',
             name='ChatSession',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
@@ -87,9 +65,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.AddField(
-            model_name='chatmessage',
-            name='session',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='chat.chatsession'),
             model_name='chatmessage',
             name='session',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='chat.chatsession'),

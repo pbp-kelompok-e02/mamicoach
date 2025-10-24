@@ -11,12 +11,10 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('user_profile', '0001_initial'),
-        ('user_profile', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CoachAvailability',
             name='CoachAvailability',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -26,18 +24,8 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('coach', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='availabilities', to='user_profile.coachprofile')),
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField(help_text='Specific date for this availability')),
-                ('start_time', models.TimeField(help_text='Start time of availability range')),
-                ('end_time', models.TimeField(help_text='End time of availability range')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('coach', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='availabilities', to='user_profile.coachprofile')),
             ],
             options={
-                'verbose_name_plural': 'Coach Availabilities',
-                'ordering': ['date', 'start_time'],
-                'indexes': [models.Index(fields=['coach', 'date'], name='schedule_co_coach_i_91ee59_idx'), models.Index(fields=['date'], name='schedule_co_date_9a0546_idx')],
                 'verbose_name_plural': 'Coach Availabilities',
                 'ordering': ['date', 'start_time'],
                 'indexes': [models.Index(fields=['coach', 'date'], name='schedule_co_coach_i_91ee59_idx'), models.Index(fields=['date'], name='schedule_co_date_9a0546_idx')],
@@ -45,16 +33,7 @@ class Migration(migrations.Migration):
         ),
         migrations.CreateModel(
             name='ScheduleSlot',
-            name='ScheduleSlot',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField(help_text='Specific date for this schedule')),
-                ('start_time', models.TimeField()),
-                ('end_time', models.TimeField()),
-                ('is_available', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('coach', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='schedule_slots', to='user_profile.coachprofile')),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('date', models.DateField(help_text='Specific date for this schedule')),
                 ('start_time', models.TimeField()),
@@ -65,8 +44,6 @@ class Migration(migrations.Migration):
                 ('coach', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='schedule_slots', to='user_profile.coachprofile')),
             ],
             options={
-                'ordering': ['date', 'start_time'],
-                'unique_together': {('coach', 'date', 'start_time')},
                 'ordering': ['date', 'start_time'],
                 'unique_together': {('coach', 'date', 'start_time')},
             },
