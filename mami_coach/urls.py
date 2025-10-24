@@ -17,6 +17,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.conf import settings
+from django.conf.urls.static import static
 from booking import views as booking_views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -30,9 +34,6 @@ urlpatterns = [
     path("", include("chat.urls")),
     path("booking/", include("booking.urls")),
     path("schedule/", include("schedule.urls")),
-    path("payment/", include("payment.urls")),
-    path("admin/", include("admin_panel.urls")),  # New admin panel
-    # Legacy API endpoints (without prefix) for old booking UI
     path(
         "api/coach/<int:coach_id>/available-dates/",
         booking_views.api_coach_available_dates_legacy,
@@ -48,6 +49,5 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# Custom error handlers
 handler404 = "main.views.handler_404"
 handler500 = "main.views.handler_500"
