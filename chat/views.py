@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.utils.html import strip_tags
 from django.views.decorators.http import require_POST
 from django.core.files.storage import default_storage
+from django.contrib import messages
 from io import BytesIO
 import json
 import os
@@ -611,7 +612,9 @@ def presend_course(request, course_id):
         
         # Verify that the user is not the coach (can't chat with themselves)
         if request.user == coach.user:
-            return JsonResponse({'error': 'Cannot create chat with yourself'}, status=400)
+            messages.error(request, 'Cannot create chat with yourself')
+            next_url = request.GET.get('next', '/')
+            return redirect(next_url)
         
         # Check or create chat session
         existing_session = ChatSession.objects.filter(
@@ -653,4 +656,6 @@ def presend_course(request, course_id):
         return redirect(f'/chat/{session_id}/?{params}')
     
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        messages.error(request, str(e))
+        next_url = request.GET.get('next', '/')
+        return redirect(next_url)

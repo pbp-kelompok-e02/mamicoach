@@ -9,7 +9,7 @@
         <!-- Sessions Header -->
         <div class="flex-shrink-0 bg-primary text-white p-4">
             <div class="flex items-center justify-between">
-                <h1 class="text-xl font-semibold">Chats</h1>
+                <h1 class="text-xl font-semibold">Chat</h1>
                 <button id="search-toggle" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <circle cx="11" cy="11" r="8"/>
@@ -24,7 +24,7 @@
                     <input
                         type="text"
                         id="session-search"
-                        placeholder="Search conversations..."
+                        placeholder="Cari percakapan..."
                         class="w-full bg-white/10 text-white placeholder-white/70 rounded-lg px-4 py-2 focus:outline-none focus:bg-white/20"
                     >
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 absolute right-3 top-3 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,7 +38,7 @@
         <!-- Sessions List -->
         <div class="flex-1 overflow-y-auto">
             <div id="sessions-loading" class="text-center py-8 text-gray-500">
-                Loading conversations...
+                Memuat percakapan...
             </div>
             <div id="sessions-list" class="divide-y divide-gray-100">
                 <!-- Sessions will be loaded here -->
@@ -75,7 +75,7 @@
             <!-- Messages Container -->
             <main id="messages-container" class="flex-1 overflow-y-auto p-4 bg-gray-50 min-h-0">
                 <div id="messages-loading" class="text-center py-8 text-gray-500">
-                    Loading messages...
+                    Memuat pesan...
                 </div>
                 <div id="messages-list">
                     <!-- Messages will be loaded here -->
@@ -88,7 +88,7 @@
                 <div id="reply-context" class="mb-3 bg-blue-50 border-l-4 border-primary px-3 py-2 rounded hidden">
                     <div class="flex items-center justify-between">
                         <span class="text-sm text-gray-700">
-                            <span class="font-semibold text-primary">Replying to:</span>
+                            <span class="font-semibold text-primary">Balas ke:</span>
                             <span id="reply-context-text" class="ml-2 text-gray-600 italic"></span>
                         </span>
                         <button type="button" id="clear-reply-btn" class="text-gray-400 hover:text-gray-600 transition-colors">
@@ -102,7 +102,7 @@
                     <div class="flex-1 flex flex-col items-center">
                         <textarea
                             id="message-input"
-                            placeholder="Type a message..."
+                            placeholder="Ketik pesan..."
                             rows="1"
                             class="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
                         ></textarea>
@@ -129,8 +129,8 @@
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Welcome to MamiCoach Chat</h3>
-                    <p class="text-gray-500">Select a conversation to start messaging</p>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Selamat datang di Chat MamiCoach</h3>
+                    <p class="text-gray-500">Pilih percakapan untuk mulai chat</p>
                 </div>
             </div>
         {% endif %}
@@ -261,12 +261,12 @@ async function loadSessions() {
         if (data.sessions && data.sessions.length > 0) {
             container.innerHTML = data.sessions.map(createSessionItem).join('');
         } else {
-            container.innerHTML = '<div class="text-center text-gray-500 py-8">No conversations yet</div>';
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">Belum ada percakapan</div>';
         }
     } catch (error) {
         console.error('Error loading sessions:', error);
         const loading = document.getElementById('sessions-loading');
-        if (loading) loading.textContent = 'Error loading conversations';
+        if (loading) loading.textContent = 'Gagal memuat percakapan';
     }
 }
 
@@ -284,7 +284,7 @@ function formatMessageTime(timestamp) {
     
     // Check if message is from yesterday
     if (messageDate.toDateString() === yesterday.toDateString()) {
-        return 'Yesterday ' + messageDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        return 'Kemarin ' + messageDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     }
     
     // For older messages, show date and time
@@ -399,7 +399,7 @@ function createSessionItem(session) {
                     </div>
                     <div class="flex justify-between items-center mt-1">
                         <p class="text-sm text-gray-600 truncate flex-1">
-                            ${session.last_message.content ? DOMPurify.sanitize(session.last_message.content) : 'No messages yet'}
+                            ${session.last_message.content ? DOMPurify.sanitize(session.last_message.content) : 'Belum ada pesan'}
                         </p>
                         ${session.unread_count > 0 ? 
                             `<span class="bg-primary text-white text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ml-2">${session.unread_count}</span>` : ''}
@@ -438,7 +438,7 @@ async function loadMessages(sessionId, skipScroll = false) {
                 is_sent_by_me: msg.sender.id === data.current_user_id
             })).join('');
         } else {
-            container.innerHTML = '<div class="text-center text-gray-500 py-8">No messages yet</div>';
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">Belum ada pesan</div>';
         }
         
         // Setup scroll event listener for marking as read
@@ -449,10 +449,10 @@ async function loadMessages(sessionId, skipScroll = false) {
     } catch (error) {
         console.error('Error loading messages:', error);
         if (loading) {
-            loading.textContent = 'Error loading messages';
+            loading.textContent = 'Gagal memuat pesan';
             loading.style.display = 'block';
         } else {
-            container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading messages</div>';
+            container.innerHTML = '<div class="text-center text-red-500 py-8">Gagal memuat pesan</div>';
         }
     }
 }
@@ -716,12 +716,12 @@ async function handleFileUpload(file) {
     const MAX_FILE_SIZE = 3 * 1024 * 1024; // 10MB
     
     if (file.size > MAX_FILE_SIZE) {
-        showToast('File size exceeds 3MB limit', 'error');
+        showToast('Ukuran file melebihi batas 3MB', 'error');
         return;
     }
     
     if (!selectedSessionId) {
-        showToast('Please select a conversation first', 'error');
+        showToast('Silakan pilih percakapan terlebih dahulu', 'error');
         return;
     }
     
@@ -738,7 +738,7 @@ async function handleFileUpload(file) {
         
     } catch (error) {
         console.error('Error preparing file:', error);
-        showToast('Error preparing file. Please try again.', 'error');
+        showToast('Gagal menyiapkan file. Silakan coba lagi.', 'error');
     }
 }
 
@@ -883,7 +883,7 @@ async function uploadPendingAttachments(messageId) {
         
     } catch (error) {
         console.error('Error uploading attachments:', error);
-        showToast('Error uploading some files. Please try again.', 'error');
+        showToast('Gagal mengunggah beberapa file. Silakan coba lagi.', 'error');
     }
 }
 
@@ -949,7 +949,7 @@ async function createEmbedAttachments(messageId) {
 
     } catch (error) {
         console.error('Error creating embed attachments:', error);
-        alert('Error creating some attachments. Please try again.');
+        showToast('Error creating some attachments. Please try again.', 'error');
     }
 }
 
@@ -967,7 +967,7 @@ async function sendMessage(sessionId, replyToId = null) {
     try {
         const body = {
             session_id: sessionId,
-            content: content || '(attachments)'  // Allow sending just attachments
+            content: content || '(lampiran)'  // Allow sending just attachments
         };
         
         // ADD REPLY CONTEXT if replying to a message
@@ -1016,11 +1016,11 @@ async function sendMessage(sessionId, replyToId = null) {
             // Refresh sessions to update last message and clear unread badges
             await loadSessions();
         } else {
-            alert('Error sending message: ' + (data.error || 'Unknown error'));
+            showToast('Gagal mengirim pesan: ' + (data.error || 'Kesalahan tidak diketahui'), 'error');
         }
     } catch (error) {
         console.error('Error sending message:', error);
-        alert('Error sending message. Please try again.');
+        showToast('Gagal mengirim pesan. Silakan coba lagi.', 'error');
     } finally {
         messageInput.disabled = false;
         sendButton.disabled = (messageInput.value.trim() === '' && pendingAttachments.length === 0);

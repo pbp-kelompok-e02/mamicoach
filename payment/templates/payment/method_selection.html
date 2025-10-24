@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Select Payment Method - MamiCoach{% endblock %}
+{% block title %}Pilih Metode Pembayaran - MamiCoach{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8 max-w-4xl">
     <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Complete Your Booking</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Selesaikan Pemesanan Anda</h1>
         
         <!-- Booking Summary -->
         <div class="bg-gray-50 rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">Booking Details</h2>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Detail Pemesanan</h2>
             <div class="space-y-3">
                 <div class="flex justify-between">
-                    <span class="text-gray-600">Course:</span>
+                    <span class="text-gray-600">Kursus:</span>
                     <span class="font-medium text-gray-800">{{ course.title }}</span>
                 </div>
                 <div class="flex justify-between">
@@ -21,14 +21,14 @@
                     <span class="font-medium text-gray-800">{{ coach.user.get_full_name|default:coach.user.username }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600">Date & Time:</span>
+                    <span class="text-gray-600">Tanggal & Waktu:</span>
                     <span class="font-medium text-gray-800">
                         {{ booking.start_datetime|date:"d M Y, H:i" }} - {{ booking.end_datetime|date:"H:i" }}
                     </span>
                 </div>
                 <hr class="my-3">
                 <div class="flex justify-between text-lg">
-                    <span class="font-semibold text-gray-700">Total Amount:</span>
+                    <span class="font-semibold text-gray-700">Total Pembayaran:</span>
                     <span class="font-bold text-blue-600">Rp {{ amount|floatformat:0 }}</span>
                 </div>
             </div>
@@ -36,7 +36,7 @@
 
         <!-- Payment Method Selection -->
         <div class="mb-6">
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">Select Payment Method</h2>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Pilih Metode Pembayaran</h2>
             
             <form id="payment-form" method="post" action="{% url 'payment:process' booking.id %}">
                 {% csrf_token %}
@@ -73,10 +73,10 @@
 
                 <div class="mt-8 flex gap-4">
                     <a href="{% url 'user_profile:dashboard_user' %}" class="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors text-center">
-                        Cancel
+                        Batal
                     </a>
                     <button type="submit" id="pay-button" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        Proceed to Payment
+                        Lanjut ke Pembayaran
                     </button>
                 </div>
             </form>
@@ -93,13 +93,13 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
     const selectedMethod = form.querySelector('input[name="payment_method"]:checked');
     
     if (!selectedMethod) {
-        showToast('Please select a payment method', 'error');
+        showToast('Silakan pilih metode pembayaran', 'error');
         return;
     }
     
     // Disable button and show loading
     payButton.disabled = true;
-    payButton.textContent = 'Processing...';
+    payButton.textContent = 'Memproses...';
     
     // Submit form via fetch
     const formData = new FormData(form);
@@ -117,16 +117,16 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
             // Redirect to Midtrans payment page
             window.location.href = data.redirect_url;
         } else {
-            showToast('Payment initiation failed: ' + (data.error || 'Unknown error'), 'error');
+            showToast('Inisiasi pembayaran gagal: ' + (data.error || 'Kesalahan tidak diketahui'), 'error');
             payButton.disabled = false;
-            payButton.textContent = 'Proceed to Payment';
+            payButton.textContent = 'Lanjut ke Pembayaran';
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('An error occurred. Please try again.', 'error');
+        showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
         payButton.disabled = false;
-        payButton.textContent = 'Proceed to Payment';
+        payButton.textContent = 'Lanjut ke Pembayaran';
     });
 });
 
