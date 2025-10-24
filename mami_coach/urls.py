@@ -30,7 +30,6 @@ urlpatterns = [
     path("", include("user_profile.urls")),
     path("booking/", include("booking.urls")),
     path("schedule/", include("schedule.urls")),
-    # Legacy API endpoints (without prefix) for old booking UI
     path(
         "api/coach/<int:coach_id>/available-dates/",
         booking_views.api_coach_available_dates_legacy,
@@ -46,6 +45,5 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# Custom error handlers
 handler404 = "main.views.handler_404"
 handler500 = "main.views.handler_500"
