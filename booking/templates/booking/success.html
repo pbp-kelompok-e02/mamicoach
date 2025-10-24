@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Booking Berhasil - MamiCoach</title>
+{% endblock meta %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Success Icon -->
+        <div class="text-center mb-8">
+            <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-green-100 mb-4">
+                <svg class="h-16 w-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Booking Berhasil!</h1>
+            <p class="text-lg text-gray-600">ID Booking: #{{ booking.id }}</p>
+        </div>
+
+        <!-- Booking Details Card -->
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+                <h2 class="text-xl font-semibold text-white">Detail Booking</h2>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- Course Info -->
+                <div class="flex items-start space-x-4">
+                    {% if booking.course.thumbnail %}
+                    <img src="{{ booking.course.thumbnail.url }}" 
+                         alt="{{ booking.course.name }}"
+                         class="w-24 h-24 rounded-lg object-cover"
+                         onerror="this.src='{% static 'images/default-course.jpg' %}'">
+                    {% else %}
+                    <div class="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    {% endif %}
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900">{{ booking.course.name }}</h3>
+                        <p class="text-sm text-gray-600 mt-1">{{ booking.course.description|truncatewords:20 }}</p>
+                        <div class="mt-2 flex items-center text-sm text-gray-500">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            {{ booking.course.duration }} menit
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t pt-6">
+                    <!-- Coach Info -->
+                    <div class="flex items-center space-x-4 mb-6">
+                        {% if booking.coach.profile_picture %}
+                        <img src="{{ booking.coach.profile_picture.url }}" 
+                             alt="{{ booking.coach.user.get_full_name }}"
+                             class="w-16 h-16 rounded-full object-cover"
+                             onerror="this.src='{% static 'images/default-avatar.png' %}'">
+                        {% else %}
+                        <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center">
+                            <span class="text-gray-600 text-xl font-semibold">
+                                {{ booking.coach.user.first_name|first }}{{ booking.coach.user.last_name|first }}
+                            </span>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <p class="text-sm text-gray-600">Coach</p>
+                            <p class="font-semibold text-gray-900">{{ booking.coach.user.get_full_name }}</p>
+                            {% if booking.coach.rating %}
+                            <div class="flex items-center mt-1">
+                                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                                <span class="ml-1 text-sm text-gray-600">{{ booking.coach.rating }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Schedule Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Tanggal</p>
+                            <p class="font-semibold text-gray-900">
+                                {% if booking.start_datetime %}
+                                {{ booking.start_datetime|date:"l, d F Y" }}
+                                {% else %}
+                                {{ booking.date|date:"l, d F Y" }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Waktu</p>
+                            <p class="font-semibold text-gray-900">
+                                {% if booking.start_datetime and booking.end_datetime %}
+                                {{ booking.start_datetime|date:"H:i" }} - {{ booking.end_datetime|date:"H:i" }}
+                                {% else %}
+                                {{ booking.schedule.start_time }} - {{ booking.schedule.end_time }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Price Info -->
+                    <div class="mt-6 pt-6 border-t">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-600">Harga Course</span>
+                            <span class="font-semibold text-gray-900">Rp {{ booking.course.price|floatformat:0 }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-lg font-bold text-blue-600 pt-2 border-t">
+                            <span>Total Pembayaran</span>
+                            <span>Rp {{ booking.course.price|floatformat:0 }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Status Info -->
+                    <div class="mt-6 pt-6 border-t">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Status Booking</span>
+                            <span class="px-4 py-2 rounded-full text-sm font-semibold
+                                {% if booking.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% elif booking.status == 'paid' %}bg-blue-100 text-blue-800
+                                {% elif booking.status == 'confirmed' %}bg-green-100 text-green-800
+                                {% elif booking.status == 'done' %}bg-gray-100 text-gray-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ booking.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-semibold text-blue-900 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Langkah Selanjutnya
+            </h3>
+            <ol class="space-y-3 text-gray-700">
+                {% if booking.status == 'pending' %}
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">1</span>
+                    <span>Silakan lakukan pembayaran sebesar <strong>Rp {{ booking.course.price|floatformat:0 }}</strong></span>
+                </li>
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">2</span>
+                    <span>Setelah pembayaran berhasil, status booking akan berubah menjadi "Paid"</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">3</span>
+                    <span>Coach akan mengkonfirmasi booking Anda</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">4</span>
+                    <span>Anda akan menerima notifikasi konfirmasi dan dapat memulai sesi</span>
+                </li>
+                {% elif booking.status == 'paid' %}
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm">✓</span>
+                    <span class="ml-3">Pembayaran berhasil!</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">1</span>
+                    <span>Menunggu konfirmasi dari coach</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">2</span>
+                    <span>Anda akan menerima notifikasi setelah coach mengkonfirmasi</span>
+                </li>
+                {% else %}
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm">✓</span>
+                    <span class="ml-3">Booking Anda sudah dikonfirmasi!</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">1</span>
+                    <span>Harap hadir tepat waktu pada jadwal yang sudah ditentukan</span>
+                </li>
+                {% endif %}
+            </ol>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 mt-8">
+            {% if booking.status == 'pending' %}
+            <button onclick="proceedToPayment({{ booking.id }})" 
+                class="flex-1 bg-primary text-white py-4 rounded-2xl font-semibold text-center hover:bg-green-600 transition-colors duration-200 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                <span>Lanjut ke Pembayaran</span>
+            </button>
+            {% comment %} <a href="{% url 'payment:method_selection' booking_id=booking.id %}" 
+            class="flex-1 bg-primary text-white py-4 rounded-2xl font-semibold text-center hover:bg-green-600 transition-colors duration-200 flex items-center justify-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                <span>Lanjut ke Pembayaran</span>
+            </a> {% endcomment %}
+            {% endif %}
+
+            <a href="/" 
+            class="flex-1 border-2 border-gray-300 text-gray-700 py-4 rounded-2xl font-semibold text-center hover:bg-gray-50 transition-colors duration-200">
+                Kembali ke Beranda
+            </a>
+        </div>
+
+        <!-- Important Notes -->
+        <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <h4 class="font-semibold text-yellow-900 mb-2 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                Catatan Penting
+            </h4>
+            <ul class="text-sm text-yellow-800 space-y-1 ml-7">
+                <li>• Simpan ID booking (#{{ booking.id }}) untuk referensi</li>
+                <li>• Pembatalan dapat dilakukan maksimal 24 jam sebelum jadwal</li>
+                <li>• Hubungi customer service jika ada kendala</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+function proceedToPayment(bookingId) {
+    // TODO: Integrate with payment gateway
+    // For now, just show alert
+    alert('Fitur pembayaran akan segera tersedia!\n\nBooking ID: ' + bookingId);
+    
+    // Redirect to payment page (to be implemented)
+    // window.location.href = `/payment/${bookingId}/`;
+}
+</script>
+{% endblock content %}
