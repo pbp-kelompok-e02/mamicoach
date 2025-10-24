@@ -13,36 +13,11 @@
         </div>
 
         {% if coaches %}
-        <div id="coaches-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {% for coach in coaches %}
             {% include "courses_and_coach/partials/coach_card.html" with coach=coach %}
             {% endfor %}
         </div>
-        
-        
-        <!-- Pagination Controls -->
-        <nav id="pagination-controls" class="flex justify-center items-center gap-2 mb-8" aria-label="Pagination">
-            <button id="first-btn" onclick="goToFirstPage()" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Halaman Pertama">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-left-icon lucide-chevrons-left"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
-            </button>
-            
-            <button id="prev-btn" onclick="changePage(-1)" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            
-            <span id="page-info" class="px-4 cursor-pointer py-2 text-gray-700 font-medium">
-                Halaman <span id="current-page">1</span> dari <span id="total-pages">1</span>
-            </span>
-            
-            <button id="next-btn" onclick="changePage(1)" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
-            
-            <button id="last-btn" onclick="goToLastPage()" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Halaman Terakhir">
-               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-right-icon lucide-chevrons-right"><path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/></svg>
-            </button>
-        </nav>
-        
         {% else %}
         <div class="text-center py-16">
             <div class="max-w-md flex flex-col justify-center items-center mx-auto">
@@ -54,72 +29,4 @@
         {% endif %}
     </div>
 </div>
-
-<script>
-let isLoading = false;
-let currentPage = {{ current_page|default:1 }};
-let totalPages = {{ total_pages|default:1 }};
-
-document.addEventListener("DOMContentLoaded", function() {
-    // Initialize pagination display on page load
-    document.getElementById('current-page').textContent = currentPage;
-    document.getElementById('total-pages').textContent = totalPages;
-    updatePaginationButtons();
-});
-
-function updatePaginationButtons() {
-    document.getElementById('first-btn').disabled = currentPage === 1;
-    document.getElementById('prev-btn').disabled = currentPage === 1;
-    document.getElementById('next-btn').disabled = currentPage === totalPages;
-    document.getElementById('last-btn').disabled = currentPage === totalPages;
-}
-
-function changePage(direction) {
-    const newPage = currentPage + direction;
-    if (newPage < 1 || newPage > totalPages) return;
-    
-    currentPage = newPage;
-    loadCoaches();
-}
-
-function goToFirstPage() {
-    if (currentPage === 1) return;
-    currentPage = 1;
-    loadCoaches();
-}
-
-function goToLastPage() {
-    if (currentPage === totalPages) return;
-    currentPage = totalPages;
-    loadCoaches();
-}
-
-async function loadCoaches() {
-    if (isLoading) return;
-    
-    isLoading = true;
-    
-    try {
-        const params = new URLSearchParams();
-        params.append('page', currentPage);
-        
-        const response = await fetch(`?${params.toString()}`, {
-            method: 'GET',
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        // Redirect to new page - simple approach
-        window.location.href = `?page=${currentPage}`;
-        
-    } catch (error) {
-        console.error('Error loading coaches:', error);
-        isLoading = false;
-    }
-}
-
-window.loadCoaches = loadCoaches;
-</script>
 {% endblock %}
