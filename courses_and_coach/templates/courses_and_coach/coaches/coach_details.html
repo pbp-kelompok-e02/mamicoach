@@ -42,9 +42,13 @@
                     {% endif %}
 
                     <div class="flex flex-wrap justify-center sm:justify-start gap-4 mt-6">
-                        <div class="bg-white flex justify-center items-center  gap-2 bg-opacity-20 rounded-lg px-2 py-1 backdrop-blur">
+                        <div class="bg-white flex justify-center items-center gap-2 bg-opacity-20 rounded-lg px-2 py-1 backdrop-blur">
                             <p class="text-2xl font-bold text-black">{{ courses.count }}</p>
                             <p class="text-sm text-black">Kelas</p>
+                        </div>
+                        <div class="bg-white flex justify-center items-center gap-2 bg-opacity-20 rounded-lg px-2 py-1 backdrop-blur">
+                            <p class="text-2xl font-bold text-black">{{ coach.total_hours_coached|floatformat:1 }}</p>
+                            <p class="text-sm text-black">Jam Melatih</p>
                         </div>
                         {% if coach.rating %}
                         <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2 backdrop-blur">
@@ -86,27 +90,74 @@
     </div>
 
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <!-- Courses Section -->
-        <div class="mb-12">
-            <div class="flex items-center gap-3 mb-8">
-                <h2 class="text-3xl font-bold text-gray-900">Kelas dari Coach Ini</h2>
-                <span class="bg-primary text-white rounded-full px-4 py-1 font-semibold">{{ courses.count }}</span>
+        <!-- Tabs Section -->
+        <div class="mb-8">
+            <div class="flex gap-2 border-b border-gray-200">
+                <button 
+                    id="tab-courses" 
+                    class="tab-button active px-6 py-3 font-semibold text-gray-900 border-b-2 border-primary transition-all duration-300"
+                    onclick="switchTab('courses')"
+                >
+                    Kelas dari Coach Ini
+                </button>
+                <button 
+                    id="tab-reviews" 
+                    class="tab-button px-6 py-3 font-semibold text-gray-600 border-b-2 border-transparent hover:text-gray-900 transition-all duration-300"
+                    onclick="switchTab('reviews')"
+                >
+                    Ulasan
+                </button>
             </div>
+        </div>
 
-            {% if courses %}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {% for course in courses %}
-                {% include "courses_and_coach/partials/course_card.html" with course=course %}
-                {% endfor %}
+        <!-- Courses Tab -->
+        <div id="content-courses" class="tab-content">
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900">Kelas dari Coach Ini</h2>
+                    <span class="bg-primary text-white rounded-full px-4 py-1 font-semibold">{{ courses.count }}</span>
+                </div>
+
+                {% if courses %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for course in courses %}
+                    {% include "courses_and_coach/partials/course_card.html" with course=course %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-12 bg-gray-50 rounded-3xl">
+                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <p class="text-gray-600 text-lg">Coach ini belum memiliki kelas.</p>
+                </div>
+                {% endif %}
             </div>
-            {% else %}
-            <div class="text-center py-12 bg-gray-50 rounded-3xl">
-                <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                </svg>
-                <p class="text-gray-600 text-lg">Coach ini belum memiliki kelas.</p>
+        </div>
+
+        <!-- Reviews Tab -->
+        <div id="content-reviews" class="tab-content hidden">
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900">Ulasan</h2>
+                    <span class="bg-primary text-white rounded-full px-4 py-1 font-semibold">{{ coach.rating_count }}</span>
+                </div>
+
+                {% if coach_reviews %}
+                <div class="space-y-6">
+                    {% for review in coach_reviews %}
+                    {% include "partials/_review_card.html" with review=review %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-12 bg-gray-50 rounded-3xl">
+                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2l-4 4z"></path>
+                    </svg>
+                    <p class="text-gray-600 text-lg">Belum ada ulasan untuk coach ini.</p>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
 
         <!-- Back Button -->
@@ -123,4 +174,34 @@
         </div>
     </div>
 </div>
+
+<script>
+    function switchTab(tabName) {
+        // Hide all tab contents
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => {
+            content.classList.add('hidden');
+        });
+
+        // Show selected tab content
+        const selectedContent = document.getElementById('content-' + tabName);
+        if (selectedContent) {
+            selectedContent.classList.remove('hidden');
+        }
+
+        // Update tab buttons styling
+        const buttons = document.querySelectorAll('.tab-button');
+        buttons.forEach(button => {
+            button.classList.remove('border-primary', 'text-gray-900');
+            button.classList.add('border-transparent', 'text-gray-600');
+        });
+
+        // Highlight active tab
+        const activeButton = document.getElementById('tab-' + tabName);
+        if (activeButton) {
+            activeButton.classList.remove('border-transparent', 'text-gray-600');
+            activeButton.classList.add('border-primary', 'text-gray-900');
+        }
+    }
+</script>
 {% endblock %}

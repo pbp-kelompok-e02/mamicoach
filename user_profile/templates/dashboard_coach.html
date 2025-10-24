@@ -27,7 +27,7 @@
                     </div>
                     <div>
                         <h3 class="text-sm font-semibold text-gray-700">Withdrawable Income</h3>
-                        <p class="text-xl md:text-2xl font-bold text-gray-800">Rp 2.750.000</p>
+                        <p class="text-2xl font-bold text-gray-800" id="withdrawable-balance">Rp {{ coach_profile.balance_formatted }}</p>
                     </div>
                 </div>
                 <button class="w-full md:w-auto bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
@@ -162,6 +162,18 @@ document.addEventListener('click', function(e) {
 
 function renderCoachProfile(profile) {
     const profileCard = document.getElementById('coach-profile-card');
+    
+    // Update withdrawable balance
+    const balanceElement = document.getElementById('withdrawable-balance');
+    if (balanceElement && profile.balance !== undefined) {
+        // Format balance as currency
+        const balanceInRupiah = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(profile.balance);
+        balanceElement.textContent = balanceInRupiah;
+    }
     
     let expertiseHTML = '';
     if (profile.expertise && profile.expertise.length > 0) {

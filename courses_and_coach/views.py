@@ -335,9 +335,11 @@ def coaches_card_ajax(request):
 def coach_details(request, coach_id):
     coach = get_object_or_404(CoachProfile, id=coach_id)
     courses = Course.objects.filter(coach=coach)
+    coach_reviews = Review.objects.filter(coach=coach).select_related('user', 'course').order_by('-created_at')
 
     context = {
         "coach": coach,
         "courses": courses,
+        "coach_reviews": coach_reviews,
     }
     return render(request, "courses_and_coach/coaches/coach_details.html", context)
