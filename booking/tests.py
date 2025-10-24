@@ -1805,10 +1805,10 @@ class BookingModelMethodsTest(TestCase):
         # Get all bookings
         bookings = list(Booking.objects.all())
         
-        # Should be ordered newest first
-        self.assertEqual(bookings[0].id, booking3.id)
-        self.assertEqual(bookings[1].id, booking2.id)
-        self.assertEqual(bookings[2].id, booking1.id)
+        # Should be ordered newest first (by created_at)
+        self.assertEqual(bookings[0], booking3)
+        self.assertEqual(bookings[1], booking2)
+        self.assertEqual(bookings[2], booking1)
     
     def test_booking_status_pending_to_paid_transition(self):
         """Test status transition from pending to paid"""

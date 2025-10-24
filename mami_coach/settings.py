@@ -229,7 +229,7 @@ else:
             },
         },
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
     MEDIA_URL = f"https://{os.getenv('R2_CUSTOM_DOMAIN')}/{os.getenv('R2_BUCKET_NAME')}/media/"

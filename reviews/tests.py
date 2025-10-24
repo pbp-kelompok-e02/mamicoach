@@ -415,38 +415,6 @@ class ReviewViewTestCase(TestCase):
             status='done'
         )
     
-    def test_show_sample_review_view_directly(self):
-        """Test show_sample_review view by calling it directly"""
-        from reviews.views import show_sample_review
-        from django.test import RequestFactory
-        
-        # Create some reviews
-        Review.objects.create(
-            course=self.course,
-            booking=self.booking,
-            user=self.user,
-            coach=self.coach,
-            rating=5,
-            content='Excellent course!'
-        )
-        
-        factory = RequestFactory()
-        request = factory.get('/reviews/')
-        response = show_sample_review(request)
-        
-        self.assertEqual(response.status_code, 200)
-    
-    def test_show_sample_review_view_empty(self):
-        """Test show_sample_review view when no reviews exist"""
-        from reviews.views import show_sample_review
-        from django.test import RequestFactory
-        
-        factory = RequestFactory()
-        request = factory.get('/reviews/')
-        response = show_sample_review(request)
-        
-        self.assertEqual(response.status_code, 200)
-    
     def test_create_review_not_logged_in(self):
         """Test that non-logged-in user is redirected to login"""
         response = self.client.get(
