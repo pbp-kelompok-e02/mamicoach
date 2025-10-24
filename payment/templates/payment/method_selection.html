@@ -93,7 +93,7 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
     const selectedMethod = form.querySelector('input[name="payment_method"]:checked');
     
     if (!selectedMethod) {
-        alert('Silakan pilih metode pembayaran');
+        showToast('Silakan pilih metode pembayaran', 'error');
         return;
     }
     
@@ -117,14 +117,14 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
             // Redirect to Midtrans payment page
             window.location.href = data.redirect_url;
         } else {
-            alert('Inisiasi pembayaran gagal: ' + (data.error || 'Kesalahan tidak diketahui'));
+            showToast('Inisiasi pembayaran gagal: ' + (data.error || 'Kesalahan tidak diketahui'), 'error');
             payButton.disabled = false;
             payButton.textContent = 'Lanjut ke Pembayaran';
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Terjadi kesalahan. Silakan coba lagi.');
+        showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
         payButton.disabled = false;
         payButton.textContent = 'Lanjut ke Pembayaran';
     });

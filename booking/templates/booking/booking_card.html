@@ -310,6 +310,8 @@
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
+        let hasAvailableInThisMonth = false;
+
         for (let day = 1; day <= daysInMonth; day++) {
             const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const currentDate = new Date(currentYear, currentMonth - 1, day);
@@ -330,6 +332,7 @@
             } else if (isAvailable) {
                 button.className += 'bg-green-100 text-green-700 hover:bg-primary hover:text-white cursor-pointer border-2 border-green-300';
                 button.onclick = () => selectDate(dateStr);
+                hasAvailableInThisMonth = true;
             } else {
                 button.className += 'text-gray-400 cursor-not-allowed hover:bg-gray-100';
                 button.disabled = true;
@@ -337,6 +340,14 @@
 
             dayCell.appendChild(button);
             calendarDays.appendChild(dayCell);
+        }
+
+        // If no available dates in this month, show small red message
+        if (!hasAvailableInThisMonth) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'col-span-7 text-center py-2 mt-2';
+            messageDiv.innerHTML = `<p class="text-red-500 text-sm">Tidak ada jadwal di bulan ini</p>`;
+            calendarDays.appendChild(messageDiv);
         }
     }
 
@@ -442,7 +453,7 @@
 
     function confirmBooking() {
         if (!selectedDate || !selectedTime) {
-            alert('Please select a date and time slot');
+            showToast('Mohon pilih tanggal dan waktu', 'error');
             return;
         }
 

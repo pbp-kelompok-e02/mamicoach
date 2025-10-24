@@ -131,11 +131,11 @@
                     </div>
                     <div class="flex-1">
                         <p class="text-sm text-gray-900">
-                            <strong>{{ log.user.username }}</strong> {{ log.action }}
+                            <strong>{{ log.admin_user.username }}</strong> {{ log.action }}
                         </p>
                         <p class="text-xs text-gray-500">{{ log.timestamp|timesince }} ago</p>
-                        {% if log.details %}
-                        <p class="text-xs text-gray-600 mt-1">{{ log.details|truncatewords:10 }}</p>
+                        {% if log.description %}
+                        <p class="text-xs text-gray-600 mt-1">{{ log.description|truncatewords:10 }}</p>
                         {% endif %}
                     </div>
                 </div>

@@ -15,55 +15,104 @@
                 <thead>
                     <tr class="text-left text-xs font-semibold text-gray-600 uppercase border-b-2 border-gray-200">
                         <th class="pb-3 pr-4">ID</th>
-                        <th class="pb-3 pr-4">Name</th>
-                        <th class="pb-3 pr-4">Specialization</th>
-                        <th class="pb-3 pr-4">Experience</th>
-                        <th class="pb-3 pr-4">Email</th>
-                        <th class="pb-3 pr-4">Phone</th>
+                        <th class="pb-3 pr-4">Coach</th>
+                        <th class="pb-3 pr-4">Bio</th>
                         <th class="pb-3 pr-4">Rating</th>
+                        <th class="pb-3 pr-4">Hours Coached</th>
+                        <th class="pb-3 pr-4">Verified Badge</th>
+                        <th class="pb-3 pr-4">Approval Status</th>
                         <th class="pb-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for coach in coaches %}
                     <tr class="border-b border-gray-100 hover:bg-gray-50">
-                        <td class="py-4 pr-4">{{ coach.id }}</td>
+                        <td class="py-4 pr-4 text-sm">{{ coach.id }}</td>
                         <td class="py-4 pr-4">
                             <div class="flex items-center">
-                                {% if coach.photo %}
-                                <img src="{{ coach.photo.url }}" alt="{{ coach.name }}" class="w-10 h-10 rounded-full mr-3 object-cover">
-                                {% else %}
-                                <div class="w-10 h-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center">
-                                    <i class="fas fa-user text-gray-600"></i>
+                                <img src="{{ coach.image_url }}" alt="{{ coach.user.username }}" class="w-10 h-10 rounded-full mr-3 object-cover">
+                                <div>
+                                    <div class="font-medium">{{ coach.user.get_full_name|default:coach.user.username }}</div>
+                                    <div class="text-xs text-gray-500">@{{ coach.user.username }}</div>
                                 </div>
-                                {% endif %}
-                                <span class="font-medium">{{ coach.name }}</span>
                             </div>
                         </td>
-                        <td class="py-4 pr-4">{{ coach.specialization|default:"—" }}</td>
-                        <td class="py-4 pr-4">
-                            {% if coach.experience_years %}
-                                {{ coach.experience_years }} years
-                            {% else %}
-                                —
-                            {% endif %}
+                        <td class="py-4 pr-4 text-sm max-w-xs">
+                            <div class="truncate">{{ coach.bio|truncatewords:10 }}</div>
                         </td>
-                        <td class="py-4 pr-4">{{ coach.email|default:"—" }}</td>
-                        <td class="py-4 pr-4">{{ coach.phone|default:"—" }}</td>
+                        <td class="py-4 pr-4 text-sm">
+                            <span class="text-yellow-500">
+                                <i class="fas fa-star"></i> {{ coach.rating|floatformat:1 }}
+                            </span>
+                            <span class="text-gray-500 text-xs">({{ coach.rating_count }})</span>
+                        </td>
+                        <td class="py-4 pr-4 text-sm">
+                            {{ coach.total_hours_coached_formatted }}
+                        </td>
                         <td class="py-4 pr-4">
-                            {% if coach.rating %}
-                                <span class="text-yellow-500">
-                                    <i class="fas fa-star"></i> {{ coach.rating }}
+                            {% if coach.verified %}
+                                <span class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                    <i class="fas fa-certificate"></i> Verified
                                 </span>
                             {% else %}
-                                —
+                                <span class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                    <i class="fas fa-certificate"></i> Not Verified
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 pr-4">
+                            {% if coach.adminverification %}
+                                <div>
+                                    <span class="px-2 py-1 rounded-full text-xs font-medium
+                                        {% if coach.adminverification.status == 'approved' %}bg-green-100 text-green-700
+                                        {% elif coach.adminverification.status == 'rejected' %}bg-red-100 text-red-700
+                                        {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                                        {% if coach.adminverification.status == 'approved' %}
+                                            <i class="fas fa-check-circle"></i> Can Train
+                                        {% elif coach.adminverification.status == 'rejected' %}
+                                            <i class="fas fa-ban"></i> Cannot Train
+                                        {% else %}
+                                            <i class="fas fa-clock"></i> Pending Review
+                                        {% endif %}
+                                    </span>
+                                    {% if coach.adminverification.notes %}
+                                        <div class="text-xs text-gray-500 mt-1" title="{{ coach.adminverification.notes }}">
+                                            {{ coach.adminverification.notes|truncatewords:5 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span class="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                                    <i class="fas fa-clock"></i> Pending Review
+                                </span>
                             {% endif %}
                         </td>
                         <td class="py-4">
                             <div class="flex space-x-2">
-                                <a href="/django-admin/courses_and_coach/coachprofile/{{ coach.id }}/change/" target="_blank" 
-                                   class="text-blue-600 hover:text-blue-800 text-sm">
-                                    <i class="fas fa-edit"></i>
+                                <!-- Manage Approval (Approve/Reject + Badge) -->
+                                <a href="{% url 'admin_panel:coach_verification_detail' coach.id %}" class="text-green-600 hover:text-green-800 text-sm" title="Manage Approval & Badge">
+                                    <i class="fas fa-user-check"></i>
+                                </a>
+                                
+                                <!-- Quick Toggle Badge Only -->
+                                <form method="POST" action="{% url 'admin_panel:coach_verify' coach.id %}" class="inline">
+                                    {% csrf_token %}
+                                    {% if coach.verified %}
+                                        <input type="hidden" name="action" value="unverify">
+                                        <button type="submit" class="text-orange-600 hover:text-orange-800 text-sm" title="Remove Badge (Quick Toggle)">
+                                            <i class="fas fa-certificate"></i>
+                                        </button>
+                                    {% else %}
+                                        <input type="hidden" name="action" value="verify">
+                                        <button type="submit" class="text-blue-600 hover:text-blue-800 text-sm" title="Add Badge (Quick Toggle)">
+                                            <i class="far fa-certificate"></i>
+                                        </button>
+                                    {% endif %}
+                                </form>
+                                
+                                <!-- Delete Button -->
+                                <a href="{% url 'admin_panel:coach_delete' coach.id %}" class="text-red-600 hover:text-red-800 text-sm" title="Delete">
+                                    <i class="fas fa-trash"></i>
                                 </a>
                             </div>
                         </td>

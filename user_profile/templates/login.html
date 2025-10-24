@@ -175,15 +175,11 @@
                     const msg = (data && (data.message || data.error)) || 'Username atau password salah.';
                     if (window.showToast) {
                         window.showToast(msg, 'error');
-                    } else {
-                        alert(msg);
                     }
                 }
             } catch (err) {
                 if (window.showToast) {
                     window.showToast('Terjadi kesalahan jaringan. Coba lagi.', 'error');
-                } else {
-                    alert('Terjadi kesalahan jaringan. Coba lagi.');
                 }
             } finally {
                 submitBtn.disabled = false;

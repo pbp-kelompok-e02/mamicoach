@@ -53,7 +53,7 @@
                         <td class="py-4 pr-4 text-sm text-gray-600">
                             {{ log.timestamp|date:"Y-m-d H:i:s" }}
                         </td>
-                        <td class="py-4 pr-4 font-medium">{{ log.user.username }}</td>
+                        <td class="py-4 pr-4 font-medium">{{ log.admin_user.username }}</td>
                         <td class="py-4 pr-4">
                             <span class="px-2 py-1 rounded-full text-xs font-medium
                                 {% if log.action == 'create' %}bg-green-100 text-green-700

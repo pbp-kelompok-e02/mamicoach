@@ -313,7 +313,7 @@ document.getElementById('saveNewCertBtn').addEventListener('click', function() {
     const certUrl = document.getElementById('new_cert_url').value.trim();
     
     if (!certName || !certUrl) {
-        alert('Silakan isi nama sertifikat dan tautan.');
+        showToast('Silakan isi nama sertifikat dan tautan.', 'error');
         return;
     }
     

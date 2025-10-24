@@ -282,7 +282,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast(data.message, 'success');
                 } else {
                     console.error('showToast is not a function!');
-                    alert(data.message);
                 }
                 
                 setTimeout(() => {
@@ -302,14 +301,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const errorMsg = errorMessages.join(' ');
                 if (typeof showToast === 'function') {
                     showToast(errorMsg, 'error');
-                } else {
-                    alert(errorMsg);
                 }
             } else {
                 if (typeof showToast === 'function') {
                     showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
-                } else {
-                    alert('Terjadi kesalahan. Silakan coba lagi.');
                 }
             }
             
