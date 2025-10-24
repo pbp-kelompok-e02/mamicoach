@@ -3,15 +3,16 @@
 
 {% block meta %}
 <title>Booking Berhasil - MamiCoach</title>
+<script src="{% static 'js/toast.js' %}"></script>
 {% endblock meta %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-3xl mx-auto">
         <!-- Success Icon -->
         <div class="text-center mb-8">
-            <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-green-100 mb-4">
-                <svg class="h-16 w-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-emerald-100 mb-4">
+                <svg class="h-16 w-16 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
             </div>
@@ -21,7 +22,7 @@
 
         <!-- Booking Details Card -->
         <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
-            <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+            <div class="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-4">
                 <h2 class="text-xl font-semibold text-white">Detail Booking</h2>
             </div>
             
@@ -82,7 +83,7 @@
                     </div>
 
                     <!-- Schedule Info -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gradient-to-br from-green-50 to-blue-50 rounded-lg p-4">
                         <div>
                             <p class="text-sm text-gray-600 mb-1">Tanggal</p>
                             <p class="font-semibold text-gray-900">
@@ -111,7 +112,7 @@
                             <span class="text-gray-600">Harga Course</span>
                             <span class="font-semibold text-gray-900">Rp {{ booking.course.price|floatformat:0 }}</span>
                         </div>
-                        <div class="flex justify-between items-center text-lg font-bold text-blue-600 pt-2 border-t">
+                        <div class="flex justify-between items-center text-lg font-bold text-emerald-600 pt-2 border-t">
                             <span>Total Pembayaran</span>
                             <span>Rp {{ booking.course.price|floatformat:0 }}</span>
                         </div>
@@ -136,8 +137,8 @@
         </div>
 
         <!-- Next Steps -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-            <h3 class="text-lg font-semibold text-blue-900 mb-4 flex items-center">
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-semibold text-emerald-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
@@ -146,41 +147,41 @@
             <ol class="space-y-3 text-gray-700">
                 {% if booking.status == 'pending' %}
                 <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">1</span>
+                    <span class="flex-shrink-0 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">1</span>
                     <span>Silakan lakukan pembayaran sebesar <strong>Rp {{ booking.course.price|floatformat:0 }}</strong></span>
                 </li>
                 <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">2</span>
+                    <span class="flex-shrink-0 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">2</span>
                     <span>Setelah pembayaran berhasil, status booking akan berubah menjadi "Paid"</span>
                 </li>
                 <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">3</span>
+                    <span class="flex-shrink-0 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">3</span>
                     <span>Coach akan mengkonfirmasi booking Anda</span>
                 </li>
                 <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">4</span>
+                    <span class="flex-shrink-0 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">4</span>
                     <span>Anda akan menerima notifikasi konfirmasi dan dapat memulai sesi</span>
                 </li>
                 {% elif booking.status == 'paid' %}
                 <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm">✓</span>
+                    <span class="flex-shrink-0 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">✓</span>
                     <span class="ml-3">Pembayaran berhasil!</span>
                 </li>
                 <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">1</span>
+                    <span class="flex-shrink-0 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">1</span>
                     <span>Menunggu konfirmasi dari coach</span>
                 </li>
                 <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">2</span>
+                    <span class="flex-shrink-0 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">2</span>
                     <span>Anda akan menerima notifikasi setelah coach mengkonfirmasi</span>
                 </li>
                 {% else %}
                 <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm">✓</span>
+                    <span class="flex-shrink-0 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm">✓</span>
                     <span class="ml-3">Booking Anda sudah dikonfirmasi!</span>
                 </li>
                 <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">1</span>
+                    <span class="flex-shrink-0 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">1</span>
                     <span>Harap hadir tepat waktu pada jadwal yang sudah ditentukan</span>
                 </li>
                 {% endif %}
@@ -191,7 +192,7 @@
         <div class="flex flex-col sm:flex-row gap-4 mt-8">
             {% if booking.status == 'pending' %}
             <button onclick="proceedToPayment({{ booking.id }})" 
-                class="flex-1 bg-primary text-white py-4 rounded-2xl font-semibold text-center hover:bg-green-600 transition-colors duration-200 flex items-center justify-center space-x-2">
+                class="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 text-white py-4 rounded-2xl font-semibold text-center hover:shadow-lg hover:from-emerald-700 hover:to-green-700 transition-all duration-200 flex items-center justify-center space-x-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                 </svg>
@@ -204,6 +205,10 @@
                 </svg>
                 <span>Lanjut ke Pembayaran</span>
             </a> {% endcomment %}
+            <button onclick="showCancelConfirmation({{ booking.id }})" 
+                class="flex-1 border-2 border-red-300 text-red-600 py-4 rounded-2xl font-semibold text-center hover:bg-red-50 transition-colors duration-200">
+                Batalkan Booking
+            </button>
             {% endif %}
 
             <a href="/" 
@@ -237,5 +242,85 @@ function proceedToPayment(bookingId) {
     
     window.location.href = `/payment/booking/${bookingId}/method`;
 }
+
+function showCancelConfirmation(bookingId) {
+    document.getElementById('cancel-confirmation-modal').classList.remove('hidden');
+    document.getElementById('cancel-confirmation-modal').dataset.bookingId = bookingId;
+}
+
+function closeCancelModal() {
+    document.getElementById('cancel-confirmation-modal').classList.add('hidden');
+}
+
+function confirmCancelBooking() {
+    const bookingId = document.getElementById('cancel-confirmation-modal').dataset.bookingId;
+    fetch(`{% url 'booking:api_booking_cancel' booking_id=0 %}`.replace('0', bookingId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCSRFToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Booking berhasil dibatalkan!', 'success');
+            setTimeout(() => {
+                window.location.href = "/";
+            }, 1500);
+        } else {
+            showToast('Gagal membatalkan booking: ' + (data.message || 'Unknown error'), 'error');
+            closeCancelModal();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Terjadi kesalahan saat membatalkan booking', 'error');
+        closeCancelModal();
+    });
+}
+
+function getCSRFToken() {
+    const name = 'csrftoken';
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('cancel-confirmation-modal');
+    if (e.target === modal) {
+        closeCancelModal();
+    }
+});
 </script>
+
+<!-- Cancel Confirmation Modal -->
+<div id="cancel-confirmation-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Batalkan Booking?</h3>
+        <p class="text-gray-600 mb-6">Apakah Anda yakin ingin membatalkan booking ini? Tindakan ini tidak dapat dibatalkan.</p>
+        <div class="flex gap-3 justify-end">
+            <button onclick="closeCancelModal()" 
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-900 px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+                Tidak
+            </button>
+            <button onclick="confirmCancelBooking()" 
+                    class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+                Ya, Batalkan
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock content %}

@@ -19,6 +19,7 @@ class Command(BaseCommand):
         self.create_courses()
         self.create_trainees()
         self.create_bookings()
+        self.create_completed_bookings()
         self.create_reviews()
         self.stdout.write(self.style.SUCCESS("Successfully populated all sample data!"))
     
@@ -46,7 +47,7 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f"Created trainee user: {user.username}"))
             profile, _ = UserProfile.objects.get_or_create(
                 user=user,
-                profile_image=f"https://i.pravatar.cc/150?u={user.username}"
+                profile_image_url=f"https://i.pravatar.cc/150?u={user.username}"
             )
             self.trainee_users.append(user)
         self.stdout.write(self.style.SUCCESS(f"Total trainees created/used: {len(self.trainee_users)}"))
@@ -105,17 +106,83 @@ class Command(BaseCommand):
             duration_minutes = getattr(course, 'duration', random.choice([45, 60, 90]))
             end_datetime = start_datetime + timezone.timedelta(minutes=duration_minutes)
             status = random.choice(status_choices)
+            
+            # Create booking with unique user + course + start_datetime combination
             booking, created = Booking.objects.get_or_create(
                 user=user,
                 course=course,
-                coach=coach,
                 start_datetime=start_datetime,
-                end_datetime=end_datetime,
-                defaults={"status": status},
+                defaults={
+                    "coach": coach,
+                    "end_datetime": end_datetime,
+                    "status": status,
+                },
             )
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created booking (ID: {booking.pk}) for {user.username} - {course.title} ({status}) [{start_datetime} - {end_datetime}]"))
             self.bookings_created.append(booking)
+
+    def create_completed_bookings(self):
+        """Create completed bookings that immediately accumulate hours and balance"""
+        from booking.models import Booking
+        from django.utils import timezone
+        
+        courses = list(Course.objects.all())
+        
+        # Create a test student if doesn't exist
+        student_user, created = User.objects.get_or_create(
+            username="student1",
+            defaults={
+                "first_name": "Student",
+                "last_name": "One",
+                "email": "student1@mamicoach.com"
+            }
+        )
+        if created:
+            student_user.set_password("password123")
+            student_user.save()
+            self.stdout.write(self.style.SUCCESS(f"Created test student user: {student_user.username}"))
+        
+        # Create 5 completed bookings for each coach to seed their balance and hours
+        now = timezone.now()
+        completed_count = 0
+        for coach in CoachProfile.objects.all():
+            coach_courses = Course.objects.filter(coach=coach)
+            if not coach_courses.exists():
+                continue
+            
+            # Create 3-5 completed bookings per coach
+            for session_num in range(random.randint(3, 5)):
+                course = random.choice(list(coach_courses))
+                duration_minutes = getattr(course, 'duration', 60)
+                
+                # Create bookings in the past (2-30 days ago)
+                days_ago = random.randint(2, 30)
+                start_time = now - timezone.timedelta(days=days_ago, hours=random.randint(1, 10))
+                end_time = start_time + timezone.timedelta(minutes=duration_minutes)
+                
+                # Create with pending status first, then transition to done
+                booking = Booking.objects.create(
+                    user=student_user,
+                    course=course,
+                    coach=coach,
+                    status='pending',
+                    start_datetime=start_time,
+                    end_datetime=end_time
+                )
+                # Transition to done to trigger hour and balance accumulation
+                booking.status = 'done'
+                booking.save()
+                
+                completed_count += 1
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"Created completed booking for {coach.user.get_full_name()} - "
+                        f"{course.title} (Duration: {duration_minutes}min, Added: ₹{int(course.price)})"
+                    )
+                )
+        
+        self.stdout.write(self.style.SUCCESS(f"Total completed bookings created: {completed_count}"))
 
     def create_categories(self):
         """Create sample categories"""
@@ -177,7 +244,7 @@ class Command(BaseCommand):
                 "expertise": ["Yoga", "Meditasi", "Prenatal Yoga"],
                 "rating": 4.9,
                 "verified": True,
-                "image_url": "https://images.unsplash.com/photo-1494790108755-2616b612b47c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                "profile_image_url": "https://images.unsplash.com/photo-1494790108755-2616b612b47c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
             },
             {
                 "username": "mike_fitness",
@@ -188,7 +255,7 @@ class Command(BaseCommand):
                 "expertise": ["Strength Training", "Cardio", "Weight Loss"],
                 "rating": 4.8,
                 "verified": True,
-                "image_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                "profile_image_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
             },
             {
                 "username": "diana_pilates",
@@ -199,7 +266,7 @@ class Command(BaseCommand):
                 "expertise": ["Pilates", "Rehabilitation", "Core Training"],
                 "rating": 4.9,
                 "verified": True,
-                "image_url": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                "profile_image_url": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
             },
             {
                 "username": "alex_zumba",
@@ -210,7 +277,7 @@ class Command(BaseCommand):
                 "expertise": ["Zumba", "Dance Fitness", "Cardio Dance"],
                 "rating": 4.7,
                 "verified": True,
-                "image_url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                "profile_image_url": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
             },
             {
                 "username": "lisa_swim",
@@ -221,7 +288,7 @@ class Command(BaseCommand):
                 "expertise": ["Swimming", "Water Aerobics", "Technique Training"],
                 "rating": 4.8,
                 "verified": True,
-                "image_url": "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                "profile_image_url": "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
             },
         ]
 
@@ -246,6 +313,7 @@ class Command(BaseCommand):
             # Create coach profile if doesn't exist
             coach_profile, coach_created = CoachProfile.objects.get_or_create(
                 user=user,
+                profile_image_url=coach_data["profile_image_url"],
                 defaults={
                     "bio": coach_data["bio"],
                     "expertise": coach_data["expertise"],
@@ -534,10 +602,3 @@ class Command(BaseCommand):
                         f"Error creating course {course_data['title']}: {e}"
                     )
                 )
-        
-        u=User.objects.create(username="student1", first_name="Student", last_name="One", email="a@gmail.com")
-        u.set_password("password123")
-        u.save()
-        
-        chosen_course=random.choice(courses)
-        Booking.objects.create(user=u, course=chosen_course, coach=chosen_course.coach, status="completed")

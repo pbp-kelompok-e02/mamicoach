@@ -8,9 +8,19 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .forms import TraineeRegistrationForm, CoachRegistrationForm
 from .models import CoachProfile, Certification, UserProfile
+from django.utils import timezone
+import pytz
+
+
+MONTH_NAMES_SHORT_ID = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+]
 
 
 def register_user(request):
+    if request.user.is_authenticated:
+        return redirect('main:show_main')
     if request.method == "POST":
         form = TraineeRegistrationForm(request.POST)
         if form.is_valid():
@@ -47,6 +57,8 @@ def register_user(request):
 
 
 def register_coach(request):
+    if request.user.is_authenticated:
+        return redirect('main:show_main')
     from courses_and_coach.models import Category
     
     if request.method == "POST":
@@ -116,6 +128,8 @@ def register_coach(request):
 
 
 def login_user(request):
+    if request.user.is_authenticated:
+        return redirect('main:show_main')
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         from_modal = request.POST.get('from_modal', 'false') == 'true'
@@ -182,19 +196,75 @@ def dashboard_coach(request):
         return redirect('main:show_main')
     
     certifications = Certification.objects.filter(coach=coach_profile)
-    
+
     context = {
         'coach_profile': coach_profile,
         'certifications': certifications,
     }
+
     return render(request, 'dashboard_coach.html', context)
 
 
 @login_required
 def get_coach_profile(request):
+    from booking.models import Booking
+    
     try:
         coach_profile = CoachProfile.objects.get(user=request.user)
         certifications = Certification.objects.filter(coach=coach_profile)
+        
+        # Get bookings with different statuses
+        confirmed_bookings = Booking.objects.filter(
+            coach=coach_profile,
+            status='confirmed'
+        ).select_related('user', 'course', 'schedule')
+        
+        # Pending bookings include both 'pending' and 'paid' statuses
+        pending_bookings = Booking.objects.filter(
+            coach=coach_profile,
+            status__in=['paid']
+        ).select_related('user', 'course', 'schedule')
+        
+        completed_bookings = Booking.objects.filter(
+            coach=coach_profile,
+            status='done'
+        ).select_related('user', 'course', 'schedule')
+        
+        jakarta_tz = pytz.timezone('Asia/Jakarta')
+
+        def to_local(dt):
+            if not dt:
+                return None
+            return timezone.localtime(dt, jakarta_tz)
+
+        def format_datetime_local(dt):
+            localized = to_local(dt)
+            if not localized:
+                return 'N/A'
+            month_label = MONTH_NAMES_SHORT_ID[localized.month - 1]
+            return f"{localized.strftime('%d')} {month_label} {localized.strftime('%H:%M')}"
+        # Get last 3 cancelled bookings
+        cancelled_bookings = Booking.objects.filter(
+            coach=coach_profile,
+            status='canceled'
+        ).select_related('user', 'course', 'schedule').order_by('-updated_at')[:3]
+        
+        # Helper function to format booking data
+        def format_booking(booking):
+            # Format datetime strings
+            start_str = format_datetime_local(booking.start_datetime)
+            end_str = format_datetime_local(booking.end_datetime)
+            
+            return {
+                'id': booking.id,
+                'booking_id': booking.id,
+                'course_title': booking.course.title,
+                'trainee_name': booking.user.get_full_name() or booking.user.username,
+                'booking_datetime': f"{start_str} - {end_str}",
+                'start_datetime': start_str,
+                'end_datetime': end_str,
+                'status': booking.status
+            }
         
         # Build profile data
         profile_data = {
@@ -209,13 +279,17 @@ def get_coach_profile(request):
                 'verified': coach_profile.verified,
                 'certifications': [
                     {
-                        'id': cert.id,
+                        'id': cert.pk,
                         'name': cert.certificate_name,
                         'url': cert.file_url,
                         'status': cert.status
                     }
                     for cert in certifications
-                ]
+                ],
+                'confirmed_bookings': [format_booking(b) for b in confirmed_bookings],
+                'pending_bookings': [format_booking(b) for b in pending_bookings],
+                'completed_bookings': [format_booking(b) for b in completed_bookings],
+                'cancelled_bookings': [format_booking(b) for b in cancelled_bookings]
             }
         }
         
@@ -294,7 +368,7 @@ def coach_profile(request):
 def dashboard_user(request):
     # Check if user is a coach
     try:
-        coach_profile = CoachProfile.objects.get(user=request.user)
+        CoachProfile.objects.get(user=request.user)
         messages.error(request, "Access denied. Coaches cannot access user dashboard.")
         return redirect('user_profile:dashboard_coach')
     except CoachProfile.DoesNotExist:
@@ -314,7 +388,7 @@ def get_user_profile(request):
     try:
         # Check if user is a coach
         try:
-            coach_profile = CoachProfile.objects.get(user=request.user)
+            CoachProfile.objects.get(user=request.user)
             return JsonResponse({
                 'success': False,
                 'message': "Access denied. Coaches cannot access user dashboard."
@@ -324,12 +398,102 @@ def get_user_profile(request):
         
         user_profile, created = UserProfile.objects.get_or_create(user=request.user)
         
+        # Import models for bookings and reviews
+        from booking.models import Booking
+        from chat.models import ChatSession
+        from reviews.models import Review
+        
+        # Get bookings with different statuses
+        confirmed_bookings = Booking.objects.filter(
+            user=request.user,
+            status='confirmed'
+        ).select_related('user', 'course', 'schedule', 'coach')
+        
+        paid_bookings = Booking.objects.filter(
+            user=request.user,
+            status='paid'
+        ).select_related('user', 'course', 'schedule', 'coach')
+        
+        pending_bookings = Booking.objects.filter(
+            user=request.user,
+            status='pending'
+        ).select_related('user', 'course', 'schedule', 'coach')
+        
+        completed_bookings = Booking.objects.filter(
+            user=request.user,
+            status='done'
+        ).select_related('user', 'course', 'schedule', 'coach')
+        
+        jakarta_tz = pytz.timezone('Asia/Jakarta')
+
+        def to_local(dt):
+            if not dt:
+                return None
+            return timezone.localtime(dt, jakarta_tz)
+
+        def format_datetime_local(dt):
+            localized = to_local(dt)
+            if not localized:
+                return 'N/A'
+            month_label = MONTH_NAMES_SHORT_ID[localized.month - 1]
+            return f"{localized.strftime('%d')} {month_label} {localized.strftime('%H:%M')}"
+
+        # Get last 3 cancelled bookings
+        cancelled_bookings = Booking.objects.filter(
+            user=request.user,
+            status='canceled'
+        ).select_related('user', 'course', 'schedule', 'coach').order_by('-updated_at')[:3]
+        
+        # Helper function to format booking data
+        def format_booking(booking):
+            # Format datetime strings
+            start_str = format_datetime_local(booking.start_datetime)
+            end_str = format_datetime_local(booking.end_datetime)
+            
+            # Get or create chat session
+            chat_session = ChatSession.objects.filter(
+                user=request.user,
+                coach=booking.coach.user
+            ).first()
+            
+            chat_session_id = str(chat_session.id) if chat_session else None
+            
+            return {
+                'id': booking.id,
+                'booking_id': booking.id,
+                'course_title': booking.course.title,
+                'coach_name': booking.coach.user.get_full_name() or booking.coach.user.username,
+                'booking_datetime': f"{start_str} - {end_str}",
+                'start_datetime': start_str,
+                'end_datetime': end_str,
+                'status': booking.status,
+                'chat_session_id': chat_session_id
+            }
+        
+        # Helper function to format completed booking with review info
+        def format_completed_booking(booking):
+            formatted = format_booking(booking)
+            
+            # Check if review exists
+            review = Review.objects.filter(booking=booking).first()
+            formatted['has_review'] = review is not None
+            if review:
+                formatted['review_id'] = review.id
+            
+            return formatted
+        
+        # Build profile data
         profile_data = {
             'success': True,
             'profile': {
                 'full_name': request.user.get_full_name(),
                 'initials': f"{request.user.first_name[0]}{request.user.last_name[0]}" if request.user.first_name and request.user.last_name else "??",
                 'profile_image': user_profile.profile_image.url if user_profile.profile_image else None,
+                'confirmed_bookings': [format_booking(b) for b in confirmed_bookings],
+                'paid_bookings': [format_booking(b) for b in paid_bookings],
+                'pending_bookings': [format_booking(b) for b in pending_bookings],
+                'completed_bookings': [format_completed_booking(b) for b in completed_bookings],
+                'cancelled_bookings': [format_booking(b) for b in cancelled_bookings]
             }
         }
         

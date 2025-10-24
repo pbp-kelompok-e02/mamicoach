@@ -1,39 +1,41 @@
 <!-- Review Card Partial -->
-<div class="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100">
-	<!-- Header: Avatar, Name, Role, and Stars in one row -->
-	<div class="flex items-start gap-4 mb-4">
-		{% if review.is_anonymous %}
-			<div class="h-16 w-16 overflow-hidden rounded-full flex-shrink-0 bg-neutral-300 flex items-center justify-center">
-				<svg class="h-8 w-8 text-neutral-500" fill="currentColor" viewBox="0 0 24 24">
-					<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-				</svg>
+<div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-neutral-100">
+	<!-- Header: Avatar, Name, Role, and Stars -->
+	<div class="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 mb-4">
+		<div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+			{% if review.is_anonymous %}
+				<div class="h-12 sm:h-16 w-12 sm:w-16 overflow-hidden rounded-full flex-shrink-0 bg-neutral-300 flex items-center justify-center">
+					<svg class="h-6 sm:h-8 w-6 sm:w-8 text-neutral-500" fill="currentColor" viewBox="0 0 24 24">
+						<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+					</svg>
+				</div>
+			{% else %}
+				<div class="h-12 sm:h-16 w-12 sm:w-16 overflow-hidden rounded-full flex-shrink-0">
+					<img src="{{ review.user.profile.image_url }}" class="h-full w-full object-cover" />
+				</div>
+			{% endif %}
+			
+			<div class="flex-1 min-w-0">
+				<h3 class="text-base sm:text-xl font-semibold text-neutral-900 truncate">
+					{% if review.is_anonymous %}
+						Anonymous User
+					{% else %}
+						{{ review.user.first_name|default:review.user.username }}
+					{% endif %}
+				</h3>
+				<p class="text-xs sm:text-sm text-neutral-600 mt-1 truncate">{{ review.course.title }}</p>
 			</div>
-		{% else %}
-			<div class="h-16 w-16 overflow-hidden rounded-full flex-shrink-0">
-				<img src="{% if review.user.profile.profile_image %}{{ review.user.profile.profile_image.url }}{% else %}https://i.pravatar.cc/100?u={{ review.user.username }}{% endif %}" alt="{{ review.user.username }} avatar" class="h-full w-full object-cover" />
-			</div>
-		{% endif %}
-		
-		<div class="flex-1 min-w-0">
-			<h3 class="text-xl font-semibold text-neutral-900">
-				{% if review.is_anonymous %}
-					Anonymous User
-				{% else %}
-					{{ review.user.first_name|default:review.user.username }}
-				{% endif %}
-			</h3>
-			<p class="text-sm text-neutral-600 mt-1">{{ review.course.title }}</p>
 		</div>
 		
-		<!-- Stars aligned to the right -->
-		<div class="flex items-center gap-1 flex-shrink-0">
+		<!-- Stars -->
+		<div class="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
 			{% for star in "12345" %}
 				{% if forloop.counter <= review.rating %}
-					<svg class="h-7 w-7 text-primary" viewBox="0 0 24 24" fill="currentColor">
+					<svg class="h-5 sm:h-7 w-5 sm:w-7 text-primary" viewBox="0 0 24 24" fill="currentColor">
 						<path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
 					</svg>
 				{% else %}
-					<svg class="h-7 w-7 text-neutral-300" viewBox="0 0 24 24" fill="currentColor">
+					<svg class="h-5 sm:h-7 w-5 sm:w-7 text-neutral-300" viewBox="0 0 24 24" fill="currentColor">
 						<path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
 					</svg>
 				{% endif %}
@@ -42,19 +44,19 @@
 	</div>
 
 	<!-- Review Content -->
-	<div class="text-neutral-700 leading-relaxed text-base space-y-4">
+	<div class="text-neutral-700 leading-relaxed text-sm sm:text-base space-y-3 sm:space-y-4">
 		{{ review.content|linebreaksbr }}
 	</div>
 	
 	<!-- Footer: Date and Edit Button -->
-	<div class="flex items-center justify-between mt-4">
-		<div class="text-sm text-neutral-500">
+	<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4">
+		<div class="text-xs sm:text-sm text-neutral-500">
 			{{ review.created_at|date:"M d, Y" }}
 		</div>
 		
 		{% if user.is_authenticated and user == review.user %}
-		<a href="{% url 'reviews:edit_review' review.id %}?next={{ request.path }}" class="flex items-center gap-1 text-sm px-3 py-1 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors">
-			<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<a href="{% url 'reviews:edit_review' review.id %}?next={{ request.path }}" class="flex items-center gap-1 text-xs sm:text-sm px-2 sm:px-3 py-1 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors whitespace-nowrap">
+			<svg class="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
 			</svg>
 			Edit

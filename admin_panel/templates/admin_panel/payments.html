@@ -48,7 +48,7 @@
                     <tr class="border-b border-gray-100 hover:bg-gray-50">
                         <td class="py-4 pr-4 font-mono text-sm">{{ payment.order_id }}</td>
                         <td class="py-4 pr-4">#{{ payment.booking.id }}</td>
-                        <td class="py-4 pr-4">{{ payment.booking.user_profile.user.username }}</td>
+                        <td class="py-4 pr-4">{{ payment.booking.user.username }}</td>
                         <td class="py-4 pr-4">
                             <span class="px-2 py-1 bg-gray-100 rounded text-xs">
                                 {{ payment.get_payment_method_display }}
@@ -67,14 +67,25 @@
                         <td class="py-4 pr-4 text-sm text-gray-600">{{ payment.created_at|date:"Y-m-d H:i" }}</td>
                         <td class="py-4">
                             <div class="flex space-x-2">
+                                <!-- Status Update Dropdown -->
+                                <form method="POST" action="{% url 'admin_panel:payment_update_status' payment.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <select name="status" onchange="this.form.submit()" class="text-xs border border-gray-300 rounded px-2 py-1">
+                                        <option value="">Change Status</option>
+                                        <option value="pending" {% if payment.status == 'pending' %}selected{% endif %}>Pending</option>
+                                        <option value="settlement" {% if payment.status == 'settlement' %}selected{% endif %}>Settlement</option>
+                                        <option value="capture" {% if payment.status == 'capture' %}selected{% endif %}>Capture</option>
+                                        <option value="deny" {% if payment.status == 'deny' %}selected{% endif %}>Deny</option>
+                                        <option value="cancel" {% if payment.status == 'cancel' %}selected{% endif %}>Cancel</option>
+                                        <option value="expire" {% if payment.status == 'expire' %}selected{% endif %}>Expire</option>
+                                        <option value="failure" {% if payment.status == 'failure' %}selected{% endif %}>Failure</option>
+                                    </select>
+                                </form>
+                                
                                 <button onclick="showPaymentDetails('{{ payment.order_id }}', '{{ payment.midtrans_response|escapejs }}')" 
-                                        class="text-blue-600 hover:text-blue-800 text-sm">
+                                        class="text-blue-600 hover:text-blue-800 text-sm" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <a href="/django-admin/payment/payment/{{ payment.id }}/change/" target="_blank" 
-                                   class="text-green-600 hover:text-green-800 text-sm">
-                                    <i class="fas fa-edit"></i>
-                                </a>
                             </div>
                         </td>
                     </tr>

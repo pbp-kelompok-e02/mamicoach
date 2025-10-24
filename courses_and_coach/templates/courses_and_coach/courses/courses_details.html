@@ -129,20 +129,11 @@
                 {% endif %}
             </div>
 
-            <div class="hidden lg:block">
+            <!-- Booking Card - Single instance for both mobile and desktop -->
+            <div class="lg:col-span-1 mt-8 lg:mt-0">
                 <div class="sticky top-24 h-fit">
                     {% include 'booking/booking_card.html' with course=course %}
                 </div>
-            </div>
-            
-            <!-- Mobile Booking Card -->
-            <div class="lg:hidden mt-8">
-                {% include 'booking/booking_card.html' with course=course %}
-            </div>
-            
-            <!-- Mobile Booking Card -->
-            <div class="lg:hidden mt-8">
-                {% include 'booking/booking_card.html' with course=course %}
             </div>
         </div>
 
@@ -210,12 +201,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success && data.redirect) {
                 window.location.href = data.redirect;
             } else {
-                alert('Gagal menghapus kelas.');
+                showToast('Gagal menghapus kelas.', 'error');
                 modalEl.classList.add('hidden');
             }
         } catch (err) {
             console.error(err);
-            alert('Terjadi kesalahan. Silakan coba lagi.');
+            showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
             modalEl.classList.add('hidden');
         } finally {
             confirmBtn.disabled = false;

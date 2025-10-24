@@ -8,10 +8,10 @@ This module provides utilities for:
 - Finding available start times for a coach on a specific date
 """
 
-from datetime import datetime, timedelta, time as dt_time, date as dt_date
+from datetime import datetime, time as dt_time, date as dt_date
 from typing import List, Tuple
-from django.db.models import Q
 from django.utils import timezone
+import pytz
 
 
 def merge_intervals(intervals: List[Tuple[dt_time, dt_time]]) -> List[Tuple[dt_time, dt_time]]:
@@ -219,10 +219,16 @@ def get_available_start_times(coach, course, target_date: dt_date, step_minutes:
         return []
     
     available_intervals = list(availabilities)
-    
+
+    jakarta_tz = pytz.timezone('Asia/Jakarta')
+    utc_tz = pytz.UTC
+
     # Get active bookings for the coach on this date (timezone-aware)
-    start_of_day = timezone.make_aware(datetime.combine(target_date, dt_time.min))
-    end_of_day = timezone.make_aware(datetime.combine(target_date, dt_time.max))
+    start_of_day_local = jakarta_tz.localize(datetime.combine(target_date, dt_time.min))
+    end_of_day_local = jakarta_tz.localize(datetime.combine(target_date, dt_time.max))
+
+    start_of_day = start_of_day_local.astimezone(utc_tz)
+    end_of_day = end_of_day_local.astimezone(utc_tz)
     
     active_bookings = Booking.objects.filter(
         coach=coach,
@@ -231,11 +237,18 @@ def get_available_start_times(coach, course, target_date: dt_date, step_minutes:
         end_datetime__gt=start_of_day
     ).values_list('start_datetime', 'end_datetime')
     
-    # Convert datetime to time for busy intervals
-    busy_intervals = [
-        (booking_start.time(), booking_end.time())
-        for booking_start, booking_end in active_bookings
-    ]
+    # Convert datetime to time for busy intervals using Jakarta timezone
+    busy_intervals = []
+    for booking_start, booking_end in active_bookings:
+        if booking_start is None or booking_end is None:
+            continue
+        if timezone.is_naive(booking_start):
+            booking_start = utc_tz.localize(booking_start)
+        if timezone.is_naive(booking_end):
+            booking_end = utc_tz.localize(booking_end)
+        local_start = timezone.localtime(booking_start, jakarta_tz)
+        local_end = timezone.localtime(booking_end, jakarta_tz)
+        busy_intervals.append((local_start.time(), local_end.time()))
     
     # Calculate free intervals
     free_intervals = subtract_busy(available_intervals, busy_intervals)

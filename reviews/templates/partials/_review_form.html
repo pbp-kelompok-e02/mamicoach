@@ -3,12 +3,12 @@
 	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 		<!-- Header -->
 		<div class="mb-8 text-center lg:text-left">
-			<p class="text-sm font-medium text-neutral-500 sm:text-base">Course Review Booking#{{ booking.id }}</p>
+			<p class="text-sm font-medium text-neutral-500 sm:text-base">Review Kursus Pemesanan#{{ booking.id }}</p>
 			<h1 class="mt-2 text-2xl font-bold text-neutral-900 sm:text-3xl lg:text-4xl">
 				{% if is_edit %}
-					Edit your review for <span class="text-primary">{{ review.coach.user.first_name|default:review.coach.user.username }}</span>
+					Edit review Anda untuk <span class="text-primary">{{ review.coach.user.first_name|default:review.coach.user.username }}</span>
 				{% else %}
-					Review your experience with <span class="text-primary">{{ booking.coach.user.first_name|default:booking.coach.user.username }}</span>
+					Review pengalaman Anda dengan <span class="text-primary">{{ booking.coach.user.first_name|default:booking.coach.user.username }}</span>
 				{% endif %}
 			</h1>
 			<p class="mt-2 text-lg text-neutral-600 font-semibold">
@@ -97,9 +97,9 @@
 						<div class="flex items-center gap-4">
 							<div class="h-12 w-12 overflow-hidden rounded-full ring-2 ring-primary/20 sm:h-16 sm:w-16">
 								{% if is_edit %}
-									<img src="{% if review.user.profile.profile_image %}{{ review.user.profile.profile_image.url }}{% else %}https://i.pravatar.cc/100?u={{ review.user.username }}{% endif %}" alt="Reviewer avatar" class="h-full w-full object-cover" />
+									<img src="{{ review.user.profile.image_url }}" alt="Reviewer avatar" class="h-full w-full object-cover" />
 								{% else %}
-									<img src="{% if request.user.profile.profile_image %}{{ request.user.profile.profile_image.url }}{% else %}https://i.pravatar.cc/100?u={{ request.user.username }}{% endif %}" alt="Reviewer avatar" class="h-full w-full object-cover" />
+									<img src="{{ request.user.profile.image_url }}" alt="Reviewer avatar" class="h-full w-full object-cover" />
 								{% endif %}
 							</div>
 							<div>
@@ -189,14 +189,14 @@
 								id="submit-btn"
 								class="flex-1 rounded-xl bg-primary px-6 py-4 text-base font-semibold text-white shadow-md transition hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 active:scale-[0.98] sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
 							>
-								Update Review
+								Perbarui Review
 							</button>
 							<button
 								type="button"
 								onclick="openDeleteModal()"
 								class="flex-1 rounded-xl bg-red-500 px-6 py-4 text-base font-semibold text-white shadow-md transition hover:bg-red-600 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 active:scale-[0.98] sm:text-lg"
 							>
-								Delete Review
+								Hapus Review
 							</button>
 						{% else %}
 							<!-- Create Mode: Submit button only -->
@@ -205,7 +205,7 @@
 								id="submit-btn"
 								class="w-full rounded-xl bg-primary px-6 py-4 text-base font-semibold text-white shadow-md transition hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 active:scale-[0.98] sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
 							>
-								Submit Review
+								Kirim Review
 							</button>
 						{% endif %}
 					</div>
@@ -213,7 +213,7 @@
 
 				{% if is_edit %}
 				<!-- Hidden Delete Form -->
-				<form id="delete-form" action="{{ delete_action }}" method="post" class="hidden">
+				<form id="delete-form" action="{% if callback_url %}{{ delete_action }}?next={{ callback_url }}{% else %}{{ delete_action }}{% endif %}" method="post" class="hidden">
 					{% csrf_token %}
 				</form>
 				{% endif %}
@@ -232,9 +232,9 @@
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
 				</svg>
 			</div>
-			<h3 class="text-xl font-semibold text-neutral-900">Delete Review</h3>
+			<h3 class="text-xl font-semibold text-neutral-900">Hapus Review</h3>
 			<p class="mt-2 text-sm text-neutral-600">
-				Are you sure you want to delete this review? This action cannot be undone and will permanently remove your review from the system.
+				Apakah Anda yakin ingin menghapus review ini? Tindakan ini tidak dapat dibatalkan dan akan menghapus review Anda secara permanen dari sistem.
 			</p>
 		</div>
 		
@@ -244,14 +244,14 @@
 				onclick="closeDeleteModal()"
 				class="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2"
 			>
-				Cancel
+				Batal
 			</button>
 			<button
 				type="button"
 				onclick="confirmDelete()"
 				class="flex-1 rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
 			>
-				Delete Review
+				Hapus Review
 			</button>
 		</div>
 	</div>
@@ -287,17 +287,17 @@ document.addEventListener('DOMContentLoaded', function () {
 		// Check rating
 		const rating = parseInt(ratingInput.value, 10);
 		if (!rating || rating < 1 || rating > 5) {
-			errors.push('Please select a rating (1-5 stars)');
+			errors.push('Silakan pilih rating (1-5 bintang)');
 		}
 		
 		// Check content
 		const content = contentInput.value.trim();
 		if (!content) {
-			errors.push('Please write your review');
+			errors.push('Silakan tulis review Anda');
 		} else if (content.length < 10) {
-			errors.push('Your review must be at least 10 characters long');
+			errors.push('Review Anda harus minimal 10 karakter');
 		} else if (content.length > 5000) {
-			errors.push('Your review cannot exceed 5000 characters');
+			errors.push('Review Anda tidak boleh melebihi 5000 karakter');
 		}
 		
 		return errors;
@@ -326,6 +326,12 @@ document.addEventListener('DOMContentLoaded', function () {
 			e.preventDefault();
 			// Scroll to error
 			errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		} else {
+			// Add callback URL to form action if it exists
+			const callbackUrl = '{{ callback_url|escapejs }}';
+			if (callbackUrl && !form.action.includes('next=')) {
+				form.action = (form.action || window.location.pathname) + '?next=' + encodeURIComponent(callbackUrl);
+			}
 		}
 	});
 	
@@ -335,11 +341,11 @@ document.addEventListener('DOMContentLoaded', function () {
 		let feedback = '';
 		
 		if (content.length === 0) {
-			feedback = '0/5000 characters';
+			feedback = '0/5000 karakter';
 		} else if (content.length < 10) {
-			feedback = content.length + '/5000 (minimum 10 characters)';
+			feedback = content.length + '/5000 (minimal 10 karakter)';
 		} else {
-			feedback = content.length + '/5000 characters';
+			feedback = content.length + '/5000 karakter';
 		}
 		
 		// Update character counter (can be displayed near the textarea)

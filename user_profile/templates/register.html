@@ -173,13 +173,16 @@
                         </form>
 
                         <!-- Footer -->
-                        <div class="mt-6 text-center">
+                        <div class="mt-6 text-center space-y-4">
                             <p class="text-sm text-gray-600">
                                 Sudah punya akun? 
                                 <a href="{% url 'user_profile:login' %}" class="text-green-600 font-bold hover:text-green-700 hover:underline">
                                     Masuk di sini
                                 </a>
                             </p>
+                            <a href="{% url 'user_profile:register_coach' %}" class="text-green-600 font-bold hover:text-green-700  hover:underline">
+                                Daftar sebagai coach
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -279,7 +282,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast(data.message, 'success');
                 } else {
                     console.error('showToast is not a function!');
-                    alert(data.message);
                 }
                 
                 setTimeout(() => {
@@ -299,14 +301,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const errorMsg = errorMessages.join(' ');
                 if (typeof showToast === 'function') {
                     showToast(errorMsg, 'error');
-                } else {
-                    alert(errorMsg);
                 }
             } else {
                 if (typeof showToast === 'function') {
                     showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
-                } else {
-                    alert('Terjadi kesalahan. Silakan coba lagi.');
                 }
             }
             

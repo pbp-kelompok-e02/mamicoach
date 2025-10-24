@@ -62,6 +62,22 @@ class Booking(models.Model):
         # Only validate if we have the new datetime fields
         if self.start_datetime and self.end_datetime:
             self.full_clean()
+        
+        # Check if booking status is transitioning to 'done' for the first time
+        if self.pk:  # Only if the object already exists
+            old_instance = Booking.objects.filter(pk=self.pk).first()
+            # Only update coach hours and balance if transitioning to 'done' from non-'done' status
+            if old_instance and old_instance.status != 'done' and self.status == 'done' and self.start_datetime and self.end_datetime:
+                duration = self.end_datetime - self.start_datetime
+                minutes = int(duration.total_seconds() / 60)
+                self.coach.total_minutes_coached += minutes
+                
+                # Add course price to coach balance
+                if self.course and self.course.price:
+                    self.coach.balance += int(self.course.price)
+                
+                self.coach.save(update_fields=['total_minutes_coached', 'balance'])
+        
         super().save(*args, **kwargs)
     
     def __str__(self):

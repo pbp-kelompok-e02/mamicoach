@@ -19,7 +19,7 @@
                     </div>
                     <input type="text" 
                             name="search"
-                           placeholder="Cari kelas atau coach..." 
+                           placeholder="Cari kelas..." 
                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary text-sm">
                 </form>
             </div>
@@ -60,16 +60,9 @@
                         <button class="flex items-center space-x-2 text-gray-700 hover:text-primary focus:outline-none">
                             <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                                <img 
-                                     src="{% if user.coachprofile and user.coachprofile.profile_image %}
-                                    {{ user.coachprofile.profile_image.url}}
-                                    {% elif user.userprofile and user.userprofile.profile_image %}
-                                    {{ user.userprofile.profile_image.url }}
-                                    {% else %}
-                                    {% static 'images/logo.png' %}
-                                    {% endif %}"
-                                    alt="Profile Picture" 
-                                    class="w-8 h-8 rounded-full object-cover"
-                                    onerror="this.onerror=null;this.src='{% static 'images/logo.png' %}';"
+                                     src="{% if user.coachprofile and user.coachprofile.image_url %}{{ user.coachprofile.image_url }}{% elif user.userprofile and user.userprofile.image_url %}{{ user.userprofile.image_url }}{% endif %}"
+                                     alt="Profile Picture" 
+                                     class="w-8 h-8 rounded-full object-cover"
                                 >
                             </div>
                             <span class="text-sm font-medium">{{ user.first_name|default:user.username }}</span>
@@ -114,7 +107,7 @@
             </div>
 
             {% if user.is_authenticated %}
-            <div class="ml-4">
+            <div class="ml-4 max-md:hidden">
                 <a href="{% url 'chat:chat_index' %}" class="text-gray-700 hover:text-primary p-2 relative">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-inbox-icon lucide-inbox"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
                 </a>
@@ -139,7 +132,7 @@
                 </div>
                 <input type="text" 
                         name="search"
-                       placeholder="Cari kelas atau coach..." 
+                       placeholder="Cari kelas..." 
                        class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary text-sm z-40">
             </form>
         </div>
@@ -156,7 +149,6 @@
             <a href="{% url 'courses_and_coach:show_coaches' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                 Coach
             </a>
-          
             
             {% if user.is_authenticated %}
                 <div class="border-t border-gray-200 pt-4">
@@ -179,6 +171,9 @@
                             Buat Kelas Baru
                         </a>
                     {% elif user.is_authenticated %}
+                        <a href="{% url 'chat:chat_index' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+                            Pesan Saya
+                        </a>
                         <a href="{% url 'user_profile:dashboard_user' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                             Dashboard
                         </a>
