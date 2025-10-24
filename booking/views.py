@@ -10,7 +10,9 @@ from schedule.models import ScheduleSlot
 from courses_and_coach.models import Course
 from booking.services.availability import get_available_start_times
 from datetime import datetime, timedelta
-import calendar, pytz, json
+import pytz
+import calendar
+import json
 
 @login_required(login_url="/login")
 def get_available_dates(request, coach_id):
@@ -353,22 +355,32 @@ def api_booking_list(request):
             'user', 'coach__user', 'course'
         ).order_by('-created_at')
         
-        bookings_data = [
-            {
+        jakarta_tz = pytz.timezone('Asia/Jakarta')
+
+        def to_local(dt):
+            if dt is None:
+                return None
+            return timezone.localtime(dt, jakarta_tz)
+
+        bookings_data = []
+        for booking in bookings_qs:
+            start_local = to_local(booking.start_datetime)
+            end_local = to_local(booking.end_datetime)
+            created_local = to_local(booking.created_at)
+
+            bookings_data.append({
                 'id': booking.id,
                 'user_name': booking.user.get_full_name() or booking.user.username,
                 'coach_name': booking.coach.user.get_full_name(),
                 'course_title': booking.course.title,
-                'start_datetime': booking.start_datetime.isoformat(),
-                'end_datetime': booking.end_datetime.isoformat(),
-                'date': booking.date.isoformat(),
-                'start_time': booking.start_time.strftime('%H:%M'),
-                'end_time': booking.end_time.strftime('%H:%M'),
+                'start_datetime': start_local.isoformat() if start_local else None,
+                'end_datetime': end_local.isoformat() if end_local else None,
+                'date': start_local.date().isoformat() if start_local else None,
+                'start_time': start_local.strftime('%H:%M') if start_local else None,
+                'end_time': end_local.strftime('%H:%M') if end_local else None,
                 'status': booking.status,
-                'created_at': booking.created_at.isoformat()
-            }
-            for booking in bookings_qs
-        ]
+                'created_at': created_local.isoformat() if created_local else booking.created_at.isoformat()
+            })
         
         return JsonResponse({
             'bookings': bookings_data,
@@ -540,27 +552,52 @@ def api_coach_available_dates_legacy(request, coach_id):
     """
     try:
         coach = get_object_or_404(CoachProfile, id=coach_id)
-        
+
         year = int(request.GET.get('year', datetime.now().year))
         month = int(request.GET.get('month', datetime.now().month))
-        
+        course_id = request.GET.get('course_id')
+
+        # Determine course context for availability (needed for duration)
+        course = None
+        if course_id:
+            course = get_object_or_404(Course, id=course_id, coach=coach)
+        else:
+            course = coach.courses.first()
+
         # Get all availabilities for this coach in the specified month
         from schedule.models import CoachAvailability
-        
+
         availabilities = CoachAvailability.objects.filter(
             coach=coach,
             date__year=year,
             date__month=month,
             date__gte=datetime.now().date()
         ).values_list('date', flat=True).distinct()
-        
+
         available_dates = []
-        for date in availabilities:
-            available_dates.append({
-                'date': date.isoformat(),
-                'day': date.day,
-                'available': True
-            })
+        for available_date in availabilities:
+            include_date = True
+            available_times_count = None
+
+            if course:
+                start_times = get_available_start_times(
+                    coach=coach,
+                    course=course,
+                    target_date=available_date,
+                    step_minutes=30
+                )
+                available_times_count = len(start_times)
+                include_date = available_times_count > 0
+
+            if include_date:
+                payload = {
+                    'date': available_date.isoformat(),
+                    'day': available_date.day,
+                    'available': True
+                }
+                if available_times_count is not None:
+                    payload['available_times_count'] = available_times_count
+                available_dates.append(payload)
         
         return JsonResponse({
             'available_dates': available_dates,
