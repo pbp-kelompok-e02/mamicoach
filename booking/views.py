@@ -539,11 +539,10 @@ def api_booking_mark_as_paid(request, booking_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-# ========== COMPATIBILITY ENDPOINTS FOR OLD BOOKING SYSTEM ==========
 
 @login_required(login_url="/login")
 @require_http_methods(["GET"])
-def api_coach_available_dates_legacy(request, coach_id):
+def api_coach_available_dates(request, coach_id):
     """
     Legacy endpoint for old booking UI.
     Returns available dates based on CoachAvailability.
@@ -618,7 +617,7 @@ def api_coach_available_dates_legacy(request, coach_id):
 
 @login_required(login_url="/login")
 @require_http_methods(["GET"])
-def api_coach_available_times_legacy(request, coach_id):
+def api_coach_available_times(request, coach_id):
     """
     Legacy endpoint for old booking UI.
     Returns available time slots for a specific date.
@@ -663,7 +662,6 @@ def api_coach_available_times_legacy(request, coach_id):
                 'display': start_time_str,
                 'available': True
             })
-        print(available_times)
         return JsonResponse({
             'available_times': available_times,
             'date': date_str,
