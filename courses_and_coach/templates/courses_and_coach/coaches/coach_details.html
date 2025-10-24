@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class=" min-h-screen">
-    <div class="bg-primary  sm:py-16">
+    <div class="bg-primary sm:py-16">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
                 <div class="flex-shrink-0">
@@ -28,15 +28,58 @@
                     <p class="text-green-50 mb-4 text-sm sm:text-base leading-relaxed max-w-2xl">{{ coach.bio }}</p>
                     {% endif %}
 
-                    <div class="flex flex-wrap justify-center sm:justify-start gap-6 mt-6">
-                        <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2 backdrop-blur">
+                    <!-- Expertise Section -->
+                    {% if coach.expertise %}
+                    <div class="mb-6">
+                        <p class="text-green-100 text-sm font-semibold mb-2">Keahlian:</p>
+                        <div class="flex flex-wrap justify-center sm:justify-start gap-2">
+                            {% for skill in coach.expertise %}
+                            <a 
+                                href="{% url 'courses_and_coach:category_detail' skill %}"
+                                class="bg-white bg-opacity-20 hover:bg-opacity-30 text-primary font-semibold px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 hover:shadow-lg"
+                            >
+                                {{ skill }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-4 mt-6">
+                        <div class="bg-white flex justify-center items-center  gap-2 bg-opacity-20 rounded-lg px-2 py-1 backdrop-blur">
                             <p class="text-2xl font-bold text-black">{{ courses.count }}</p>
                             <p class="text-sm text-black">Kelas</p>
                         </div>
                         {% if coach.rating %}
                         <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2 backdrop-blur">
-                            <p class="text-2xl font-bold text-black">{{ coach.rating|floatformat:1 }}</p>
-                            <p class="text-sm text-black">Rating</p>
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center">
+                                    {% with rating=coach.rating|floatformat:0|add:"0" %}
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= rating %}
+                                        <svg class="w-5 h-5 text-primary fill-current" viewBox="0 0 20 20">
+                                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"></path>
+                                        </svg>
+                                        {% elif forloop.counter == rating|add:"1" and coach.rating|floatformat:1|slice:"2:" != "0" %}
+                                        <svg class="w-5 h-5 text-primary fill-current" viewBox="0 0 20 20">
+                                            <defs>
+                                                <linearGradient id="half">
+                                                    <stop offset="50%" stop-color="currentColor"/>
+                                                    <stop offset="50%" stop-color="#E5E7EB"/>
+                                                </linearGradient>
+                                            </defs>
+                                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" fill="url(#half)"></path>
+                                        </svg>
+                                        {% else %}
+                                        <svg class="w-5 h-5 text-gray-300 fill-current" viewBox="0 0 20 20">
+                                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"></path>
+                                        </svg>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endwith %}
+                                </div>
+                                <span class="text-lg font-bold text-black">{{ coach.rating|floatformat:1 }}</span>
+                            </div>
                         </div>
                         {% endif %}
                     </div>
