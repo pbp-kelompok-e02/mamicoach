@@ -50,6 +50,7 @@ class Course(models.Model):
     )
     duration = models.PositiveIntegerField(help_text="Duration in minutes")
     # TODO: Rating between 0.0 to 5.0
+    rating = models.FloatField(default=0.0)
     thumbnail_url = models.URLField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

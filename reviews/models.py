@@ -17,3 +17,17 @@ class Review(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Update course rating
+        course_reviews = Review.objects.filter(course=self.course)
+        course_avg = course_reviews.aggregate(models.Avg('rating'))['rating__avg'] or 0
+        self.course.rating = course_avg
+        self.course.save(update_fields=['rating'])
+
+        # Update coach rating
+        coach_reviews = Review.objects.filter(coach=self.coach)
+        coach_avg = coach_reviews.aggregate(models.Avg('rating'))['rating__avg'] or 0
+        self.coach.rating = coach_avg
+        self.coach.save(update_fields=['rating'])
