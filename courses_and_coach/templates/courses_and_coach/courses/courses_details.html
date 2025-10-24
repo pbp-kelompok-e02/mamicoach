@@ -105,6 +105,28 @@
                         <p class="text-gray-600 leading-relaxed">{{ course.description }}</p>
                     </div>
                 </div>
+                <!-- Reviews Section -->
+                {% if reviews %}
+                <div class="mt-16">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-8">Ulasan dari Siswa</h2>
+                    <div class="space-y-6">
+                        {% for review in reviews %}
+                            {% include 'partials/_review_card.html' with review=review %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="mt-16">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-8">Ulasan dari Siswa</h2>
+                    <div class="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-black/5">
+                        <svg class="mx-auto h-12 w-12 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-1l-4 4z"></path>
+                        </svg>
+                        <h3 class="mt-4 text-lg font-semibold text-neutral-900">Belum ada ulasan</h3>
+                        <p class="mt-2 text-neutral-600">Jadilah yang pertama memberi ulasan untuk kelas ini!</p>
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
             <div class="hidden lg:block">
@@ -123,6 +145,7 @@
                 {% include 'booking/booking_card.html' with course=course %}
             </div>
         </div>
+
 
         {% if related_courses %}
         <div class="mt-16">

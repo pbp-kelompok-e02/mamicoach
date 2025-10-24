@@ -37,9 +37,13 @@ PRODUCTION = os.getenv("PRODUCTION", "False").lower() == "true"
 SCHEMA = os.getenv("SCHEMA", "public")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = not PRODUCTION
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "kevin-cornellius-mamicoach.pbp.cs.ui.ac.id"]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost",
+    "https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id",
+]
 
 
 # Application definition
@@ -54,8 +58,11 @@ INSTALLED_APPS = [
     "main",
     "courses_and_coach",
     "user_profile",
+    "reviews",
+    "chat",
     "schedule",
     "booking",
+    "payment",
 ]
 
 MIDDLEWARE = [
@@ -197,9 +204,11 @@ else:
         BASE_DIR / "static"
     )  # merujuk ke /static root project pada mode production
 
-# Media files (User uploaded files)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Media files (User uploads)
+# https://docs.djangoproject.com/en/5.2/howto/manage-files/
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

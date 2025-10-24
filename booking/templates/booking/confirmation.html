@@ -266,7 +266,6 @@
             if (data.success) {
                 // Redirect to payment page (to be implemented by payment team)
                 // For now, redirect to success page or booking history
-                alert('Booking berhasil dibuat! (Payment integration coming soon)');
                 window.location.href = `/booking/success/${data.booking_id}/`;
             }
         } catch (error) {
