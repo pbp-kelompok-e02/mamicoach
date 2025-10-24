@@ -6,3 +6,6 @@ requests
 urllib3
 python-dotenv
 dj-database-url
+Pillow
+midtransclient
+pytz
