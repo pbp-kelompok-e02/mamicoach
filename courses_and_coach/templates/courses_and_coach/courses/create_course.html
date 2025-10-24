@@ -8,7 +8,10 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Buat Kelas Baru</h1>
+            <div class="flex justify-center items-center space-x-4 mb-4">        
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Buat Kelas Baru</h1>
+                <a href="{% url 'courses_and_coach:my_courses' %}" class="bg-primary text-white font-bold px-2 py-1 rounded-xl hover:underline">Lihat Kelas</a>
+            </div>
             <p class="text-lg text-gray-600">Bagikan keahlian Anda dan bantu lebih banyak orang mencapai tujuan fitness mereka</p>
         </div>
 

@@ -289,7 +289,7 @@ def payment_callback(request):
     booking = payment.booking
     
     # Check if user owns this booking (optional, for security)
-    if request.user.is_authenticated and booking.user_profile.user != request.user:
+    if request.user.is_authenticated and booking.user != request.user:
         messages.error(request, 'Unauthorized access')
         return redirect('user_profile:dashboard_user')
     

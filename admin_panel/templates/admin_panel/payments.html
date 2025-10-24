@@ -48,7 +48,7 @@
                     <tr class="border-b border-gray-100 hover:bg-gray-50">
                         <td class="py-4 pr-4 font-mono text-sm">{{ payment.order_id }}</td>
                         <td class="py-4 pr-4">#{{ payment.booking.id }}</td>
-                        <td class="py-4 pr-4">{{ payment.booking.user_profile.user.username }}</td>
+                        <td class="py-4 pr-4">{{ payment.booking.user.username }}</td>
                         <td class="py-4 pr-4">
                             <span class="px-2 py-1 bg-gray-100 rounded text-xs">
                                 {{ payment.get_payment_method_display }}

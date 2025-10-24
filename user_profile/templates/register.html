@@ -173,13 +173,16 @@
                         </form>
 
                         <!-- Footer -->
-                        <div class="mt-6 text-center">
+                        <div class="mt-6 text-center space-y-4">
                             <p class="text-sm text-gray-600">
                                 Sudah punya akun? 
                                 <a href="{% url 'user_profile:login' %}" class="text-green-600 font-bold hover:text-green-700 hover:underline">
                                     Masuk di sini
                                 </a>
                             </p>
+                            <a href="{% url 'user_profile:register_coach' %}" class="text-green-600 font-bold hover:text-green-700  hover:underline">
+                                Daftar sebagai coach
+                            </a>
                         </div>
                     </div>
                 </div>
