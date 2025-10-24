@@ -80,13 +80,13 @@
                 <div class="flex flex-wrap gap-3 items-center">
                     <span class="text-sm font-medium text-gray-700">Kategori:</span>
                     <button type="button" 
-                            class="category-filter cursor-pointer px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 {% if not selected_category %}bg-primary text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}"
+                            class="category-filter px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 {% if not selected_category %}bg-primary text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}"
                             data-category="">
                         Semua
                     </button>
                     {% for category in categories %}
                     <button type="button" 
-                            class="category-filter  cursor-pointer px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:bg-primary hover:text-white"
+                            class="category-filter px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:bg-primary hover:text-white"
                             data-category="{{category.name}}">
                         {{ category.name }}
                     </button>
@@ -119,29 +119,6 @@
             {% endif %}
         </div>
 
-        <!-- Pagination Controls -->
-        <nav id="pagination-controls" class="flex justify-center items-center gap-2 mb-8" aria-label="Pagination">
-            <button id="first-btn" onclick="goToFirstPage()" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Halaman Pertama">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-left-icon lucide-chevrons-left"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
-            </button>
-            
-            <button id="prev-btn" onclick="changePage(-1)" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            
-            <span id="page-info" class="px-4 cursor-pointer py-2 text-gray-700 font-medium">
-                Halaman <span id="current-page">1</span> dari <span id="total-pages">1</span>
-            </span>
-            
-            <button id="next-btn" onclick="changePage(1)" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
-            
-            <button id="last-btn" onclick="goToLastPage()" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Halaman Terakhir">
-               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-right-icon lucide-chevrons-right"><path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/></svg>
-            </button>
-        </nav>
-
         <!-- Empty State -->
         <div id="empty-state" class="text-center py-16 {% if courses %}hidden{% endif %}">
             <div class="max-w-md mx-auto flex flex-col justify-center items-center gap-2">
@@ -159,8 +136,6 @@
 <script>
 let searchTimeout;
 let isLoading = false;
-let currentPage = {{ current_page|default:1 }};
-let totalPages = {{ total_pages|default:1 }};
 
 // Get CSRF token
 const csrfToken = '{{ csrf_token }}';
@@ -175,8 +150,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // Real-time search with debounce
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
-        currentPage = 1; // Reset to first page on search
-        totalPages = 1;
         searchTimeout = setTimeout(() => {
             loadCourses();
         }, 500); // 500ms delay
@@ -186,8 +159,6 @@ document.addEventListener("DOMContentLoaded", function() {
         button.addEventListener('click', function(e) {
             e.preventDefault();
             
-            currentPage = 1; 
-            totalPages = 1;
             const categoryInput = document.getElementById('category-input');
             const selectedCategory = this.getAttribute('data-category');
             if (categoryInput) {
@@ -244,15 +215,13 @@ document.addEventListener("DOMContentLoaded", function() {
             const params = new URLSearchParams();
             if (searchQuery) {
                 params.append('search', searchQuery);
-            }   
+            }
             if (selectedCategory) {
                 params.append('category', selectedCategory);
             }
-            params.append('page', currentPage);
             
             console.log('Search Query:', searchQuery);
             console.log('Category:', selectedCategory);
-            console.log('Page:', currentPage);
             console.log('Params:', params.toString());
 
             // Fetch data
@@ -270,20 +239,12 @@ document.addEventListener("DOMContentLoaded", function() {
             const data = await response.json();
             console.log('Response data:', data);
             
-            // Update pagination info
-            totalPages = data.total_pages || 1;
-            currentPage = data.current_page || 1;
-            
-            // Update pagination UI
-            document.getElementById('current-page').textContent = currentPage;
-            document.getElementById('total-pages').textContent = totalPages;
-            updatePaginationButtons();
-            
+            // Update UI based on response
             if (data.html && data.html.trim()) {
                 coursesContainer.innerHTML = data.html;
                 emptyState.classList.add('hidden');
-                document.getElementById('pagination-controls').classList.remove('hidden');
                 
+                // Update class count info
                 const classCountInfo = document.getElementById('class-count-info');
                 if (classCountInfo && data.count !== undefined) {
                     if (data.count > 0) {
@@ -295,13 +256,14 @@ document.addEventListener("DOMContentLoaded", function() {
             } else {
                 coursesContainer.innerHTML = '';
                 emptyState.classList.remove('hidden');
-                document.getElementById('pagination-controls').classList.add('hidden');
                 
+                // Update class count info for empty results
                 const classCountInfo = document.getElementById('class-count-info');
                 if (classCountInfo) {
                     classCountInfo.textContent = 'Tidak ada kelas ditemukan';
                 }
                 
+                // Update empty message
                 const emptyMessage = document.getElementById('empty-message');
                 if (emptyMessage) {
                     if (searchQuery) {
@@ -317,6 +279,7 @@ document.addEventListener("DOMContentLoaded", function() {
         } catch (error) {
             console.error('Error loading courses:', error);
             
+            // Show error state
             coursesContainer.innerHTML = `
                 <div class="col-span-full text-center py-16">
                     <div class="text-red-500 mb-4">
@@ -333,54 +296,17 @@ document.addEventListener("DOMContentLoaded", function() {
             `;
             
             emptyState.classList.add('hidden');
-            document.getElementById('pagination-controls').classList.add('hidden');
         } finally {
             isLoading = false;
         }
     }
 
     window.loadCourses = loadCourses;
-    
-    // Initialize pagination display on page load
-    document.getElementById('current-page').textContent = currentPage;
-    document.getElementById('total-pages').textContent = totalPages;
-    updatePaginationButtons();
 });
-
-function updatePaginationButtons() {
-    document.getElementById('first-btn').disabled = currentPage === 1;
-    document.getElementById('prev-btn').disabled = currentPage === 1;
-    document.getElementById('next-btn').disabled = currentPage === totalPages;
-    document.getElementById('last-btn').disabled = currentPage === totalPages;
-}
-
-function changePage(direction) {
-    const newPage = currentPage + direction;
-    if (newPage < 1 || newPage > totalPages) return;
-    
-    currentPage = newPage;
-    loadCourses();
-}
-
-function goToFirstPage() {
-    if (currentPage === 1) return;
-    currentPage = 1;
-    loadCourses();
-}
-
-function goToLastPage() {
-    if (currentPage === totalPages) return;
-    currentPage = totalPages;
-    loadCourses();
-}
 
 function clearSearch() {
     const searchInput = document.querySelector('input[name="courses-search"]');
     const categoryInput = document.getElementById('category-input');
-    
-    // Reset pagination
-    currentPage = 1;
-    totalPages = 1;
     
     if (searchInput) {
         searchInput.value = '';
