@@ -194,9 +194,10 @@ function renderUnpaidBookings(bookings) {
                 </div>
             </div>
             <div class="ml-4">
-                <span class="bg-yellow-100 text-yellow-800 px-6 py-2 rounded-lg text-sm font-medium">
-                    Waiting for Payment
-                </span>
+                <a href="${"{% url 'booking:booking_success' booking_id=999 %}".replace('999', booking.booking_id)}"
+                   class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors">
+                    Pay Now
+                </a>
             </div>
         </div>
     `).join('');
