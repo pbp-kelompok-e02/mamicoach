@@ -1,10 +1,29 @@
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from courses_and_coach.models import Course, Category
+from user_profile.models import CoachProfile
 
 
 # Create your views here.
 def show_main(request):
-    return render(request, "pages/landing_page/index.html")
+    # Get top 4 featured courses based on coach rating
+    featured_courses = (
+        Course.objects.all()
+        .select_related("coach", "category")
+        .order_by("-coach__rating")[:4]
+    )
+
+    # Get all categories
+    categories = Category.objects.all().order_by("name")
+
+    # Get top 6 coaches by rating
+    top_coaches = CoachProfile.objects.filter(verified=True).order_by("-rating")[:6]
+
+    context = {
+        "featured_courses": featured_courses,
+        "categories": categories,
+        "top_coaches": top_coaches,
+    }
+    return render(request, "pages/landing_page/index.html", context)
 
 
 # Error handlers

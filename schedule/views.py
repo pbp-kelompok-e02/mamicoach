@@ -9,14 +9,19 @@ import json
 
 from schedule.models import CoachAvailability
 from user_profile.models import CoachProfile
+from booking.services.availability import merge_intervals
 
 
 @login_required
 @require_http_methods(["POST"])
 def api_availability_upsert(request):
     """
-    Upsert coach availability for a specific date.
-    Replaces all existing ranges for that date with new ones.
+    Upsert coach availability for a specific date with auto-merge.
+    
+    Behavior:
+    - REPLACE mode: Deletes all existing intervals for the date, then saves new ones
+    - Auto-merge: New intervals are merged if they overlap/adjacent
+    - Returns merged intervals for UI preview
     
     POST /schedule/api/availability/upsert/
     Body: {
@@ -24,7 +29,20 @@ def api_availability_upsert(request):
         "ranges": [
             {"start": "HH:MM", "end": "HH:MM"},
             ...
-        ]
+        ],
+        "mode": "replace"  // Optional: "replace" (default) or "merge"
+    }
+    
+    Response: {
+        "success": true,
+        "message": "...",
+        "date": "YYYY-MM-DD",
+        "merged_intervals": [
+            {"start": "HH:MM", "end": "HH:MM"},
+            ...
+        ],
+        "original_count": 3,
+        "merged_count": 2
     }
     """
     try:
@@ -35,6 +53,7 @@ def api_availability_upsert(request):
         data = json.loads(request.body)
         date_str = data.get('date')
         ranges = data.get('ranges', [])
+        mode = data.get('mode', 'replace')  # Default: replace existing intervals
         
         if not date_str:
             return JsonResponse({'error': 'Date is required'}, status=400)
@@ -49,8 +68,19 @@ def api_availability_upsert(request):
         if not ranges or not isinstance(ranges, list):
             return JsonResponse({'error': 'At least one time range is required'}, status=400)
         
-        # Parse and validate time ranges
-        parsed_ranges = []
+        # Step 1: Get existing intervals (only if merge mode)
+        if mode == 'merge':
+            existing_availabilities = CoachAvailability.objects.filter(
+                coach=coach,
+                date=target_date
+            ).values_list('start_time', 'end_time')
+            existing_intervals = list(existing_availabilities)
+        else:
+            # Replace mode: ignore existing intervals
+            existing_intervals = []
+        
+        # Step 2: Parse and validate new ranges
+        new_intervals = []
         for idx, range_data in enumerate(ranges):
             try:
                 start_str = range_data.get('start')
@@ -64,19 +94,34 @@ def api_availability_upsert(request):
                 start_time = datetime.strptime(start_str, '%H:%M').time()
                 end_time = datetime.strptime(end_str, '%H:%M').time()
                 
+                # Validation: end_time must be after start_time
                 if end_time <= start_time:
                     return JsonResponse({
-                        'error': f'Range {idx + 1}: end time must be after start time'
+                        'error': f'Range {idx + 1}: end time ({end_str}) must be after start time ({start_str})'
                     }, status=400)
                 
-                parsed_ranges.append((start_time, end_time))
+                new_intervals.append((start_time, end_time))
                 
             except ValueError:
                 return JsonResponse({
-                    'error': f'Range {idx + 1}: invalid time format. Use HH:MM'
+                    'error': f'Range {idx + 1}: invalid time format. Use HH:MM (24-hour)'
                 }, status=400)
         
-        # Upsert: Delete existing ranges for this date, then create new ones
+        # Step 3: Determine intervals to process based on mode
+        if mode == 'merge':
+            # Merge mode: combine existing + new
+            all_intervals = existing_intervals + new_intervals
+            original_count = len(all_intervals)
+        else:
+            # Replace mode: only use new intervals
+            all_intervals = new_intervals
+            original_count = len(new_intervals)
+        
+        # Step 4: Auto-merge overlapping/adjacent intervals within new set
+        merged = merge_intervals(all_intervals)
+        merged_count = len(merged)
+        
+        # Step 5: Upsert - Delete old, create merged intervals
         with transaction.atomic():
             # Delete existing availabilities for this coach and date
             CoachAvailability.objects.filter(
@@ -84,7 +129,7 @@ def api_availability_upsert(request):
                 date=target_date
             ).delete()
             
-            # Bulk create new availabilities
+            # Bulk create merged availabilities
             availabilities = [
                 CoachAvailability(
                     coach=coach,
@@ -92,16 +137,36 @@ def api_availability_upsert(request):
                     start_time=start_time,
                     end_time=end_time
                 )
-                for start_time, end_time in parsed_ranges
+                for start_time, end_time in merged
             ]
             
             CoachAvailability.objects.bulk_create(availabilities)
         
+        # Step 6: Format response with merged intervals
+        merged_intervals_response = [
+            {
+                'start': start_time.strftime('%H:%M'),
+                'end': end_time.strftime('%H:%M')
+            }
+            for start_time, end_time in merged
+        ]
+        
+        # Build message based on mode
+        if mode == 'merge':
+            message = f'Availability updated for {date_str}. {original_count} interval(s) merged into {merged_count}.'
+        else:
+            if original_count == merged_count:
+                message = f'Availability updated for {date_str}. {merged_count} interval(s) saved.'
+            else:
+                message = f'Availability updated for {date_str}. {original_count} interval(s) merged into {merged_count}.'
+        
         return JsonResponse({
             'success': True,
-            'message': f'{len(parsed_ranges)} time range(s) saved for {date_str}',
+            'message': message,
             'date': date_str,
-            'count': len(parsed_ranges)
+            'merged_intervals': merged_intervals_response,
+            'original_count': original_count,
+            'merged_count': merged_count
         })
         
     except CoachProfile.DoesNotExist:

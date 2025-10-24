@@ -36,7 +36,7 @@
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 relative">
             <div class="lg:col-span-2">
                 <div class="relative rounded-3xl overflow-hidden shadow-xl mb-8">
                     <img 
@@ -108,6 +108,11 @@
             </div>
 
             <div class="lg:col-span-1">
+                {% include 'booking/booking_card.html' with course=course %}
+            </div>
+            
+            <!-- Mobile Booking Card -->
+            <div class="lg:hidden mt-8">
                 {% include 'booking/booking_card.html' with course=course %}
             </div>
         </div>
