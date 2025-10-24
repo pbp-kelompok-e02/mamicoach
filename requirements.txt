@@ -10,3 +10,5 @@ Pillow
 midtransclient
 pytz
 coverage
+django-storages
+boto3
