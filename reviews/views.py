@@ -7,16 +7,6 @@ from .models import Review
 from .forms import ReviewForm
 # Create your views here.
 
-def show_sample_review(request):
-    # Fetch all reviews from database, ordered by most recent
-    reviews = Review.objects.select_related(
-        'user', 'course', 'coach', 'coach__user'
-    ).order_by('-created_at')
-    
-    ctx = {
-        'reviews': reviews
-    }
-    return render(request, "pages/sample_review.html", context=ctx)
 
 @login_required(login_url='/login')
 def create_review(request, booking_id):

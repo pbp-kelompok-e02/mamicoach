@@ -26,7 +26,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
-            <span>Jadwalkan Sesi</span>
+            <span>Pesan Sekarang</span>
         </button>
 
         <!-- Coach Info -->
@@ -97,7 +97,7 @@
             <div class="flex justify-between items-center mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-900">Pilih Tanggal & Waktu</h2>
-                    <p class="text-sm text-gray-600 mt-1">Pilih jadwal yang Anda inginkan dengan {{ course.coach.user.get_full_name }}</p>
+                    <p class="text-sm text-gray-600 mt-1">Tentukan jadwal kursus bersama {{ course.coach.user.get_full_name }}</p>
                 </div>
                 <button onclick="closeBookingModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,7 +148,7 @@
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <span><span class="font-semibold">Time zone:</span> Indochina Time (UTC+7)</span>
+                                <span><span class="font-semibold">Zona Waktu:</span> Waktu Indochina (UTC+7)</span>
                             </div>
                         </div>
                     </div>
@@ -162,10 +162,10 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                                 </svg>
-                                <span>Back to calendar</span>
+                                <span>Kembali ke kalender</span>
                             </button>
-                            <h3 id="selectedDateDisplay" class="text-xl font-bold text-gray-900 mb-1">Thursday, October 23</h3>
-                            <p class="text-xs text-gray-600">Select a time slot</p>
+                            <h3 id="selectedDateDisplay" class="text-xl font-bold text-gray-900 mb-1">Kamis, 23 Oktober</h3>
+                            <p class="text-xs text-gray-600">Pilih waktu yang Anda inginkan</p>
                         </div>
 
                         <!-- Time Slots Grid - Lebih compact -->
