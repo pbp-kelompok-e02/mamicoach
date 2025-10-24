@@ -28,6 +28,7 @@ urlpatterns = [
     path("", include("user_profile.urls")),
     path("booking/", include("booking.urls")),
     path("schedule/", include("schedule.urls")),
+    path("payment/", include("payment.urls")),
     # Legacy API endpoints (without prefix) for old booking UI
     path(
         "api/coach/<int:coach_id>/available-dates/",
