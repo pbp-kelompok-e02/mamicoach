@@ -1,0 +1,77 @@
+<!-- Styled Review Card Partial -->
+<div class="relative h-60 w-full flex flex-col">
+    <!-- Large Green Background Container -->
+    <div class="bg-primary rounded-3xl shadow-lg flex-1 flex flex-col">
+        <!-- White Card with Content -->
+        <div class="bg-white rounded-2xl shadow-sm border border-neutral-100 relative flex-1 flex flex-col">
+            <!-- Green Quote Icon -->
+            <div class="absolute top-6 right-6 flex-shrink-0">
+                <svg class="h-8 w-8 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
+                </svg>
+            </div>
+
+            <!-- Main Content -->
+            <div class="p-6 pb-4 flex-1 overflow-y-auto flex flex-col">
+                <!-- Header: Avatar and User Info -->
+                <div class="flex items-start gap-3 mb-4 flex-shrink-0">
+                    {% if review.is_anonymous %}
+                        <div class="h-12 w-12 overflow-hidden rounded-full flex-shrink-0 bg-neutral-300 flex items-center justify-center">
+                            <svg class="h-6 w-6 text-neutral-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                            </svg>
+                        </div>
+                    {% else %}
+                        <div class="h-12 w-12 overflow-hidden rounded-full flex-shrink-0">
+                            <img src="{% if review.user.userprofile.profile_image %}{{ review.user.userprofile.profile_image.url }}{% else %}/image/logo.png{% endif %}" 
+                                 alt="{{ review.user.username }} avatar" 
+                                 class="h-full w-full object-cover" />
+                        </div>
+                    {% endif %}
+                    
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-semibold text-neutral-900">
+                            {% if review.is_anonymous %}
+                            Anonymous User
+                            {% else %}
+                            {{ review.user.first_name|default:review.user.username }}
+                            {% endif %}
+                        </h3>
+                        <p class="text-xs text-neutral-600 mt-0.5 truncate">{{ review.course.title }}</p>
+                    </div>
+                </div>
+
+                <!-- Review Content -->
+                <div class="text-neutral-700 leading-relaxed text-sm line-clamp-4 flex-1">
+                    {{ review.content|linebreaksbr }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer with Stars and Course Info -->
+        <div class="px-4 py-2 flex items-center justify-between gap-2 min-w-0 flex-shrink-0">
+            <!-- Star Rating -->
+            <div class="flex items-center gap-1 min-w-0">
+                {% for star in "12345" %}
+                    {% if forloop.counter <= review.rating %}
+                        <svg class="h-4 w-4 text-yellow-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                        </svg>
+                    {% else %}
+                        <svg class="h-4 w-4 text-white/30 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                        </svg>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Course Name and Arrow -->
+            <a href="{% url 'courses_and_coach:course_details' review.course.id %}" class="text-white font-semibold text-xs truncate hover:text-gray-100 transition-colors flex items-center gap-1">
+                <span class="truncate">{{ review.course.title|truncatewords:2 }}</span>
+                <svg class="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5l7 7-7 7M12 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>

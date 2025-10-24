@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "main",
     "courses_and_coach",
     "user_profile",
+    "reviews",
     "chat",
     "schedule",
     "booking",
