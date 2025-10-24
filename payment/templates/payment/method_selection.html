@@ -6,47 +6,47 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8 max-w-4xl">
     <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Selesaikan Pemesanan Anda</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Selesaikan Pemesanan Anda</h1>
         
         <!-- Booking Summary -->
-        <div class="bg-gray-50 rounded-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">Detail Pemesanan</h2>
+        <div class="bg-gradient-to-br from-green-50 to-blue-50 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Detail Pemesanan</h2>
             <div class="space-y-3">
                 <div class="flex justify-between">
                     <span class="text-gray-600">Kursus:</span>
-                    <span class="font-medium text-gray-800">{{ course.title }}</span>
+                    <span class="font-medium text-gray-900">{{ course.title }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-600">Coach:</span>
-                    <span class="font-medium text-gray-800">{{ coach.user.get_full_name|default:coach.user.username }}</span>
+                    <span class="font-medium text-gray-900">{{ coach.user.get_full_name|default:coach.user.username }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-600">Tanggal & Waktu:</span>
-                    <span class="font-medium text-gray-800">
+                    <span class="font-medium text-gray-900">
                         {{ booking.start_datetime|date:"d M Y, H:i" }} - {{ booking.end_datetime|date:"H:i" }}
                     </span>
                 </div>
                 <hr class="my-3">
                 <div class="flex justify-between text-lg">
-                    <span class="font-semibold text-gray-700">Total Pembayaran:</span>
-                    <span class="font-bold text-blue-600">Rp {{ amount|floatformat:0 }}</span>
+                    <span class="font-semibold text-gray-900">Total Pembayaran:</span>
+                    <span class="font-bold text-emerald-600">Rp {{ amount|floatformat:0 }}</span>
                 </div>
             </div>
         </div>
 
         <!-- Payment Method Selection -->
         <div class="mb-6">
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">Pilih Metode Pembayaran</h2>
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Pilih Metode Pembayaran</h2>
             
             <form id="payment-form" method="post" action="{% url 'payment:process' booking.id %}">
                 {% csrf_token %}
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {% for method_value, method_label in payment_methods %}
-                    <label class="payment-method-card relative flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
-                        <input type="radio" name="payment_method" value="{{ method_value }}" class="mr-3 h-4 w-4 text-blue-600" required>
+                    <label class="payment-method-card relative flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-emerald-500 hover:bg-green-50 transition-all">
+                        <input type="radio" name="payment_method" value="{{ method_value }}" class="mr-3 h-4 w-4 text-emerald-600" required>
                         <div class="flex-1">
-                            <span class="font-medium text-gray-800">{{ method_label }}</span>
+                            <span class="font-medium text-gray-900">{{ method_label }}</span>
                         </div>
                         <div class="payment-icon ml-2">
                             {% if 'VA' in method_label or 'Virtual Account' in method_label %}
@@ -72,10 +72,10 @@
                 </div>
 
                 <div class="mt-8 flex gap-4">
-                    <a href="{% url 'user_profile:dashboard_user' %}" class="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors text-center">
+                    <a href="{% url 'user_profile:dashboard_user' %}" class="flex-1 bg-gray-200 text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors text-center">
                         Batal
                     </a>
-                    <button type="submit" id="pay-button" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button type="submit" id="pay-button" class="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg hover:from-emerald-700 hover:to-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                         Lanjut ke Pembayaran
                     </button>
                 </div>
@@ -134,10 +134,10 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
 document.querySelectorAll('.payment-method-card input[type="radio"]').forEach(radio => {
     radio.addEventListener('change', function() {
         document.querySelectorAll('.payment-method-card').forEach(card => {
-            card.classList.remove('border-blue-500', 'bg-blue-50');
+            card.classList.remove('border-emerald-500', 'bg-green-50');
         });
         if (this.checked) {
-            this.closest('.payment-method-card').classList.add('border-blue-500', 'bg-blue-50');
+            this.closest('.payment-method-card').classList.add('border-emerald-500', 'bg-green-50');
         }
     });
 });
@@ -145,8 +145,8 @@ document.querySelectorAll('.payment-method-card input[type="radio"]').forEach(ra
 
 <style>
 .payment-method-card:has(input:checked) {
-    border-color: #3b82f6;
-    background-color: #eff6ff;
+    border-color: #10b981;
+    background-color: #f0fdf4;
 }
 </style>
 {% endblock %}

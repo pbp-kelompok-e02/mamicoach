@@ -716,6 +716,7 @@ async function handleFileUpload(file) {
     const MAX_FILE_SIZE = 3 * 1024 * 1024; // 10MB
     
     if (file.size > MAX_FILE_SIZE) {
+        console.log(1)
         showToast('Ukuran file melebihi batas 3MB', 'error');
         return;
     }
