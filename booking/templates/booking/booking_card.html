@@ -442,7 +442,7 @@
 
     function confirmBooking() {
         if (!selectedDate || !selectedTime) {
-            alert('Please select a date and time slot');
+            showToast('Please select a date and time slot', 'error');
             return;
         }
 

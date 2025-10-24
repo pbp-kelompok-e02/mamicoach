@@ -93,7 +93,7 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
     const selectedMethod = form.querySelector('input[name="payment_method"]:checked');
     
     if (!selectedMethod) {
-        alert('Please select a payment method');
+        showToast('Please select a payment method', 'error');
         return;
     }
     
@@ -117,14 +117,14 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
             // Redirect to Midtrans payment page
             window.location.href = data.redirect_url;
         } else {
-            alert('Payment initiation failed: ' + (data.error || 'Unknown error'));
+            showToast('Payment initiation failed: ' + (data.error || 'Unknown error'), 'error');
             payButton.disabled = false;
             payButton.textContent = 'Proceed to Payment';
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        showToast('An error occurred. Please try again.', 'error');
         payButton.disabled = false;
         payButton.textContent = 'Proceed to Payment';
     });

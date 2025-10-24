@@ -716,12 +716,12 @@ async function handleFileUpload(file) {
     const MAX_FILE_SIZE = 3 * 1024 * 1024; // 10MB
     
     if (file.size > MAX_FILE_SIZE) {
-        alert('File size exceeds 3MB limit');
+        showToast('File size exceeds 3MB limit', 'error');
         return;
     }
     
     if (!selectedSessionId) {
-        alert('Please select a conversation first');
+        showToast('Please select a conversation first', 'error');
         return;
     }
     
@@ -738,7 +738,7 @@ async function handleFileUpload(file) {
         
     } catch (error) {
         console.error('Error preparing file:', error);
-        alert('Error preparing file. Please try again.');
+        showToast('Error preparing file. Please try again.', 'error');
     }
 }
 
@@ -883,7 +883,7 @@ async function uploadPendingAttachments(messageId) {
         
     } catch (error) {
         console.error('Error uploading attachments:', error);
-        alert('Error uploading some files. Please try again.');
+        showToast('Error uploading some files. Please try again.', 'error');
     }
 }
 
