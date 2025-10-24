@@ -63,10 +63,7 @@ INSTALLED_APPS = [
     "schedule",
     "booking",
     "payment",
-<<<<<<< HEAD
     "admin_panel",
-=======
->>>>>>> origin
 ]
 
 MIDDLEWARE = [
