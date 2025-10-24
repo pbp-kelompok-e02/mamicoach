@@ -142,7 +142,7 @@
         <div class="mt-16">
             <h2 class="text-2xl font-bold text-gray-900 mb-8">Kelas Serupa</h2>
             <div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 z-0"> 
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"> 
                     {% for course in related_courses %}
                     {% include "courses_and_coach/partials/course_card.html" with course=course %}
                     {% endfor %}
