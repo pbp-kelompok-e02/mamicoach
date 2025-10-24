@@ -7,9 +7,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
+
     initial = True
 
     dependencies = [
+        ('booking', '0001_initial'),
+        ('courses_and_coach', '0001_initial'),
+        ('user_profile', '0001_initial'),
         ('booking', '0001_initial'),
         ('courses_and_coach', '0001_initial'),
         ('user_profile', '0001_initial'),
@@ -19,7 +23,18 @@ class Migration(migrations.Migration):
     operations = [
         migrations.CreateModel(
             name='Review',
+            name='Review',
             fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('is_anonymous', models.BooleanField(default=False)),
+                ('rating', models.PositiveIntegerField()),
+                ('content', models.TextField()),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('booking', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='review', to='booking.booking')),
+                ('coach', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reviews', to='user_profile.coachprofile')),
+                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reviews', to='courses_and_coach.course')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reviews', to=settings.AUTH_USER_MODEL)),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('is_anonymous', models.BooleanField(default=False)),
                 ('rating', models.PositiveIntegerField()),

@@ -12,101 +12,64 @@
             <p class="text-lg text-gray-600">Belajar dari para ahli di bidangnya masing-masing</p>
         </div>
 
-        <!-- Search Bar -->
-        <div class="bg-white rounded-3xl shadow-lg p-6 mb-8">
-            <div class="space-y-4">
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    <input 
-                        type="text" 
-                        name="search"
-                        id="search-input"
-                        value="{{ search_query|default:'' }}"
-                        placeholder="Cari coach berdasarkan nama..." 
-                        class="block w-full pl-12 pr-4 py-4 border border-gray-300 rounded-2xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary"
+        {% if coaches %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for coach in coaches %}
+            <a href="{% url 'courses_and_coach:coach_details' coach.id %}" class="bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300 group flex flex-col">
+                <div class="relative h-48 bg-gradient-to-br from-primary to-green-600 overflow-hidden">
+                    <img 
+                        src="{% if coach.profile_image and coach.profile_image.url %}
+                        {{ coach.profile_image.url }}
+                        {% else %}
+                        {% static 'images/logo.png' %}
+                        {% endif %}" 
+                        alt="{{ coach.user.get_full_name }}" 
+                        class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                     >
                 </div>
-                
-                <div class="flex justify-between items-center pt-4 border-t border-gray-200">
-                    <div class="text-sm text-gray-600" id="coach-count-info">
-                        {% if coaches %}
-                            Menampilkan {{ coaches|length }} dari {{ coaches.paginator.count }} coach
-                        {% else %}
-                            Tidak ada coach ditemukan
-                        {% endif %}
+
+                <div class="p-6 flex flex-col h-full">
+                    <h2 class="text-xl font-bold text-gray-900 mb-1">{{ coach.user.get_full_name }}</h2>
+                    <div class="flex flex-wrap gap-2 mb-2">
+                        {% for expertise in coach.expertise %}
+                        <p class="text-sm font-medium bg-primary text-white w-fit p-1 rounded">{{ expertise }}</p>
+                        {% endfor %}
                     </div>
-                    <div class="flex gap-2">
-                        <button type="button" onclick="clearSearch()" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-xl font-medium hover:bg-gray-300 transition-colors duration-200">
-                            Reset
-                        </button>
-                        <button type="button" onclick="loadCoaches()" class="bg-primary text-white px-6 py-2 rounded-xl font-medium hover:bg-green-600 transition-colors duration-200">
-                            Cari
-                        </button>
+                    
+                    <div class="flex items-center gap-4 text-sm text-gray-600 mb-4 pb-4 border-b border-gray-200">
+                        <span class="flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scroll-text-icon lucide-scroll-text"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>
+                            <span>{{ coach.courses.count }} kelas</span>
+                        </span>
+                    </div>
+
+                    {% if coach.bio %}
+                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ coach.bio }}</p>
+                    {% endif %}
+
+                    <div
+                        class="mt-auto inline-flex justify-center items-center w-full bg-primary text-white font-semibold py-3 px-4 rounded-2xl hover:bg-green-700 transition-colors duration-300 group-hover:shadow-lg"
+                    >
+                        Lihat Profil
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
                     </div>
                 </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-16">
+            <div class="max-w-md mx-auto">
+                <svg class="w-24 h-24 mx-auto text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 4.354a4 4 0 110 8.048M7.828 12a6 6 0 1110.666 0"></path>
+                </svg>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">Belum Ada Coach</h3>
+                <p class="text-gray-600">Belum ada coach yang terdaftar di platform kami.</p>
             </div>
         </div>
-
-        <div id="coaches-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-            {% if coaches %}
-                {% for coach in coaches %}
-                {% include "courses_and_coach/partials/coach_card.html" with coach=coach %}
-                {% endfor %}
-            {% else %}
-                <div class="col-span-full text-center py-16">
-                    <div class="max-w-md flex flex-col justify-center items-center mx-auto">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-x-icon lucide-user-round-x"><path d="M2 21a8 8 0 0 1 11.873-7"/><circle cx="10" cy="8" r="5"/><path d="m17 17 5 5"/><path d="m22 17-5 5"/></svg>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">
-                            {% if search_query %}
-                                Tidak Ada Coach Ditemukan
-                            {% else %}
-                                Belum Ada Coach
-                            {% endif %}
-                        </h3>
-                        <p class="text-gray-600 mb-4">
-                            {% if search_query %}
-                                Tidak ada coach yang cocok dengan pencarian "{{ search_query }}"
-                            {% else %}
-                                Belum ada coach yang terdaftar di platform kami.
-                            {% endif %}
-                        </p>
-                        {% if search_query %}
-                        <button onclick="clearSearch()" class="inline-flex items-center space-x-2 bg-primary text-white px-6 py-3 rounded-2xl font-semibold hover:bg-green-600 transition-colors duration-200">
-                            <span>Lihat Semua Coach</span>
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endif %}
-        </div>
-        
-        
-        <!-- Pagination Controls -->
-        <nav id="pagination-controls" class="flex justify-center items-center gap-2 mb-8 {% if not coaches %}hidden{% endif %}" aria-label="Pagination">
-            <button id="first-btn" onclick="goToFirstPage()" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Halaman Pertama">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-left-icon lucide-chevrons-left"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
-            </button>
-            
-            <button id="prev-btn" onclick="changePage(-1)" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            
-            <span id="page-info" class="px-4 cursor-pointer py-2 text-gray-700 font-medium">
-                Halaman <span id="current-page">1</span> dari <span id="total-pages">1</span>
-            </span>
-            
-            <button id="next-btn" onclick="changePage(1)" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
-            
-            <button id="last-btn" onclick="goToLastPage()" class="px-3 cursor-pointer py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Halaman Terakhir">
-               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevrons-right-icon lucide-chevrons-right"><path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/></svg>
-            </button>
-        </nav>
+        {% endif %}
     </div>
 </div>
 
