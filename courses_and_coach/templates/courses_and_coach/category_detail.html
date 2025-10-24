@@ -173,10 +173,8 @@
 
             <!-- Empty State for Coaches -->
             <div id="coaches-empty-state" class="text-center py-16 hidden">
-                <div class="max-w-md mx-auto">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292m0 0H5.707m4.707 0v4.707"></path>
-                    </svg>
+                <div class="text-center flex flex-col justify-center items-center gap-4 py-16 bg-white rounded-2xl shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-x-icon lucide-user-round-x"><path d="M2 21a8 8 0 0 1 11.873-7"/><circle cx="10" cy="8" r="5"/><path d="m17 17 5 5"/><path d="m22 17-5 5"/></svg>
                     <h3 class="mt-4 text-lg font-medium text-gray-900">Belum ada coach</h3>
                     <p class="mt-2 text-gray-500" id="coaches-empty-message">
                         Belum ada coach di kategori {{ category.name }}.
