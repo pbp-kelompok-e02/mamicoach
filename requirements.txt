@@ -9,3 +9,4 @@ dj-database-url
 Pillow
 midtransclient
 pytz
+coverage
