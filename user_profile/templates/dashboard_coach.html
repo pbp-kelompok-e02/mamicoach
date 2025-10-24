@@ -39,116 +39,50 @@
         <!-- In Process Bookings -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4">In Process Bookings</h2>
-            <div class="space-y-3">
-                <!-- Booking Item 1 -->
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div class="flex items-center gap-3 flex-grow">
-                        <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-semibold text-gray-800">Class A <span class="text-gray-500 font-normal">with Trainee Jeff</span></h3>
-                            <p class="text-xs text-gray-500">Booked: 17 Oct 13.00-14.00 - Expires: 15-17 Oct 24.00</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2 ml-4">
-                        <button class="bg-white border-2 border-primary hover:bg-green-50 text-primary px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-icon lucide-message-circle">
-                                <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>
-                            </svg>
-                            Chat
-                        </button>
-                        <button class="bg-primary hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                            Mark as Complete
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Booking Item 2 -->
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div class="flex items-center gap-3 flex-grow">
-                        <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-semibold text-gray-800">Class A <span class="text-gray-500 font-normal">with Trainee Kevin</span></h3>
-                            <p class="text-xs text-gray-500">Booked: 17 Oct 13.00-14.00 - Expires: 15-17 Oct 24.00</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2 ml-4">
-                        <button class="bg-white border-2 border-primary hover:bg-green-50 text-primary px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-icon lucide-message-circle">
-                                <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>
-                            </svg>
-                            Chat
-                        </button>
-                        <button class="bg-primary hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                            Mark as Complete
-                        </button>
-                    </div>
-                </div>
+            <div id="in-process-bookings" class="space-y-3">
+                <!-- Bookings will be populated here -->
             </div>
         </div>
         
         <!-- Pending Bookings -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Pending Bookings</h2>
-            <div class="space-y-3">
-                <!-- Pending Booking Item -->
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div class="flex items-center gap-3 flex-grow">
-                        <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-semibold text-gray-800">Class A <span class="text-gray-500 font-normal">with Trainee Jeff</span></h3>
-                            <p class="text-xs text-gray-500">Booked: 17 Oct 13.00-14.00 - Expires: 15-17 Oct 24.00</p>
-                        </div>
-                    </div>
-                    <div class="ml-4">
-                        <button class="bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
-                            Accept
-                        </button>
-                    </div>
-                </div>
+            <div id="pending-bookings" class="space-y-3">
+                <!-- Pending bookings will be populated here -->
             </div>
         </div>
         
         <!-- Completed Bookings -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Completed Bookings</h2>
-            <div class="space-y-3">
-                <!-- Completed Booking Item -->
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div class="flex items-center gap-3 flex-grow">
-                        <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-semibold text-gray-800">Class A <span class="text-gray-500 font-normal">with Rach Kevin</span></h3>
-                            <p class="text-xs text-gray-500">Booked: 17 Oct 13.00-14.00</p>
-                        </div>
-                    </div>
-                    <div class="ml-4">
-                        <span class="bg-green-100 text-primary px-6 py-2 rounded-md text-sm font-medium">
-                            Completed
-                        </span>
-                    </div>
-                </div>
+            <div id="completed-bookings" class="space-y-3">
+                <!-- Completed bookings will be populated here -->
             </div>
         </div>
     </div>
 </div>
 
+<!-- Confirmation Modal -->
+<div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2" id="modal-title">Confirm Action</h3>
+        <p class="text-gray-600 mb-6" id="modal-message">Are you sure?</p>
+        <div class="flex gap-3 justify-end">
+            <button onclick="closeConfirmationModal()" 
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                Cancel
+            </button>
+            <button onclick="confirmAction()" 
+                    class="bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+let pendingAction = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     fetchCoachProfile();
 });
@@ -173,6 +107,33 @@ function fetchCoachProfile() {
         showError('An error occurred while loading profile');
     });
 }
+
+function showConfirmationModal(title, message, onConfirm) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-message').textContent = message;
+    pendingAction = onConfirm;
+    document.getElementById('confirmation-modal').classList.remove('hidden');
+}
+
+function closeConfirmationModal() {
+    document.getElementById('confirmation-modal').classList.add('hidden');
+    pendingAction = null;
+}
+
+function confirmAction() {
+    if (pendingAction) {
+        pendingAction();
+    }
+    closeConfirmationModal();
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('confirmation-modal');
+    if (e.target === modal) {
+        closeConfirmationModal();
+    }
+});
 
 function renderCoachProfile(profile) {
     const profileCard = document.getElementById('coach-profile-card');
@@ -300,6 +261,225 @@ function renderCoachProfile(profile) {
             </div>
         </div>
     `;
+    
+    // Render bookings
+    renderInProcessBookings(profile.confirmed_bookings || []);
+    renderPendingBookings(profile.pending_bookings || []);
+    renderCompletedBookings(profile.completed_bookings || []);
+}
+
+function renderInProcessBookings(bookings) {
+    const container = document.getElementById('in-process-bookings');
+    
+    if (!bookings || bookings.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm">No in-process bookings at the moment</p>';
+        return;
+    }
+    
+    container.innerHTML = bookings.map(booking => {
+        return `
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="flex items-center gap-3 flex-grow">
+                <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-800">${booking.course_title} <span class="text-gray-500 font-normal">with ${booking.trainee_name}</span></h3>
+                    <p class="text-xs text-gray-500">${booking.booking_datetime}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 ml-4">
+                <a href="/chat/presend-booking/${booking.booking_id}/" 
+                   class="bg-white border-2 border-primary hover:bg-green-50 text-primary px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-icon lucide-message-circle">
+                        <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>
+                    </svg>
+                    Chat
+                </a>
+                <button onclick="markBookingAsComplete(${booking.booking_id})" 
+                        class="bg-primary hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    Mark as Complete
+                </button>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+function renderPendingBookings(bookings) {
+    const container = document.getElementById('pending-bookings');
+    
+    if (!bookings || bookings.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm">No pending bookings at the moment</p>';
+        return;
+    }
+    
+    container.innerHTML = bookings.map(booking => `
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="flex items-center gap-3 flex-grow">
+                <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-800">${booking.course_title} <span class="text-gray-500 font-normal">with ${booking.trainee_name}</span></h3>
+                    <p class="text-xs text-gray-500">${booking.booking_datetime}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 ml-4">
+                <button onclick="confirmBooking(${booking.booking_id})" 
+                        class="bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                    Accept
+                </button>
+                <button onclick="declineBooking(${booking.booking_id})" 
+                        class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                    Decline
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderCompletedBookings(bookings) {
+    const container = document.getElementById('completed-bookings');
+    
+    if (!bookings || bookings.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm">No completed bookings yet</p>';
+        return;
+    }
+    
+    container.innerHTML = bookings.map(booking => `
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="flex items-center gap-3 flex-grow">
+                <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-800">${booking.course_title} <span class="text-gray-500 font-normal">with ${booking.trainee_name}</span></h3>
+                    <p class="text-xs text-gray-500">${booking.booking_datetime}</p>
+                </div>
+            </div>
+            <div class="ml-4">
+                <span class="bg-green-100 text-primary px-6 py-2 rounded-md text-sm font-medium">
+                    Completed
+                </span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function markBookingAsComplete(bookingId) {
+    showConfirmationModal(
+        'Mark as Complete',
+        'Are you sure you want to mark this booking as complete?',
+        () => {
+            fetch(`/booking/api/booking/${bookingId}/status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({ status: 'done' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Booking marked as complete', 'success');
+                    fetchCoachProfile();
+                } else {
+                    showToast('Failed to update booking: ' + (data.message || data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred while updating the booking', 'error');
+            });
+        }
+    );
+}
+
+function confirmBooking(bookingId) {
+    showConfirmationModal(
+        'Confirm Booking',
+        'Are you sure you want to confirm this booking?',
+        () => {
+            fetch(`/booking/api/booking/${bookingId}/status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({ status: 'confirmed' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Booking confirmed', 'success');
+                    fetchCoachProfile();
+                } else {
+                    showToast('Failed to confirm booking: ' + (data.message || data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred while confirming the booking', 'error');
+            });
+        }
+    );
+}
+
+function declineBooking(bookingId) {
+    showConfirmationModal(
+        'Decline Booking',
+        'Are you sure you want to decline this booking?',
+        () => {
+            fetch(`/booking/api/booking/${bookingId}/status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({ status: 'canceled' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Booking declined', 'success');
+                    fetchCoachProfile();
+                } else {
+                    showToast('Failed to decline booking: ' + (data.message || data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred while declining the booking', 'error');
+            });
+        }
+    );
+}
+
+function getCSRFToken() {
+    const name = 'csrftoken';
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 function showError(message) {

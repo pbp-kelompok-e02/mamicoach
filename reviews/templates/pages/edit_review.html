@@ -3,5 +3,6 @@
 {% block title %}Edit Review - MamiCoach{% endblock %}
 
 {% block content %}
-{% include 'partials/_review_form.html' with is_edit=True form_action="" delete_action="" %}
+{% url 'reviews:delete_review' review.id as delete_action %}
+{% include 'partials/_review_form.html' with is_edit=True form_action="" delete_action=delete_action callback_url=callback_url %}
 {% endblock %}

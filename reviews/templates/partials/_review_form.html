@@ -213,7 +213,7 @@
 
 				{% if is_edit %}
 				<!-- Hidden Delete Form -->
-				<form id="delete-form" action="{{ delete_action }}" method="post" class="hidden">
+				<form id="delete-form" action="{% if callback_url %}{{ delete_action }}?next={{ callback_url }}{% else %}{{ delete_action }}{% endif %}" method="post" class="hidden">
 					{% csrf_token %}
 				</form>
 				{% endif %}
@@ -326,6 +326,12 @@ document.addEventListener('DOMContentLoaded', function () {
 			e.preventDefault();
 			// Scroll to error
 			errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		} else {
+			// Add callback URL to form action if it exists
+			const callbackUrl = '{{ callback_url|escapejs }}';
+			if (callbackUrl && !form.action.includes('next=')) {
+				form.action = (form.action || window.location.pathname) + '?next=' + encodeURIComponent(callbackUrl);
+			}
 		}
 	});
 	
