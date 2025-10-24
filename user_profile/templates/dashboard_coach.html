@@ -84,22 +84,30 @@
                 <!-- Completed bookings will be populated here -->
             </div>
         </div>
+        
+        <!-- Recently Cancelled Bookings -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Recently Cancelled Bookings</h2>
+            <div id="cancelled-bookings" class="space-y-3">
+                <!-- Recently cancelled bookings will be populated here -->
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- Confirmation Modal -->
 <div id="confirmation-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4">
-        <h3 class="text-lg font-semibold text-gray-800 mb-2" id="modal-title">Confirm Action</h3>
-        <p class="text-gray-600 mb-6" id="modal-message">Are you sure?</p>
+        <h3 class="text-lg font-semibold text-gray-800 mb-2" id="modal-title">Konfirmasi</h3>
+        <p class="text-gray-600 mb-6" id="modal-message">Apakah Anda yakin?</p>
         <div class="flex gap-3 justify-end">
             <button onclick="closeConfirmationModal()" 
                     class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-md text-sm font-medium transition-colors">
-                Cancel
+                Batal
             </button>
             <button onclick="confirmAction()" 
                     class="bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
-                Confirm
+                Konfirmasi
             </button>
         </div>
     </div>
@@ -303,6 +311,7 @@ function renderCoachProfile(profile) {
     renderInProcessBookings(profile.confirmed_bookings || []);
     renderPendingBookings(profile.pending_bookings || []);
     renderCompletedBookings(profile.completed_bookings || []);
+    renderCancelledBookings(profile.cancelled_bookings || []);
 }
 
 function renderInProcessBookings(bookings) {
@@ -404,6 +413,36 @@ function renderCompletedBookings(bookings) {
             <div class="w-full md:w-auto md:ml-4">
                 <span class="block text-center bg-green-100 text-primary px-6 py-2 rounded-md text-sm font-medium">
                     Completed
+                </span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderCancelledBookings(bookings) {
+    const container = document.getElementById('cancelled-bookings');
+    
+    if (!bookings || bookings.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm">No cancelled bookings</p>';
+        return;
+    }
+    
+    container.innerHTML = bookings.map(booking => `
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 gap-3 md:gap-4">
+            <div class="flex items-center gap-3 flex-grow min-w-0">
+                <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="text-sm font-semibold text-gray-800 truncate">${booking.course_title} <span class="text-gray-500 font-normal">with ${booking.trainee_name}</span></h3>
+                    <p class="text-xs text-gray-500 truncate">${booking.booking_datetime}</p>
+                </div>
+            </div>
+            <div class="w-full md:w-auto md:ml-4">
+                <span class="block text-center bg-red-100 text-red-600 px-6 py-2 rounded-md text-sm font-medium">
+                    Cancelled
                 </span>
             </div>
         </div>

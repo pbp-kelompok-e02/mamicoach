@@ -10,7 +10,7 @@ class Category(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
-    thumbnail_url = models.URLField(null=True, blank=True)
+    thumbnail_url = models.URLField(max_length=500, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Categories"
@@ -54,7 +54,7 @@ class Course(models.Model):
     # TODO: Rating between 0.0 to 5.0
     rating = models.FloatField(default=0.0)
     rating_count = models.PositiveIntegerField(default=0)
-    thumbnail_url = models.URLField(null=True, blank=True)
+    thumbnail_url = models.URLField(max_length=500, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

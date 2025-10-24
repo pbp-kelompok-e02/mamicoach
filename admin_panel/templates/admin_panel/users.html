@@ -25,37 +25,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for user in users %}
+                    {% for userprofile in users %}
                     <tr class="border-b border-gray-100 hover:bg-gray-50">
-                        <td class="py-4 pr-4">{{ user.id }}</td>
-                        <td class="py-4 pr-4 font-medium">{{ user.username }}</td>
-                        <td class="py-4 pr-4">{{ user.email|default:"—" }}</td>
-                        <td class="py-4 pr-4">
-                            {% if user.userprofile %}
-                                {{ user.userprofile.full_name|default:"—" }}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                        <td class="py-4 pr-4">
-                            {% if user.userprofile %}
-                                {{ user.userprofile.phone_number|default:"—" }}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                        <td class="py-4 pr-4 text-sm text-gray-600">{{ user.date_joined|date:"Y-m-d" }}</td>
+                        <td class="py-4 pr-4">{{ userprofile.user.id }}</td>
+                        <td class="py-4 pr-4 font-medium">{{ userprofile.user.username }}</td>
+                        <td class="py-4 pr-4">{{ userprofile.user.email|default:"—" }}</td>
+                        <td class="py-4 pr-4">{{ userprofile.user.get_full_name|default:"—" }}</td>
+                        <td class="py-4 pr-4">—</td>
+                        <td class="py-4 pr-4 text-sm text-gray-600">{{ userprofile.user.date_joined|date:"Y-m-d" }}</td>
                         <td class="py-4 pr-4">
                             <span class="px-2 py-1 rounded-full text-xs font-medium
-                                {% if user.is_active %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
-                                {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                                {% if userprofile.user.is_active %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                                {% if userprofile.user.is_active %}Active{% else %}Inactive{% endif %}
                             </span>
                         </td>
                         <td class="py-4">
                             <div class="flex space-x-2">
-                                <a href="/django-admin/auth/user/{{ user.id }}/change/" target="_blank" 
-                                   class="text-blue-600 hover:text-blue-800 text-sm">
-                                    <i class="fas fa-edit"></i>
+                                <a href="{% url 'admin_panel:user_delete' userprofile.user.id %}" class="text-red-600 hover:text-red-800 text-sm" title="Delete">
+                                    <i class="fas fa-trash"></i>
                                 </a>
                             </div>
                         </td>

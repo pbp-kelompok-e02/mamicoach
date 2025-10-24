@@ -8,6 +8,14 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .forms import TraineeRegistrationForm, CoachRegistrationForm
 from .models import CoachProfile, Certification, UserProfile
+from django.utils import timezone
+import pytz
+
+
+MONTH_NAMES_SHORT_ID = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+]
 
 
 def register_user(request):
@@ -200,8 +208,6 @@ def dashboard_coach(request):
 @login_required
 def get_coach_profile(request):
     from booking.models import Booking
-    from chat.models import ChatSession
-    from django.utils import timezone
     
     try:
         coach_profile = CoachProfile.objects.get(user=request.user)
@@ -224,14 +230,30 @@ def get_coach_profile(request):
             status='done'
         ).select_related('user', 'course', 'schedule')
         
+        jakarta_tz = pytz.timezone('Asia/Jakarta')
+
+        def to_local(dt):
+            if not dt:
+                return None
+            return timezone.localtime(dt, jakarta_tz)
+
+        def format_datetime_local(dt):
+            localized = to_local(dt)
+            if not localized:
+                return 'N/A'
+            month_label = MONTH_NAMES_SHORT_ID[localized.month - 1]
+            return f"{localized.strftime('%d')} {month_label} {localized.strftime('%H:%M')}"
+        # Get last 3 cancelled bookings
+        cancelled_bookings = Booking.objects.filter(
+            coach=coach_profile,
+            status='canceled'
+        ).select_related('user', 'course', 'schedule').order_by('-updated_at')[:3]
+        
         # Helper function to format booking data
         def format_booking(booking):
             # Format datetime strings
-            start_dt = booking.start_datetime if booking.start_datetime else None
-            end_dt = booking.end_datetime if booking.end_datetime else None
-            
-            start_str = start_dt.strftime('%d %b %H:%M') if start_dt else 'N/A'
-            end_str = end_dt.strftime('%d %b %H:%M') if end_dt else 'N/A'
+            start_str = format_datetime_local(booking.start_datetime)
+            end_str = format_datetime_local(booking.end_datetime)
             
             return {
                 'id': booking.id,
@@ -266,7 +288,8 @@ def get_coach_profile(request):
                 ],
                 'confirmed_bookings': [format_booking(b) for b in confirmed_bookings],
                 'pending_bookings': [format_booking(b) for b in pending_bookings],
-                'completed_bookings': [format_booking(b) for b in completed_bookings]
+                'completed_bookings': [format_booking(b) for b in completed_bookings],
+                'cancelled_bookings': [format_booking(b) for b in cancelled_bookings]
             }
         }
         
@@ -345,7 +368,7 @@ def coach_profile(request):
 def dashboard_user(request):
     # Check if user is a coach
     try:
-        coach_profile = CoachProfile.objects.get(user=request.user)
+        CoachProfile.objects.get(user=request.user)
         messages.error(request, "Access denied. Coaches cannot access user dashboard.")
         return redirect('user_profile:dashboard_coach')
     except CoachProfile.DoesNotExist:
@@ -365,7 +388,7 @@ def get_user_profile(request):
     try:
         # Check if user is a coach
         try:
-            coach_profile = CoachProfile.objects.get(user=request.user)
+            CoachProfile.objects.get(user=request.user)
             return JsonResponse({
                 'success': False,
                 'message': "Access denied. Coaches cannot access user dashboard."
@@ -401,14 +424,31 @@ def get_user_profile(request):
             status='done'
         ).select_related('user', 'course', 'schedule', 'coach')
         
+        jakarta_tz = pytz.timezone('Asia/Jakarta')
+
+        def to_local(dt):
+            if not dt:
+                return None
+            return timezone.localtime(dt, jakarta_tz)
+
+        def format_datetime_local(dt):
+            localized = to_local(dt)
+            if not localized:
+                return 'N/A'
+            month_label = MONTH_NAMES_SHORT_ID[localized.month - 1]
+            return f"{localized.strftime('%d')} {month_label} {localized.strftime('%H:%M')}"
+
+        # Get last 3 cancelled bookings
+        cancelled_bookings = Booking.objects.filter(
+            user=request.user,
+            status='canceled'
+        ).select_related('user', 'course', 'schedule', 'coach').order_by('-updated_at')[:3]
+        
         # Helper function to format booking data
         def format_booking(booking):
             # Format datetime strings
-            start_dt = booking.start_datetime if booking.start_datetime else None
-            end_dt = booking.end_datetime if booking.end_datetime else None
-            
-            start_str = start_dt.strftime('%d %b %H:%M') if start_dt else 'N/A'
-            end_str = end_dt.strftime('%d %b %H:%M') if end_dt else 'N/A'
+            start_str = format_datetime_local(booking.start_datetime)
+            end_str = format_datetime_local(booking.end_datetime)
             
             # Get or create chat session
             chat_session = ChatSession.objects.filter(
@@ -452,7 +492,8 @@ def get_user_profile(request):
                 'confirmed_bookings': [format_booking(b) for b in confirmed_bookings],
                 'paid_bookings': [format_booking(b) for b in paid_bookings],
                 'pending_bookings': [format_booking(b) for b in pending_bookings],
-                'completed_bookings': [format_completed_booking(b) for b in completed_bookings]
+                'completed_bookings': [format_completed_booking(b) for b in completed_bookings],
+                'cancelled_bookings': [format_booking(b) for b in cancelled_bookings]
             }
         }
         

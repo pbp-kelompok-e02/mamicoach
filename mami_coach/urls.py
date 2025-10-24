@@ -32,21 +32,9 @@ urlpatterns = [
     path("schedule/", include("schedule.urls")),
     path("payment/", include("payment.urls")),
     path("admin/", include("admin_panel.urls")),  # New admin panel
-    # Legacy API endpoints (without prefix) for old booking UI
-    path(
-        "api/coach/<int:coach_id>/available-dates/",
-        booking_views.api_coach_available_dates_legacy,
-        name="legacy_available_dates",
-    ),
-    path(
-        "api/coach/<int:coach_id>/available-times/",
-        booking_views.api_coach_available_times_legacy,
-        name="legacy_available_times",
-    ),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Custom error handlers
 handler404 = "main.views.handler_404"
