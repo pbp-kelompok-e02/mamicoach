@@ -197,7 +197,7 @@ def create_booking(request, course_id):
             'success': True,
             'message': 'Booking created successfully',
             'booking_id': booking.id,
-            'redirect_url': f'/booking/payment/{booking.id}/'
+            'redirect_url': f'/payment/booking/{booking.id}/'
         })
         
     except Exception as e:

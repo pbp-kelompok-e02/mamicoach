@@ -27,7 +27,7 @@ def payment_method_selection(request, booking_id):
     # Check if booking is in pending status
     if booking.status != 'pending':
         messages.error(request, f'This booking is already {booking.status}. Payment is only available for pending bookings.')
-        return redirect('booking:history')  # Adjust redirect as needed
+        return redirect('user_profile:dashboard_user')
     
     # Get course details
     course = booking.course
@@ -264,7 +264,7 @@ def payment_callback(request, booking_id):
     
     if not payment:
         messages.error(request, 'Payment record not found')
-        return redirect('booking:history')
+        return redirect('user_profile:dashboard_user')
     
     # Check payment status from Midtrans
     midtrans = MidtransService()

@@ -8,3 +8,4 @@ python-dotenv
 dj-database-url
 Pillow
 midtransclient
+pytz
