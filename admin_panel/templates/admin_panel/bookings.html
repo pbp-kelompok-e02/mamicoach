@@ -1,0 +1,95 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block page_title %}Booking Management{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md">
+    <div class="p-6 border-b border-gray-200">
+        <h3 class="text-xl font-semibold text-gray-900">All Bookings</h3>
+        <p class="text-sm text-gray-600 mt-1">Manage booking appointments and statuses</p>
+    </div>
+
+    <div class="p-6">
+        <!-- Filter Options -->
+        <div class="mb-4 flex gap-2">
+            <a href="?status=all" class="px-4 py-2 rounded-lg text-sm font-medium {% if not request.GET.status or request.GET.status == 'all' %}bg-gray-900 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                All
+            </a>
+            <a href="?status=pending" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.status == 'pending' %}bg-orange-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                Pending
+            </a>
+            <a href="?status=paid" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.status == 'paid' %}bg-blue-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                Paid
+            </a>
+            <a href="?status=confirmed" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.status == 'confirmed' %}bg-green-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                Confirmed
+            </a>
+            <a href="?status=done" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.status == 'done' %}bg-purple-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                Done
+            </a>
+            <a href="?status=cancelled" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.status == 'cancelled' %}bg-red-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                Cancelled
+            </a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-600 uppercase border-b-2 border-gray-200">
+                        <th class="pb-3 pr-4">ID</th>
+                        <th class="pb-3 pr-4">User</th>
+                        <th class="pb-3 pr-4">Course</th>
+                        <th class="pb-3 pr-4">Schedule</th>
+                        <th class="pb-3 pr-4">Amount</th>
+                        <th class="pb-3 pr-4">Status</th>
+                        <th class="pb-3 pr-4">Created</th>
+                        <th class="pb-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-4 pr-4">#{{ booking.id }}</td>
+                        <td class="py-4 pr-4">{{ booking.user_profile.user.username }}</td>
+                        <td class="py-4 pr-4">{{ booking.course.name|truncatewords:4 }}</td>
+                        <td class="py-4 pr-4 text-sm">
+                            {% if booking.schedule %}
+                                {{ booking.schedule.date|date:"Y-m-d" }}<br>
+                                <span class="text-gray-500">{{ booking.schedule.time_slot }}</span>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td class="py-4 pr-4 font-semibold">Rp {{ booking.total_price|floatformat:0 }}</td>
+                        <td class="py-4 pr-4">
+                            <span class="px-2 py-1 rounded-full text-xs font-medium
+                                {% if booking.status == 'pending' %}bg-orange-100 text-orange-700
+                                {% elif booking.status == 'paid' %}bg-blue-100 text-blue-700
+                                {% elif booking.status == 'confirmed' %}bg-green-100 text-green-700
+                                {% elif booking.status == 'done' %}bg-purple-100 text-purple-700
+                                {% elif booking.status == 'cancelled' %}bg-red-100 text-red-700
+                                {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                {{ booking.status }}
+                            </span>
+                        </td>
+                        <td class="py-4 pr-4 text-sm text-gray-600">{{ booking.created_at|date:"Y-m-d H:i" }}</td>
+                        <td class="py-4">
+                            <div class="flex space-x-2">
+                                <a href="/django-admin/booking/booking/{{ booking.id }}/change/" target="_blank" 
+                                   class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="py-8 text-center text-gray-500">No bookings found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

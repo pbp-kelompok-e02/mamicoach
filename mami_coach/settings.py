@@ -63,6 +63,10 @@ INSTALLED_APPS = [
     "schedule",
     "booking",
     "payment",
+<<<<<<< HEAD
+    "admin_panel",
+=======
+>>>>>>> origin
 ]
 
 MIDDLEWARE = [
@@ -214,6 +218,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Base URL for external callbacks (Midtrans)
+BASE_URL = os.getenv('BASE_URL', 'https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id')
 
 # Set PostgreSQL search_path after each new connection (avoid startup 'options' not supported by Neon pooler)
 if PRODUCTION:
