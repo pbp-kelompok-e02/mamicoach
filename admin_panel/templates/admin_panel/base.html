@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MamiCoach Admin Panel{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gray-900 text-white flex-shrink-0">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-green-400">MamiCoach</h1>
+                <p class="text-sm text-gray-400">Admin Panel</p>
+            </div>
+            
+            <nav class="mt-6">
+                <a href="{% url 'admin_panel:dashboard' %}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors {% if request.resolver_match.url_name == 'dashboard' %}bg-gray-800 text-white border-l-4 border-green-500{% endif %}">
+                    <i class="fas fa-tachometer-alt w-5"></i>
+                    <span class="ml-3">Dashboard</span>
+                </a>
+                
+                <div class="mt-6">
+                    <p class="px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Management</p>
+                    
+                    <a href="{% url 'admin_panel:users' %}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors {% if request.resolver_match.url_name == 'users' %}bg-gray-800 text-white border-l-4 border-green-500{% endif %}">
+                        <i class="fas fa-users w-5"></i>
+                        <span class="ml-3">Users</span>
+                    </a>
+                    
+                    <a href="{% url 'admin_panel:coaches' %}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors {% if request.resolver_match.url_name == 'coaches' %}bg-gray-800 text-white border-l-4 border-green-500{% endif %}">
+                        <i class="fas fa-chalkboard-teacher w-5"></i>
+                        <span class="ml-3">Coaches</span>
+                    </a>
+                    
+                    <a href="{% url 'admin_panel:courses' %}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors {% if request.resolver_match.url_name == 'courses' %}bg-gray-800 text-white border-l-4 border-green-500{% endif %}">
+                        <i class="fas fa-book w-5"></i>
+                        <span class="ml-3">Courses</span>
+                    </a>
+                    
+                    <a href="{% url 'admin_panel:bookings' %}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors {% if request.resolver_match.url_name == 'bookings' %}bg-gray-800 text-white border-l-4 border-green-500{% endif %}">
+                        <i class="fas fa-calendar-check w-5"></i>
+                        <span class="ml-3">Bookings</span>
+                    </a>
+                    
+                    <a href="{% url 'admin_panel:payments' %}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors {% if request.resolver_match.url_name == 'payments' %}bg-gray-800 text-white border-l-4 border-green-500{% endif %}">
+                        <i class="fas fa-credit-card w-5"></i>
+                        <span class="ml-3">Payments</span>
+                    </a>
+                </div>
+                
+                <div class="mt-6">
+                    <p class="px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">System</p>
+                    
+                    <a href="{% url 'admin_panel:settings' %}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors {% if request.resolver_match.url_name == 'settings' %}bg-gray-800 text-white border-l-4 border-green-500{% endif %}">
+                        <i class="fas fa-cog w-5"></i>
+                        <span class="ml-3">Settings</span>
+                    </a>
+                    
+                    <a href="{% url 'admin_panel:logs' %}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors {% if request.resolver_match.url_name == 'logs' %}bg-gray-800 text-white border-l-4 border-green-500{% endif %}">
+                        <i class="fas fa-list w-5"></i>
+                        <span class="ml-3">Activity Logs</span>
+                    </a>
+                </div>
+                
+                <div class="mt-6">
+                    <p class="px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Account</p>
+                    
+                    <a href="{% url 'admin_panel:change_password' %}" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors {% if request.resolver_match.url_name == 'change_password' %}bg-gray-800 text-white border-l-4 border-green-500{% endif %}">
+                        <i class="fas fa-key w-5"></i>
+                        <span class="ml-3">Change Password</span>
+                    </a>
+                    
+                    <a href="{% url 'admin_panel:logout' %}" class="flex items-center px-6 py-3 text-red-400 hover:bg-gray-800 hover:text-red-300 transition-colors">
+                        <i class="fas fa-sign-out-alt w-5"></i>
+                        <span class="ml-3">Logout</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Bar -->
+            <header class="bg-white shadow-sm z-10">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <h2 class="text-2xl font-semibold text-gray-800">{% block page_title %}Dashboard{% endblock %}</h2>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-gray-600">Welcome, <strong>{{ user.username }}</strong></span>
+                        <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">
+                            {{ user.username|slice:":1"|upper }}
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 overflow-y-auto bg-gray-100 p-6">
+                <!-- Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 border-green-500 text-green-800{% elif message.tags == 'error' %}bg-red-100 border-red-500 text-red-800{% else %}bg-blue-100 border-blue-500 text-blue-800{% endif %} border-l-4">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% block content %}
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+</body>
+</html>

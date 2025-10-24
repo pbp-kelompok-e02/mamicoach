@@ -22,7 +22,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("django-admin/", admin.site.urls),  # Renamed from /admin/ to /django-admin/
     path("", include("main.urls")),
     path("", include("courses_and_coach.urls")),
     path("", include("user_profile.urls")),
@@ -31,6 +31,7 @@ urlpatterns = [
     path("booking/", include("booking.urls")),
     path("schedule/", include("schedule.urls")),
     path("payment/", include("payment.urls")),
+    path("admin/", include("admin_panel.urls")),  # New admin panel
     # Legacy API endpoints (without prefix) for old booking UI
     path(
         "api/coach/<int:coach_id>/available-dates/",

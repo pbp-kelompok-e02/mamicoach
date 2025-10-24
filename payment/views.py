@@ -159,8 +159,9 @@ def process_payment(request, booking_id):
 @require_POST
 def midtrans_webhook(request):
     """
-    Webhook endpoint for Midtrans payment notifications
+    Webhook endpoint for Midtrans payment notifications (Pay Account Notification URL)
     This endpoint receives POST requests from Midtrans when payment status changes
+    Must return 200 OK without redirects to avoid 301/302 errors
     """
     try:
         # Parse JSON body
@@ -181,19 +182,25 @@ def midtrans_webhook(request):
         )
         
         if not is_valid:
-            return JsonResponse({
-                'success': False,
-                'error': 'Invalid signature'
-            }, status=403)
+            # Return 200 OK even for invalid signature to prevent retries
+            response = HttpResponse(
+                json.dumps({'success': False, 'error': 'Invalid signature'}),
+                content_type='application/json',
+                status=200
+            )
+            return response
         
         # Get payment record
         try:
             payment = Payment.objects.get(order_id=order_id)
         except Payment.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'error': 'Payment not found'
-            }, status=404)
+            # Return 200 OK to prevent retries
+            response = HttpResponse(
+                json.dumps({'success': False, 'error': 'Payment not found'}),
+                content_type='application/json',
+                status=200
+            )
+            return response
         
         # Update payment status based on Midtrans status
         payment.transaction_id = transaction_id
@@ -225,16 +232,22 @@ def midtrans_webhook(request):
                 # Call the booking API to mark as paid
                 mark_booking_as_paid(booking.id, payment.id, payment.method)
         
-        return JsonResponse({
-            'success': True,
-            'message': 'Notification processed'
-        })
+        # Return 200 OK with plain response (no redirect)
+        response = HttpResponse(
+            json.dumps({'success': True, 'message': 'Notification processed'}),
+            content_type='application/json',
+            status=200
+        )
+        return response
         
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+        # Return 200 OK even on error to prevent retries
+        response = HttpResponse(
+            json.dumps({'success': False, 'error': str(e)}),
+            content_type='application/json',
+            status=200
+        )
+        return response
 
 
 def mark_booking_as_paid(booking_id: int, payment_id: int, payment_method: str):
@@ -252,31 +265,60 @@ def mark_booking_as_paid(booking_id: int, payment_id: int, payment_method: str):
     return False
 
 
-@login_required
-def payment_callback(request, booking_id):
+def payment_callback(request):
     """
-    Callback page after user completes/cancels payment on Midtrans page
+    Finish Redirect URL - Customer sent here if payment is successful
+    Query params: ?order_id=xxx&status_code=xxx&transaction_status=xxx
     """
-    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    # Get order_id from query parameters
+    order_id = request.GET.get('order_id')
+    transaction_status = request.GET.get('transaction_status')
+    status_code = request.GET.get('status_code')
     
-    # Get latest payment for this booking
-    payment = Payment.objects.filter(booking=booking).order_by('-created_at').first()
-    
-    if not payment:
-        messages.error(request, 'Payment record not found')
+    if not order_id:
+        messages.error(request, 'Invalid payment callback - missing order ID')
         return redirect('user_profile:dashboard_user')
     
-    # Check payment status from Midtrans
+    # Get payment by order_id
+    try:
+        payment = Payment.objects.get(order_id=order_id)
+    except Payment.DoesNotExist:
+        messages.error(request, 'Payment not found')
+        return redirect('user_profile:dashboard_user')
+    
+    booking = payment.booking
+    
+    # Check if user owns this booking (optional, for security)
+    if request.user.is_authenticated and booking.user_profile.user != request.user:
+        messages.error(request, 'Unauthorized access')
+        return redirect('user_profile:dashboard_user')
+    
+    # Update payment status from query params
+    if transaction_status:
+        if transaction_status in ['settlement', 'capture']:
+            payment.status = transaction_status
+            payment.paid_at = datetime.now()
+            payment.save()
+            
+            # Mark booking as paid
+            if booking.status == 'pending':
+                booking.status = 'paid'
+                booking.save()
+        else:
+            payment.status = transaction_status
+            payment.save()
+    
+    # Also verify with Midtrans API for accuracy
     midtrans = MidtransService()
     status_result = midtrans.get_transaction_status(payment.order_id)
     
     if status_result.get('success'):
         status_data = status_result.get('data', {})
-        transaction_status = status_data.get('transaction_status')
+        api_transaction_status = status_data.get('transaction_status')
         
-        # Update local payment status
-        if transaction_status == 'settlement' or transaction_status == 'capture':
-            payment.status = transaction_status
+        # Update with API result if available
+        if api_transaction_status in ['settlement', 'capture']:
+            payment.status = api_transaction_status
             payment.paid_at = datetime.now()
             payment.save()
             
@@ -291,6 +333,108 @@ def payment_callback(request, booking_id):
         'is_success': payment.is_successful,
         'is_pending': payment.is_pending,
         'is_failed': payment.is_failed,
+        'page_type': 'finish',
+    }
+    
+    return render(request, 'payment/callback.html', context)
+
+
+def payment_unfinish(request):
+    """
+    Unfinish Redirect URL - Customer sent here if they click 'Back to Order Website' 
+    on VT-Web's payment page (payment not completed)
+    Query params: ?order_id=xxx&status_code=xxx&transaction_status=xxx
+    """
+    # Get order_id from query parameters
+    order_id = request.GET.get('order_id')
+    transaction_status = request.GET.get('transaction_status')
+    
+    if not order_id:
+        messages.error(request, 'Invalid payment callback - missing order ID')
+        return redirect('user_profile:dashboard_user')
+    
+    # Get payment by order_id
+    try:
+        payment = Payment.objects.get(order_id=order_id)
+    except Payment.DoesNotExist:
+        messages.error(request, 'Payment not found')
+        return redirect('user_profile:dashboard_user')
+    
+    booking = payment.booking
+    
+    # Update payment status from query params if provided
+    if transaction_status:
+        payment.status = transaction_status
+        payment.save()
+    
+    # Also check with Midtrans API
+    midtrans = MidtransService()
+    status_result = midtrans.get_transaction_status(payment.order_id)
+    
+    if status_result.get('success'):
+        status_data = status_result.get('data', {})
+        api_transaction_status = status_data.get('transaction_status')
+        payment.status = api_transaction_status
+        payment.save()
+    
+    context = {
+        'booking': booking,
+        'payment': payment,
+        'is_success': payment.is_successful,
+        'is_pending': payment.is_pending,
+        'is_failed': payment.is_failed,
+        'page_type': 'unfinish',
+        'message': 'Payment not completed. You can continue the payment later.',
+    }
+    
+    return render(request, 'payment/callback.html', context)
+
+
+def payment_error(request):
+    """
+    Error Redirect URL - Customer sent here if payment encounters an error
+    Query params: ?order_id=xxx&status_code=xxx&transaction_status=xxx
+    """
+    # Get order_id from query parameters
+    order_id = request.GET.get('order_id')
+    transaction_status = request.GET.get('transaction_status')
+    
+    if not order_id:
+        messages.error(request, 'Invalid payment callback - missing order ID')
+        return redirect('user_profile:dashboard_user')
+    
+    # Get payment by order_id
+    try:
+        payment = Payment.objects.get(order_id=order_id)
+    except Payment.DoesNotExist:
+        messages.error(request, 'Payment not found')
+        return redirect('user_profile:dashboard_user')
+    
+    booking = payment.booking
+    
+    # Update payment status from query params if provided
+    if transaction_status:
+        payment.status = transaction_status
+        payment.save()
+    
+    # Also check with Midtrans API
+    midtrans = MidtransService()
+    status_result = midtrans.get_transaction_status(payment.order_id)
+    
+    if status_result.get('success'):
+        status_data = status_result.get('data', {})
+        api_transaction_status = status_data.get('transaction_status')
+        payment.status = api_transaction_status
+        payment.save()
+    
+    context = {
+        'booking': booking,
+        'payment': payment,
+        'is_success': payment.is_successful,
+        'is_pending': payment.is_pending,
+        'is_failed': payment.is_failed,
+        'page_type': 'error',
+        'message': 'Payment failed. Please try again or contact support.',
     }
     
     return render(request, 'payment/callback.html', context)
