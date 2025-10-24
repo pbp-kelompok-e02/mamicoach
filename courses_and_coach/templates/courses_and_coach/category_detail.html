@@ -33,67 +33,155 @@
 
     <!-- Search and Filter Section -->
     <div class="container mx-auto px-12 py-8">
-        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <div class="relative">
-                    <input 
-                        type="text" 
-                        name="search-courses" 
-                        value="{{ search_query|default:'' }}"
-                        placeholder="Cari kelas {{ category.name|lower }}..."
-                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    >
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                </div>
+        <div class="flex gap-4 mb-8 border-b border-gray-200">
+            <button id="courses-tab" class="tab-button active px-4 py-3 font-semibold text-primary border-b-2 border-primary transition-colors" onclick="switchTab('courses')">
+                Kelas ({{ courses_count|default:0 }})
+            </button>
+            <button id="coaches-tab" class="tab-button px-4 py-3 font-semibold text-gray-600 border-b-2 border-transparent hover:text-gray-900 transition-colors" onclick="switchTab('coaches')">
+                Coach ({{ coaches_count|default:0 }})
+            </button>
+        </div>
 
-                <a 
-                    href="{% url 'courses_and_coach:show_courses' %}"
-                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                >
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        <div id="courses-section" class="tab-content">
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div class="relative flex-1">
+                        <input 
+                            type="text" 
+                            name="search-courses" 
+                            value="{{ search_query|default:'' }}"
+                            placeholder="Cari kelas {{ category.name|lower }}..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        >
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <a 
+                        href="{% url 'courses_and_coach:show_courses' %}"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Semua Kelas
+                    </a>
+                </div>
+            </div>
+
+            <div id="courses-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                {% if courses %}
+                    {% for course in courses %}
+                        {% include 'courses_and_coach/partials/course_card.html' %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <nav id="courses-pagination-controls" class="flex justify-center items-center gap-2 mb-8 {% if not courses %}hidden{% endif %}" aria-label="Pagination">
+                <button class="first-btn-courses px-3 py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="goToFirstPageCourses()" title="Halaman Pertama">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
+                </button>
+                
+                <button class="prev-btn-courses px-3 py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="changePageCourses(-1)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                
+                <span class="px-4 py-2 text-gray-700 font-medium">
+                    Halaman <span class="current-page-courses">1</span> dari <span class="total-pages-courses">1</span>
+                </span>
+                
+                <button class="next-btn-courses px-3 py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="changePageCourses(1)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+                
+                <button class="last-btn-courses px-3 py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="goToLastPageCourses()" title="Halaman Terakhir">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/></svg>
+                </button>
+            </nav>
+
+            <!-- Empty State for Courses -->
+            <div id="courses-empty-state" class="text-center py-16 {% if courses %}hidden{% endif %}">
+                <div class="max-w-md mx-auto">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                     </svg>
-                    Semua Kelas
-                </a>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">Belum ada kelas</h3>
+                    <p class="mt-2 text-gray-500" id="courses-empty-message">
+                        Belum ada kelas yang tersedia untuk kategori {{ category.name }}.
+                    </p>
+                </div>
             </div>
         </div>
 
-        {% if courses %}
-            <div id="courses-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                {% for course in courses %}
-                    {% include 'courses_and_coach/partials/course_card.html' %}
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <!-- Empty State -->
-        <div id="empty-state" class="text-center py-16 {% if courses %}hidden{% endif %}">
-            <div class="max-w-md mx-auto">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                </svg>
-                <h3 class="mt-4 text-lg font-medium text-gray-900">Belum ada kelas</h3>
-                <p class="mt-2 text-gray-500">
-                    {% if search_query %}
-                        Tidak ada kelas {{ category.name|lower }} yang cocok dengan pencarian "{{ search_query }}".
-                    {% else %}
-                        Belum ada kelas yang tersedia untuk kategori {{ category.name }}.
-                    {% endif %}
-                </p>
-                {% if search_query %}
-                    <div class="mt-6">
-                        <a 
-                            href="{% url 'courses_and_coach:category_detail' category.name %}"
-                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700"
+        <div id="coaches-section" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div class="relative flex-1">
+                        <input 
+                            type="text" 
+                            name="search-coaches" 
+                            placeholder="Cari coach di kategori {{ category.name|lower }}..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                         >
-                            Lihat Semua Kelas {{ category.name }}
-                        </a>
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
                     </div>
-                {% endif %}
+
+                    <a 
+                        href="{% url 'courses_and_coach:show_coaches' %}"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Semua Coach
+                    </a>
+                </div>
+            </div>
+
+            <div id="coaches-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+            </div>
+
+            <!-- Coaches Pagination -->
+            <nav id="coaches-pagination-controls" class="flex justify-center items-center gap-2 mb-8 hidden" aria-label="Pagination">
+                <button class="first-btn-coaches px-3 py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="goToFirstPageCoaches()" title="Halaman Pertama">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
+                </button>
+                
+                <button class="prev-btn-coaches px-3 py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="changePageCoaches(-1)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                
+                <span class="px-4 py-2 text-gray-700 font-medium">
+                    Halaman <span class="current-page-coaches">1</span> dari <span class="total-pages-coaches">1</span>
+                </span>
+                
+                <button class="next-btn-coaches px-3 py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="changePageCoaches(1)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+                
+                <button class="last-btn-coaches px-3 py-2 rounded-lg bg-primary hover:bg-primary/50 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" onclick="goToLastPageCoaches()" title="Halaman Terakhir">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/></svg>
+                </button>
+            </nav>
+
+            <!-- Empty State for Coaches -->
+            <div id="coaches-empty-state" class="text-center py-16 hidden">
+                <div class="max-w-md mx-auto">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292m0 0H5.707m4.707 0v4.707"></path>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">Belum ada coach</h3>
+                    <p class="mt-2 text-gray-500" id="coaches-empty-message">
+                        Belum ada coach di kategori {{ category.name }}.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -101,101 +189,356 @@
 
 <script>
 let searchTimeout;
-let isLoading = false;
+let isLoadingCourses = false;
+let isLoadingCoaches = false;
+
+// Pagination state for courses
+let currentPageCourses = {{ current_page|default:1 }};
+let totalPagesCourses = {{ total_pages|default:1 }};
+
+// Pagination state for coaches
+let currentPageCoaches = 1;
+let totalPagesCoaches = 1;
 
 // Get CSRF token
 const csrfToken = '{{ csrf_token }}';
+const selectedCategory = "{{ category.name|escapejs }}";
 
 document.addEventListener("DOMContentLoaded", function() {
-    const searchInput = document.querySelector('input[name="search-courses"]');
-    const coursesContainer = document.getElementById("courses-container");
-    const emptyState = document.getElementById("empty-state");
+    const searchCoursesInput = document.querySelector('input[name="search-courses"]');
+    const searchCoachesInput = document.querySelector('input[name="search-coaches"]');
 
-    const selectedCategory = "{{ category.name|escapejs }}";
+    // Real-time search for courses with debounce
+    if (searchCoursesInput) {
+        searchCoursesInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            currentPageCourses = 1;
+            searchTimeout = setTimeout(() => {
+                loadCourses();
+            }, 500);
+        });
 
-    searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            loadCourses();
-        }, 500); // 500ms delay
-    });
+        searchCoursesInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                currentPageCourses = 1;
+                loadCourses();
+            }
+        });
+    }
 
-    async function loadCourses() {
-        console.log("loadCourses called");
-        if (isLoading) return;
+    // Real-time search for coaches with debounce
+    if (searchCoachesInput) {
+        searchCoachesInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            currentPageCoaches = 1;
+            searchTimeout = setTimeout(() => {
+                loadCoaches();
+            }, 500);
+        });
+
+        searchCoachesInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                currentPageCoaches = 1;
+                loadCoaches();
+            }
+        });
+    }
+
+    // Initialize pagination display
+    document.querySelector('.current-page-courses').textContent = currentPageCourses;
+    document.querySelector('.total-pages-courses').textContent = totalPagesCourses;
+    updateCoursesPaginationButtons();
+
+    window.loadCourses = loadCourses;
+    window.loadCoaches = loadCoaches;
+});
+
+function switchTab(tab) {
+    const coursesSection = document.getElementById('courses-section');
+    const coachesSection = document.getElementById('coaches-section');
+    const coursesTab = document.getElementById('courses-tab');
+    const coachesTab = document.getElementById('coaches-tab');
+
+    if (tab === 'courses') {
+        coursesSection.classList.remove('hidden');
+        coachesSection.classList.add('hidden');
         
-        isLoading = true;
+        coursesTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+        coursesTab.classList.remove('border-b-2', 'border-transparent', 'text-gray-600');
         
-        try {
-            // Show loading state
-            coursesContainer.innerHTML = `
-                <div class="col-span-full text-center py-16">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p class="text-gray-600">Memuat kelas...</p>
-                </div>
-            `;
-            
-            emptyState.classList.add('hidden');
-
-            const searchInput = document.querySelector('input[name="search-courses"]');
-            const searchQuery = searchInput ? searchInput.value.trim() : '';
-            const params = new URLSearchParams();
-            if (searchQuery) {
-                params.append('search', searchQuery);
-            }
-            if (selectedCategory) {
-                params.append('category',selectedCategory);
-            }
-            
-
-            // Fetch data
-            const response = await fetch(`{% url 'courses_and_coach:courses_card_ajax' %}?${params.toString()}`, {
-                method: 'GET',
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            
-            // Update UI based on response
-            if (data.html && data.html.trim()) {
-                coursesContainer.innerHTML = data.html;
-                emptyState.classList.add('hidden');
-            } else {
-                coursesContainer.innerHTML = '';
-                emptyState.classList.remove('hidden');
-            }
-
-        } catch (error) {
-            console.error('Error loading courses:', error);
-            
-            // Show error state
-            coursesContainer.innerHTML = `
-                <div class="col-span-full text-center py-16">
-                    <div class="text-red-500 mb-4">
-                        <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <h3 class="text-lg font-semibold">Terjadi Kesalahan</h3>
-                        <p class="text-gray-600 mt-2">Gagal memuat kelas. Silakan coba lagi.</p>
-                        <button onclick="loadCourses()" class="mt-4 bg-primary text-white px-4 py-2 rounded-lg hover:bg-green-600">
-                            Coba Lagi
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            emptyState.classList.add('hidden');
-        } finally {
-            isLoading = false;
+        coachesTab.classList.remove('border-b-2', 'border-primary', 'text-primary');
+        coachesTab.classList.add('border-b-2', 'border-transparent', 'text-gray-600');
+    } else if (tab === 'coaches') {
+        coachesSection.classList.remove('hidden');
+        coursesSection.classList.add('hidden');
+        
+        coachesTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+        coachesTab.classList.remove('border-b-2', 'border-transparent', 'text-gray-600');
+        
+        coursesTab.classList.remove('border-b-2', 'border-primary', 'text-primary');
+        coursesTab.classList.add('border-b-2', 'border-transparent', 'text-gray-600');
+        
+        // Load coaches if not already loaded
+        if (document.getElementById('coaches-container').innerHTML.trim() === '') {
+            loadCoaches();
         }
     }
-})
+}
+
+async function loadCourses() {
+    console.log("loadCourses called");
+    if (isLoadingCourses) return;
+    
+    isLoadingCourses = true;
+    const coursesContainer = document.getElementById('courses-container');
+    const emptyState = document.getElementById('courses-empty-state');
+    
+    try {
+        // Show loading state
+        coursesContainer.innerHTML = `
+            <div class="col-span-full text-center py-16">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p class="text-gray-600">Memuat kelas...</p>
+            </div>
+        `;
+        
+        emptyState.classList.add('hidden');
+
+        const searchInput = document.querySelector('input[name="search-courses"]');
+        const searchQuery = searchInput ? searchInput.value.trim() : '';
+        
+        const params = new URLSearchParams();
+        if (searchQuery) {
+            params.append('search', searchQuery);
+        }
+        if (selectedCategory) {
+            params.append('category', selectedCategory);
+        }
+        params.append('page', currentPageCourses);
+
+        console.log('Params:', params.toString());
+
+        const response = await fetch(`{% url 'courses_and_coach:courses_card_ajax' %}?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': csrfToken,
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        totalPagesCourses = data.total_pages || 1;
+        currentPageCourses = data.current_page || 1;
+        
+        document.querySelector('.current-page-courses').textContent = currentPageCourses;
+        document.querySelector('.total-pages-courses').textContent = totalPagesCourses;
+        updateCoursesPaginationButtons();
+        
+        if (data.html && data.html.trim()) {
+            coursesContainer.innerHTML = data.html;
+            emptyState.classList.add('hidden');
+            document.getElementById('courses-pagination-controls').classList.remove('hidden');
+        } else {
+            coursesContainer.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            document.getElementById('courses-pagination-controls').classList.add('hidden');
+            
+            const emptyMessage = document.getElementById('courses-empty-message');
+            if (emptyMessage) {
+                if (searchQuery) {
+                    emptyMessage.textContent = `Tidak ada kelas yang cocok dengan pencarian "${searchQuery}" di kategori ${selectedCategory}.`;
+                } else {
+                    emptyMessage.textContent = `Belum ada kelas yang tersedia untuk kategori ${selectedCategory}.`;
+                }
+            }
+        }
+
+    } catch (error) {
+        console.error('Error loading courses:', error);
+        
+        coursesContainer.innerHTML = `
+            <div class="col-span-full text-center py-16">
+                <div class="text-red-500 mb-4">
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-lg font-semibold">Terjadi Kesalahan</h3>
+                    <p class="text-gray-600 mt-2">Gagal memuat kelas. Silakan coba lagi.</p>
+                    <button onclick="loadCourses()" class="mt-4 bg-primary text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                        Coba Lagi
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        emptyState.classList.add('hidden');
+        document.getElementById('courses-pagination-controls').classList.add('hidden');
+    } finally {
+        isLoadingCourses = false;
+    }
+}
+
+async function loadCoaches() {
+    console.log("loadCoaches called");
+    if (isLoadingCoaches) return;
+    
+    isLoadingCoaches = true;
+    const coachesContainer = document.getElementById('coaches-container');
+    const emptyState = document.getElementById('coaches-empty-state');
+    
+    try {
+        // Show loading state
+        coachesContainer.innerHTML = `
+            <div class="col-span-full text-center py-16">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p class="text-gray-600">Memuat coach...</p>
+            </div>
+        `;
+        
+        emptyState.classList.add('hidden');
+
+        const searchInput = document.querySelector('input[name="search-coaches"]');
+        const searchQuery = searchInput ? searchInput.value.trim() : '';
+        
+        const params = new URLSearchParams();
+        if (searchQuery) {
+            params.append('search', searchQuery);
+        }
+        if (selectedCategory) {
+            params.append('category', selectedCategory);
+        }
+        params.append('page', currentPageCoaches);
+
+        console.log('Coaches params:', params.toString());
+
+        const response = await fetch(`{% url 'courses_and_coach:coaches_card_ajax' %}?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': csrfToken,
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Coaches response data:', data);
+        
+        totalPagesCoaches = data.total_pages || 1;
+        currentPageCoaches = data.current_page || 1;
+        
+        document.querySelector('.current-page-coaches').textContent = currentPageCoaches;
+        document.querySelector('.total-pages-coaches').textContent = totalPagesCoaches;
+        updateCoachesPaginationButtons();
+        
+        if (data.html && data.html.trim()) {
+            coachesContainer.innerHTML = data.html;
+            emptyState.classList.add('hidden');
+            document.getElementById('coaches-pagination-controls').classList.remove('hidden');
+        } else {
+            coachesContainer.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            document.getElementById('coaches-pagination-controls').classList.add('hidden');
+            
+            const emptyMessage = document.getElementById('coaches-empty-message');
+            if (emptyMessage) {
+                if (searchQuery) {
+                    emptyMessage.textContent = `Tidak ada coach yang cocok dengan pencarian "${searchQuery}" di kategori ${selectedCategory}.`;
+                } else {
+                    emptyMessage.textContent = `Belum ada coach di kategori ${selectedCategory}.`;
+                }
+            }
+        }
+
+    } catch (error) {
+        console.error('Error loading coaches:', error);
+        
+        coachesContainer.innerHTML = `
+            <div class="col-span-full text-center py-16">
+                <div class="text-red-500 mb-4">
+                    <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-lg font-semibold">Terjadi Kesalahan</h3>
+                    <p class="text-gray-600 mt-2">Gagal memuat coach. Silakan coba lagi.</p>
+                    <button onclick="loadCoaches()" class="mt-4 bg-primary text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                        Coba Lagi
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        emptyState.classList.add('hidden');
+        document.getElementById('coaches-pagination-controls').classList.add('hidden');
+    } finally {
+        isLoadingCoaches = false;
+    }
+}
+
+function updateCoursesPaginationButtons() {
+    document.querySelector('.first-btn-courses').disabled = currentPageCourses === 1;
+    document.querySelector('.prev-btn-courses').disabled = currentPageCourses === 1;
+    document.querySelector('.next-btn-courses').disabled = currentPageCourses === totalPagesCourses;
+    document.querySelector('.last-btn-courses').disabled = currentPageCourses === totalPagesCourses;
+}
+
+function updateCoachesPaginationButtons() {
+    document.querySelector('.first-btn-coaches').disabled = currentPageCoaches === 1;
+    document.querySelector('.prev-btn-coaches').disabled = currentPageCoaches === 1;
+    document.querySelector('.next-btn-coaches').disabled = currentPageCoaches === totalPagesCoaches;
+    document.querySelector('.last-btn-coaches').disabled = currentPageCoaches === totalPagesCoaches;
+}
+
+function changePageCourses(direction) {
+    const newPage = currentPageCourses + direction;
+    if (newPage < 1 || newPage > totalPagesCourses) return;
+    
+    currentPageCourses = newPage;
+    loadCourses();
+}
+
+function changePageCoaches(direction) {
+    const newPage = currentPageCoaches + direction;
+    if (newPage < 1 || newPage > totalPagesCoaches) return;
+    
+    currentPageCoaches = newPage;
+    loadCoaches();
+}
+
+function goToFirstPageCourses() {
+    if (currentPageCourses === 1) return;
+    currentPageCourses = 1;
+    loadCourses();
+}
+
+function goToLastPageCourses() {
+    if (currentPageCourses === totalPagesCourses) return;
+    currentPageCourses = totalPagesCourses;
+    loadCourses();
+}
+
+function goToFirstPageCoaches() {
+    if (currentPageCoaches === 1) return;
+    currentPageCoaches = 1;
+    loadCoaches();
+}
+
+function goToLastPageCoaches() {
+    if (currentPageCoaches === totalPagesCoaches) return;
+    currentPageCoaches = totalPagesCoaches;
+    loadCoaches();
+}
+</script>
 
 </script>
 

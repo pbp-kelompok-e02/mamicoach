@@ -92,7 +92,9 @@ def create_course(request):
 
 def category_detail(request, category_name):
     category = get_object_or_404(Category, name__iexact=category_name)
-    courses = Course.objects.filter(category=category).select_related("coach")
+    all_courses_in_category = Course.objects.filter(category=category).select_related("coach")
+    
+    courses = all_courses_in_category
 
     search_query = request.GET.get("search")
     if search_query:
@@ -102,10 +104,23 @@ def category_detail(request, category_name):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
+    # Count coaches by their expertise (category name in their expertise list)
+    coaches_with_expertise = CoachProfile.objects.all()
+    coaches_count = 0
+    category_name_lower = category.name.lower()
+    for coach in coaches_with_expertise:
+        if coach.expertise:
+            for expertise in coach.expertise:
+                if isinstance(expertise, str) and expertise.lower() == category_name_lower:
+                    coaches_count += 1
+                    break
+
     context = {
         "category": category,
         "courses": page_obj,
         "search_query": search_query,
+        "courses_count": courses.count(),
+        "coaches_count": coaches_count,
     }
     return render(request, "courses_and_coach/category_detail.html", context)
 
@@ -301,6 +316,19 @@ def show_coaches(request):
 
 def coaches_card_ajax(request):
     coaches_list = CoachProfile.objects.all()
+
+    # Filter by category (expertise) if provided
+    category_filter = request.GET.get("category")
+    if category_filter:
+        # Filter coaches whose expertise contains the category name (case-insensitive)
+        filtered_coaches = []
+        for coach in coaches_list:
+            if coach.expertise:
+                for expertise in coach.expertise:
+                    if isinstance(expertise, str) and expertise.lower() == category_filter.lower():
+                        filtered_coaches.append(coach.id)
+                        break
+        coaches_list = coaches_list.filter(id__in=filtered_coaches)
 
     search_query = request.GET.get("search")
     if search_query:
