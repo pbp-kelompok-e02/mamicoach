@@ -11,6 +11,10 @@ class ChatSession(models.Model):
     started_at = models.DateTimeField(auto_now_add=True)
     last_message_at = models.DateTimeField(auto_now=True)
     ended_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-last_message_at']
+        unique_together = ('user', 'coach')
 
     def __str__(self):
         return f"ChatSession between {self.user.username} and {self.coach.username} started at {self.started_at}"

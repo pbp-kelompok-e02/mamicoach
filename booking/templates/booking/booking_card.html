@@ -12,7 +12,9 @@
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
                 </svg>
-                <span class="text-sm font-medium">Verified Coach</span>
+                {% if course.coach.verified %}
+                    <span class="text-sm font-medium">Verified Coach</span>
+                {% endif %}
             </div>
             {% endif %}
         </div>
@@ -54,7 +56,7 @@
                             <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
                         </svg>
                         <span class="text-sm font-medium text-gray-900">{{ course.coach.rating|floatformat:1 }}</span>
-                        <span class="text-sm text-gray-500">(284,3 rb)</span>
+                        <span class="text-sm text-gray-500">({{ course.coach.rating_count|default:"0" }})</span>
                     </div>
                 </div>
             </div>
@@ -64,16 +66,23 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <span>• 242 jam sesi dijadwalkan</span>
+                    <span>• {{ course.coach.total_hours_coached_formatted }} sesi dijadwalkan</span>
                 </div>
             </div>
 
-            <button class="w-full mt-4 text-primary border border-primary py-3 rounded-2xl font-semibold hover:bg-primary hover:text-white transition-colors duration-200 flex items-center justify-center space-x-2">
+            <a href="{% url 'courses_and_coach:coach_details' course.coach.id %}" class="w-full mt-4 text-primary border border-primary py-3 rounded-2xl font-semibold hover:bg-primary hover:text-white transition-colors duration-200 flex items-center justify-center space-x-2">
                 <span>Lihat profil coach</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
-            </button>
+            </a>
+
+            <a href="{% url 'chat:presend_course' course.id %}" class="w-full mt-3 text-primary border border-primary py-3 rounded-2xl font-semibold hover:bg-primary hover:text-white transition-colors duration-200 flex items-center justify-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle">
+                    <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>
+                </svg>
+                <span>Chat dengan coach</span>
+            </a>
         </div>
     </div>
 </div>
