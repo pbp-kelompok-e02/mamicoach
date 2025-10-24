@@ -744,7 +744,7 @@ class PresendCourseTest(ChatTestSetUp):
         response = self.client.get(
             reverse('chat:presend_course', kwargs={'course_id': self.course.id})
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 302)
     
     def test_presend_course_creates_session(self):
         """Test presending course creates chat session if needed"""

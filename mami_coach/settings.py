@@ -196,20 +196,43 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 if DEBUG:
     STATICFILES_DIRS = [
         BASE_DIR / "static"  # merujuk ke /static root project pada mode development
     ]
-else:
-    STATIC_ROOT = (
-        BASE_DIR / "static"
-    )  # merujuk ke /static root project pada mode production
 
 # Media files (User uploads)
 # https://docs.djangoproject.com/en/5.2/howto/manage-files/
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# Check if we should use R2 even in development (for testing)
+USE_R2 = DEBUG and os.getenv("USE_R2_LOCALLY", "False").lower() == "true" or not DEBUG
+
+if DEBUG and not USE_R2:
+    # Development: use local filesystem (default)
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+else:
+    # Use Cloudflare R2 (either production or local testing with USE_R2_LOCALLY=True)
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "access_key": os.getenv("R2_ACCESS_KEY_ID"),
+                "secret_key": os.getenv("R2_SECRET_ACCESS_KEY"),
+                "bucket_name": os.getenv("R2_BUCKET_NAME"),
+                "region_name": "auto",
+                "endpoint_url": os.getenv("R2_ENDPOINT_URL"),
+                "custom_domain": os.getenv("R2_CUSTOM_DOMAIN"),
+                "querystring_auth": False,  # Allow public access to files
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+    MEDIA_URL = f"https://{os.getenv('R2_CUSTOM_DOMAIN')}/{os.getenv('R2_BUCKET_NAME')}/media/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
