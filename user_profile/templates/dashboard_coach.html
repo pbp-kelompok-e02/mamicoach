@@ -36,6 +36,51 @@
             </div>
         </div>
         
+        <!-- Your Classes Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-gray-800">Your Classes</h2>
+                <a href="{% url 'courses_and_coach:my_courses' %}" class="text-primary hover:text-green-600 text-sm font-medium transition-colors">
+                    View All
+                </a>
+            </div>
+            <div id="your-classes" class="space-y-4">
+            {% for course in courses %}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition p-4">
+                <div class="flex items-start gap-3">
+                    {% if course.thumbnail %}
+                    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}"
+                        class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
+                    {% endif %}
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900">{{ course.title }}</h3>
+                        <p class="text-sm text-gray-600 line-clamp-2">{{ course.description }}</p>
+                        <a href="{% url 'courses_and_coach:course_details' course.id %}"
+                            class="text-primary text-sm font-medium hover:underline mt-1 inline-block">
+                            View details >
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        </div>
+        
+        <!-- Create Class Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Create New Class</h2>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <h3 class="text-gray-800 font-semibold mb-1">Ready to share your expertise?</h3>
+                <p class="text-gray-600 text-sm mb-4">Create a new class and start teaching today</p>
+                <a href="{% url 'courses_and_coach:create_course' %}" class="inline-block bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+                    Create Class
+                </a>
+            </div>
+        </div>
+        
         <!-- In Process Bookings -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4">In Process Bookings</h2>

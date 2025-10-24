@@ -60,16 +60,9 @@
                         <button class="flex items-center space-x-2 text-gray-700 hover:text-primary focus:outline-none">
                             <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                                <img 
-                                     src="{{% if user.coachprofile and user.coachprofile.image_url %}
-                                    {{ user.coachprofile.image_url }}
-                                    {% elif user.userprofile and user.userprofile.image_url %}
-                                    {{ user.userprofile.image_url }}
-                                    {% else %}
-                                    {% static 'images/logo.png' %}
-                                    {% endif %}}"
-                                    alt="Profile Picture" 
-                                    class="w-8 h-8 rounded-full object-cover"
-                                    onerror="this.onerror=null;this.src='{% static 'images/logo.png' %}';"
+                                     src="{% if user.coachprofile and user.coachprofile.image_url %}{{ user.coachprofile.image_url }}{% elif user.userprofile and user.userprofile.image_url %}{{ user.userprofile.image_url }}{% endif %}"
+                                     alt="Profile Picture" 
+                                     class="w-8 h-8 rounded-full object-cover"
                                 >
                             </div>
                             <span class="text-sm font-medium">{{ user.first_name|default:user.username }}</span>

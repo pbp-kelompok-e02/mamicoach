@@ -97,7 +97,7 @@
                     <tbody class="text-sm">
                         {% for booking in recent_bookings %}
                         <tr class="border-b last:border-0">
-                            <td class="py-3">{{ booking.user_profile.user.username }}</td>
+                            <td class="py-3">{{ booking.user.username }}</td>
                             <td class="py-3">{{ booking.course.name|truncatewords:3 }}</td>
                             <td class="py-3">
                                 <span class="px-2 py-1 rounded-full text-xs font-medium
