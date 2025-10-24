@@ -148,7 +148,6 @@ class Command(BaseCommand):
                 defaults={
                     "bio": coach_data["bio"],
                     "expertise": coach_data["expertise"],
-                    "image_url": coach_data["image_url"],
                     "rating": coach_data["rating"],
                     "verified": coach_data["verified"],
                 },

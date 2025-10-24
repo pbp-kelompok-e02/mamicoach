@@ -588,7 +588,6 @@ def api_coach_available_times_legacy(request, coach_id):
     
     GET /api/coach/<coach_id>/available-times/?date=YYYY-MM-DD&course_id=123
     """
-    print("A")
     try:
         coach = get_object_or_404(CoachProfile, id=coach_id)
         date_str = request.GET.get('date')
