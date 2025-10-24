@@ -1,0 +1,114 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block page_title %}Activity Logs{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-md">
+    <div class="p-6 border-b border-gray-200">
+        <h3 class="text-xl font-semibold text-gray-900">Admin Activity Logs</h3>
+        <p class="text-sm text-gray-600 mt-1">Track all administrative actions and changes</p>
+    </div>
+
+    <div class="p-6">
+        <!-- Filter Options -->
+        <div class="mb-4 flex gap-2 flex-wrap">
+            <a href="?action=all" class="px-4 py-2 rounded-lg text-sm font-medium {% if not request.GET.action or request.GET.action == 'all' %}bg-gray-900 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                All
+            </a>
+            <a href="?action=view" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.action == 'view' %}bg-blue-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                View
+            </a>
+            <a href="?action=create" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.action == 'create' %}bg-green-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                Create
+            </a>
+            <a href="?action=update" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.action == 'update' %}bg-yellow-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                Update
+            </a>
+            <a href="?action=delete" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.action == 'delete' %}bg-red-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                Delete
+            </a>
+            <a href="?action=login" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.action == 'login' %}bg-purple-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                Login
+            </a>
+            <a href="?action=logout" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.action == 'logout' %}bg-gray-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                Logout
+            </a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="text-left text-xs font-semibold text-gray-600 uppercase border-b-2 border-gray-200">
+                        <th class="pb-3 pr-4">Timestamp</th>
+                        <th class="pb-3 pr-4">User</th>
+                        <th class="pb-3 pr-4">Action</th>
+                        <th class="pb-3 pr-4">Details</th>
+                        <th class="pb-3 pr-4">IP Address</th>
+                        <th class="pb-3">User Agent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-4 pr-4 text-sm text-gray-600">
+                            {{ log.timestamp|date:"Y-m-d H:i:s" }}
+                        </td>
+                        <td class="py-4 pr-4 font-medium">{{ log.user.username }}</td>
+                        <td class="py-4 pr-4">
+                            <span class="px-2 py-1 rounded-full text-xs font-medium
+                                {% if log.action == 'create' %}bg-green-100 text-green-700
+                                {% elif log.action == 'update' %}bg-yellow-100 text-yellow-700
+                                {% elif log.action == 'delete' %}bg-red-100 text-red-700
+                                {% elif log.action == 'view' %}bg-blue-100 text-blue-700
+                                {% elif log.action == 'login' %}bg-purple-100 text-purple-700
+                                {% elif log.action == 'logout' %}bg-gray-100 text-gray-700
+                                {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                {{ log.action }}
+                            </span>
+                        </td>
+                        <td class="py-4 pr-4 text-sm">
+                            {% if log.details %}
+                                {{ log.details|truncatewords:15 }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td class="py-4 pr-4 text-sm font-mono">{{ log.ip_address|default:"—" }}</td>
+                        <td class="py-4 text-xs text-gray-500" title="{{ log.user_agent }}">
+                            {{ log.user_agent|truncatewords:5|default:"—" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-gray-500">No activity logs found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination (if needed) -->
+        {% if logs.has_other_pages %}
+        <div class="mt-6 flex justify-center">
+            <nav class="flex gap-2">
+                {% if logs.has_previous %}
+                <a href="?page={{ logs.previous_page_number }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm">
+                    Previous
+                </a>
+                {% endif %}
+                
+                <span class="px-4 py-2 bg-green-500 text-white rounded text-sm">
+                    Page {{ logs.number }} of {{ logs.paginator.num_pages }}
+                </span>
+                
+                {% if logs.has_next %}
+                <a href="?page={{ logs.next_page_number }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm">
+                    Next
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

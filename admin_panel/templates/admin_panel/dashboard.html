@@ -1,0 +1,149 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Users -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm font-medium">Total Users</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_users }}</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Coaches -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm font-medium">Total Coaches</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_coaches }}</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-chalkboard-teacher text-green-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Courses -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm font-medium">Total Courses</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_courses }}</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-book text-purple-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm font-medium">Total Revenue</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">Rp {{ total_revenue|floatformat:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-dollar-sign text-yellow-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <p class="text-gray-600 text-sm font-medium">Total Bookings</p>
+            <p class="text-2xl font-bold text-gray-900 mt-2">{{ total_bookings }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <p class="text-gray-600 text-sm font-medium">Pending Bookings</p>
+            <p class="text-2xl font-bold text-orange-600 mt-2">{{ pending_bookings }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <p class="text-gray-600 text-sm font-medium">Confirmed Bookings</p>
+            <p class="text-2xl font-bold text-green-600 mt-2">{{ confirmed_bookings }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <p class="text-gray-600 text-sm font-medium">Completed Bookings</p>
+            <p class="text-2xl font-bold text-blue-600 mt-2">{{ done_bookings }}</p>
+        </div>
+    </div>
+
+    <!-- Recent Bookings & Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Bookings -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Bookings</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-left text-xs font-semibold text-gray-600 uppercase border-b">
+                            <th class="pb-3">User</th>
+                            <th class="pb-3">Course</th>
+                            <th class="pb-3">Status</th>
+                            <th class="pb-3">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        {% for booking in recent_bookings %}
+                        <tr class="border-b last:border-0">
+                            <td class="py-3">{{ booking.user_profile.user.username }}</td>
+                            <td class="py-3">{{ booking.course.name|truncatewords:3 }}</td>
+                            <td class="py-3">
+                                <span class="px-2 py-1 rounded-full text-xs font-medium
+                                    {% if booking.status == 'pending' %}bg-orange-100 text-orange-700
+                                    {% elif booking.status == 'paid' or booking.status == 'confirmed' %}bg-green-100 text-green-700
+                                    {% elif booking.status == 'done' %}bg-blue-100 text-blue-700
+                                    {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                    {{ booking.status }}
+                                </span>
+                            </td>
+                            <td class="py-3">Rp {{ booking.total_price|floatformat:0 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="py-4 text-center text-gray-500">No recent bookings</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Activity Logs -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+            <div class="space-y-3">
+                {% for log in recent_logs %}
+                <div class="flex items-start space-x-3 pb-3 border-b last:border-0">
+                    <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user text-gray-600 text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-900">
+                            <strong>{{ log.user.username }}</strong> {{ log.action }}
+                        </p>
+                        <p class="text-xs text-gray-500">{{ log.timestamp|timesince }} ago</p>
+                        {% if log.details %}
+                        <p class="text-xs text-gray-600 mt-1">{{ log.details|truncatewords:10 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-gray-500 text-center py-4">No recent activity</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
