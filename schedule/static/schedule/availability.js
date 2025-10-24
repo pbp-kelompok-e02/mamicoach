@@ -138,7 +138,7 @@ async function loadAvailabilityForDate(date) {
     }
 }
 
-// Save availability (upsert)
+// Save availability (upsert with auto-merge)
 async function saveAvailability() {
     const date = document.getElementById('availabilityDate').value;
     
@@ -195,16 +195,40 @@ async function saveAvailability() {
             throw new Error(data.error || 'Failed to save availability');
         }
         
-        showModalMessage(`Berhasil menyimpan ${data.count} rentang waktu untuk ${data.date}`, 'success');
+        // Show success message with merge info
+        let message = data.message;
+        if (data.original_count !== data.merged_count) {
+            message += ` (${data.original_count} interval digabung menjadi ${data.merged_count})`;
+        }
+        showModalMessage(message, 'success');
+        
+        // Update UI with merged intervals
+        if (data.merged_intervals && data.merged_intervals.length > 0) {
+            const container = document.getElementById('timeRangesContainer');
+            container.innerHTML = '';
+            
+            data.merged_intervals.forEach(range => {
+                addTimeRange(range.start, range.end);
+            });
+            
+            // Show merge notification if intervals were merged
+            if (data.original_count !== data.merged_count) {
+                setTimeout(() => {
+                    showModalMessage(
+                        `✨ Interval yang tumpang tindih atau berdekatan telah digabung otomatis!`, 
+                        'info'
+                    );
+                }, 2000);
+            }
+        }
         
         // Enable delete button
         document.getElementById('deleteAllBtn').disabled = false;
         
-        // Optionally reload the page or update UI
-        setTimeout(() => {
-            closeAvailabilityModal();
-            // You can add a reload here if needed: location.reload();
-        }, 1500);
+        // Optionally close modal after delay
+        // setTimeout(() => {
+        //     closeAvailabilityModal();
+        // }, 3000);
         
     } catch (error) {
         console.error('Error saving availability:', error);

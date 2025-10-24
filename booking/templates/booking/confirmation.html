@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Konfirmasi Booking - MamiCoach{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Progress Bar -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
+                        ✓
+                    </div>
+                    <span class="text-sm font-medium text-gray-700">Pilih Waktu</span>
+                </div>
+                <div class="flex-1 h-1 mx-4 bg-primary"></div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
+                        2
+                    </div>
+                    <span class="text-sm font-medium text-gray-900">Konfirmasi</span>
+                </div>
+                <div class="flex-1 h-1 mx-4 bg-gray-300"></div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-semibold">
+                        3
+                    </div>
+                    <span class="text-sm font-medium text-gray-500">Pembayaran</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Card -->
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-primary to-green-600 p-6 text-white">
+                <h1 class="text-2xl font-bold mb-2">Konfirmasi Booking</h1>
+                <p class="text-green-100">Pastikan detail booking Anda sudah benar</p>
+            </div>
+
+            <!-- Booking Details -->
+            <div class="p-6 space-y-6">
+                <!-- Course Info -->
+                <div class="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
+                    {% if course.thumbnail %}
+                    <img 
+                        src="{{ course.thumbnail.url }}" 
+                        alt="{{ course.name }}"
+                        class="w-20 h-20 rounded-lg object-cover"
+                        onerror="this.src='{% static 'images/default-course.jpg' %}'"
+                    >
+                    {% else %}
+                    <div class="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    {% endif %}
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900">{{ course.name }}</h3>
+                        <p class="text-sm text-gray-600">{{ course.description|truncatewords:10 }}</p>
+                        <div class="flex items-center space-x-2 mt-2">
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-sm text-gray-600">{{ course.duration }} menit</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coach Info -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Coach</h3>
+                    <div class="flex items-center space-x-4">
+                        {% if course.coach.profile_picture %}
+                        <img 
+                            src="{{ course.coach.profile_picture.url }}" 
+                            alt="{{ course.coach.user.get_full_name }}"
+                            class="w-16 h-16 rounded-full object-cover"
+                            onerror="this.src='{% static 'images/default-avatar.png' %}'"
+                        >
+                        {% else %}
+                        <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center">
+                            <span class="text-gray-600 text-xl font-semibold">
+                                {{ course.coach.user.first_name|first }}{{ course.coach.user.last_name|first }}
+                            </span>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h4 class="font-semibold text-gray-900">{{ course.coach.user.get_full_name }}</h4>
+                            {% if course.coach.rating %}
+                            <div class="flex items-center space-x-1 mt-1">
+                                <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                                </svg>
+                                <span class="text-sm font-medium text-gray-700">{{ course.coach.rating|floatformat:1 }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date & Time Info -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Jadwal Sesi</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-blue-50 rounded-xl">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span class="text-sm font-medium text-blue-900">Tanggal</span>
+                            </div>
+                            <p class="text-lg font-bold text-blue-900" id="displayDate">-</p>
+                            <p class="text-sm text-blue-700" id="displayDayName">-</p>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-xl">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-sm font-medium text-green-900">Waktu</span>
+                            </div>
+                            <p class="text-lg font-bold text-green-900" id="displayTime">-</p>
+                            <p class="text-sm text-green-700">Durasi: {{ course.duration_formatted }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Info -->
+                <div class="border-t border-gray-200 pt-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-gray-700">Harga per sesi</span>
+                        <span class="text-lg font-semibold text-gray-900">{{ course.price_formatted }}</span>
+                    </div>
+                    <div class="flex items-center justify-between py-4 bg-gray-50 rounded-xl px-4">
+                        <span class="text-lg font-bold text-gray-900">Total Pembayaran</span>
+                        <span class="text-2xl font-bold text-primary">Rp {{ course.price|floatformat:0 }}</span>
+                    </div>
+                </div>
+
+                <!-- Important Notes -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-yellow-900 mb-1">Penting!</h4>
+                            <ul class="text-sm text-yellow-800 space-y-1">
+                                <li>• Pastikan Anda hadir tepat waktu</li>
+                                <li>• Booking akan menunggu konfirmasi dari coach</li>
+                                <li>• Pembayaran akan diproses setelah konfirmasi</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="bg-gray-50 px-6 py-4 flex items-center justify-between">
+                <a 
+                    href="{{ request.META.HTTP_REFERER|default:'/courses/'|add:course.id|add:'/' }}"
+                    class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
+                >
+                    ← Kembali
+                </a>
+                <button 
+                    type="button"
+                    onclick="confirmBooking()"
+                    id="confirmBtn"
+                    class="px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-green-600 transition-colors flex items-center space-x-2"
+                >
+                    <span>Lanjut ke Pembayaran</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center">
+            <div class="bg-white rounded-xl p-6 flex flex-col items-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+                <p class="text-gray-700 font-medium">Memproses booking...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get booking data from session storage or URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookingDate = urlParams.get('date');
+    const bookingTime = urlParams.get('time');
+    const courseId = {{ course.id }};
+
+    // Display date and time
+    function displayBookingInfo() {
+        if (bookingDate && bookingTime) {
+            // Format date
+            const date = new Date(bookingDate);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = date.toLocaleDateString('id-ID', options);
+            const dayName = date.toLocaleDateString('id-ID', { weekday: 'long' });
+            
+            document.getElementById('displayDate').textContent = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('displayDayName').textContent = dayName;
+            document.getElementById('displayTime').textContent = bookingTime;
+        } else {
+            // Redirect back if no booking data
+            alert('Data booking tidak lengkap');
+            window.history.back();
+        }
+    }
+
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Confirm booking
+    async function confirmBooking() {
+        if (!bookingDate || !bookingTime) {
+            alert('Data booking tidak lengkap');
+            return;
+        }
+
+        // Show loading
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+        document.getElementById('confirmBtn').disabled = true;
+
+        try {
+            const response = await fetch(`/booking/api/course/${courseId}/create/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    date: bookingDate,
+                    start_time: bookingTime
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Gagal membuat booking');
+            }
+
+            if (data.success) {
+                // Redirect to payment page (to be implemented by payment team)
+                // For now, redirect to success page or booking history
+                alert('Booking berhasil dibuat! (Payment integration coming soon)');
+                window.location.href = `/booking/success/${data.booking_id}/`;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Gagal membuat booking: ' + error.message);
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            document.getElementById('confirmBtn').disabled = false;
+        }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', displayBookingInfo);
+</script>
+{% endblock %}

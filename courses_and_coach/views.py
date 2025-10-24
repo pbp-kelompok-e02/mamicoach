@@ -110,7 +110,7 @@ def my_courses(request):
         return redirect("courses_and_coach:show_courses")
 
     from datetime import date
-
+    
     context = {
         "courses": courses,
         "coach_profile": coach_profile,
