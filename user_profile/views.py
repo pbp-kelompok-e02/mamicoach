@@ -475,8 +475,7 @@ def user_profile(request):
         request.user.first_name = request.POST.get('first_name', '').strip()
         request.user.last_name = request.POST.get('last_name', '').strip()
         request.user.save()
-        
-        # Update profile image if provided
+
         if 'profile_image' in request.FILES:
             user_profile.profile_image = request.FILES['profile_image']
             user_profile.save()
