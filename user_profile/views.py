@@ -188,14 +188,12 @@ def dashboard_coach(request):
         return redirect('main:show_main')
     
     certifications = Certification.objects.filter(coach=coach_profile)
-    courses = coach_profile.courses.all()[:2]
 
     context = {
         'coach_profile': coach_profile,
         'certifications': certifications,
-        'courses': courses,
     }
-    
+
     return render(request, 'dashboard_coach.html', context)
 
 

@@ -211,9 +211,11 @@
             document.getElementById('displayDayName').textContent = dayName;
             document.getElementById('displayTime').textContent = bookingTime;
         } else {
-            // Redirect back if no booking data
-            alert('Data booking tidak lengkap');
-            window.history.back();
+            // Show error toast and redirect to home
+            showToast('Data booking tidak lengkap. Silakan coba lagi.', 'error');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1500);
         }
     }
 
@@ -236,7 +238,7 @@
     // Confirm booking
     async function confirmBooking() {
         if (!bookingDate || !bookingTime) {
-            alert('Data booking tidak lengkap');
+            showToast('Data booking tidak lengkap. Silakan coba lagi.', 'error');
             return;
         }
 
@@ -260,17 +262,26 @@
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Gagal membuat booking');
+                throw new Error(data.error || data.message || 'Gagal membuat booking');
             }
 
             if (data.success) {
+                // Show success toast
+                showToast('Booking berhasil dibuat! Redirecting...', 'success');
                 // Redirect to payment page (to be implemented by payment team)
                 // For now, redirect to success page or booking history
-                window.location.href = `/booking/success/${data.booking_id}/`;
+                setTimeout(() => {
+                    window.location.href = `/booking/success/${data.booking_id}/`;
+                }, 1500);
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Gagal membuat booking: ' + error.message);
+            showToast('Gagal membuat booking: ' + error.message, 'error');
+            // Redirect back to course details after showing error
+            setTimeout(() => {
+                window.location.href = `/courses/${courseId}/`;
+            }, 2000);   
+        } finally {
             document.getElementById('loadingOverlay').classList.add('hidden');
             document.getElementById('confirmBtn').disabled = false;
         }
