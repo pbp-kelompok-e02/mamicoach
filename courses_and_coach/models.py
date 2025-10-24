@@ -43,7 +43,9 @@ class Course(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     location = models.CharField(
-        max_length=255, help_text="Location where the course takes place"
+        max_length=255, 
+        default="Online",
+        help_text="Location where the course takes place (default: Online)"
     )
     price = models.PositiveIntegerField(
         help_text="Price in the smallest currency unit (e.g., cents, rupiah)"
