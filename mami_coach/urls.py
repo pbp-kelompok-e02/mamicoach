@@ -26,6 +26,8 @@ urlpatterns = [
     path("", include("main.urls")),
     path("", include("courses_and_coach.urls")),
     path("", include("user_profile.urls")),
+    path("", include("reviews.urls")),
+    path("", include("chat.urls")),
     path("booking/", include("booking.urls")),
     path("schedule/", include("schedule.urls")),
     path("payment/", include("payment.urls")),

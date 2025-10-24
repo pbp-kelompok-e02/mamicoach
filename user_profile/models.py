@@ -16,6 +16,7 @@ class CoachProfile(models.Model):
     expertise = models.JSONField(default=list) 
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     rating = models.FloatField(default=0.0)
+    rating_count = models.PositiveIntegerField(default=0)
     verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

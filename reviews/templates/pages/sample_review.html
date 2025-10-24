@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Sample Reviews - MamiCoach{% endblock %}
+
+{% block content %}
+<section class="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 py-8 sm:py-12">
+	<div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+		<!-- Header -->
+		<div class="mb-8 text-center">
+			<h1 class="text-3xl font-bold text-neutral-900 sm:text-4xl">
+				Course Reviews
+			</h1>
+			<p class="mt-2 text-lg text-neutral-600">
+				See what our students are saying about their learning experience
+			</p>
+		</div>
+
+		<!-- Review Style Toggle -->
+		<div class="mb-8 text-center">
+			<div class="inline-flex rounded-lg border border-neutral-300 bg-white p-1">
+				<button 
+					id="original-style-btn" 
+					class="rounded-md px-4 py-2 text-sm font-medium transition-colors bg-primary text-white"
+				>
+					Original Style
+				</button>
+				<button 
+					id="styled-style-btn" 
+					class="rounded-md px-4 py-2 text-sm font-medium transition-colors text-neutral-700 hover:text-neutral-900"
+				>
+					Styled Cards
+				</button>
+			</div>
+		</div>
+
+		<!-- Original Reviews Grid -->
+		<div id="original-reviews" class="space-y-6">
+			{% for review in reviews %}
+				{% include 'partials/_review_card.html' with review=review %}
+			{% empty %}
+				<div class="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-black/5">
+					<svg class="mx-auto h-12 w-12 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-1l-4 4z"></path>
+					</svg>
+					<h3 class="mt-4 text-lg font-semibold text-neutral-900">No reviews yet</h3>
+					<p class="mt-2 text-neutral-600">Be the first to share your experience!</p>
+				</div>
+			{% endfor %}
+		</div>
+
+		<!-- Styled Reviews Grid -->
+		<div id="styled-reviews" class="space-y-6 hidden">
+			{% for review in reviews %}
+				{% include 'partials/_review_card_styled.html' with review=review %}
+			{% empty %}
+				<div class="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-black/5">
+					<svg class="mx-auto h-12 w-12 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-1l-4 4z"></path>
+					</svg>
+					<h3 class="mt-4 text-lg font-semibold text-neutral-900">No reviews yet</h3>
+					<p class="mt-2 text-neutral-600">Be the first to share your experience!</p>
+				</div>
+			{% endfor %}
+		</div>
+
+		<!-- Pagination (if needed) -->
+		{% if reviews|length > 5 %}
+		<div class="mt-12 flex justify-center">
+			<nav class="flex items-center gap-2">
+				<button class="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50">
+					Previous
+				</button>
+				<button class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white">
+					1
+				</button>
+				<button class="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50">
+					2
+				</button>
+				<button class="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50">
+					Next
+				</button>
+			</nav>
+		</div>
+		{% endif %}
+	</div>
+</section>
+
+<!-- JavaScript for toggle functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const originalBtn = document.getElementById('original-style-btn');
+    const styledBtn = document.getElementById('styled-style-btn');
+    const originalReviews = document.getElementById('original-reviews');
+    const styledReviews = document.getElementById('styled-reviews');
+
+    originalBtn.addEventListener('click', function() {
+        // Show original reviews
+        originalReviews.classList.remove('hidden');
+        styledReviews.classList.add('hidden');
+        
+        // Update button styles
+        originalBtn.classList.add('bg-primary', 'text-white');
+        originalBtn.classList.remove('text-neutral-700', 'hover:text-neutral-900');
+        styledBtn.classList.remove('bg-primary', 'text-white');
+        styledBtn.classList.add('text-neutral-700', 'hover:text-neutral-900');
+    });
+
+    styledBtn.addEventListener('click', function() {
+        // Show styled reviews
+        styledReviews.classList.remove('hidden');
+        originalReviews.classList.add('hidden');
+        
+        // Update button styles
+        styledBtn.classList.add('bg-primary', 'text-white');
+        styledBtn.classList.remove('text-neutral-700', 'hover:text-neutral-900');
+        originalBtn.classList.remove('bg-primary', 'text-white');
+        originalBtn.classList.add('text-neutral-700', 'hover:text-neutral-900');
+    });
+});
+</script>
+{% endblock %}

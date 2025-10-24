@@ -1,0 +1,1148 @@
+{% extends "base_chat.html" %}
+
+{% block title %}Chat{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gray-100 min-h-0">
+    <!-- Sessions Sidebar -->
+    <div id="sessions-sidebar" class="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 flex flex-col {% if selected_session_id %}hidden md:flex{% endif %} min-h-0">
+        <!-- Sessions Header -->
+        <div class="flex-shrink-0 bg-primary text-white p-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-semibold">Chats</h1>
+                <button id="search-toggle" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Search Bar -->
+            <div id="search-container" class="mt-3 hidden">
+                <div class="relative">
+                    <input
+                        type="text"
+                        id="session-search"
+                        placeholder="Search conversations..."
+                        class="w-full bg-white/10 text-white placeholder-white/70 rounded-lg px-4 py-2 focus:outline-none focus:bg-white/20"
+                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 absolute right-3 top-3 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sessions List -->
+        <div class="flex-1 overflow-y-auto">
+            <div id="sessions-loading" class="text-center py-8 text-gray-500">
+                Loading conversations...
+            </div>
+            <div id="sessions-list" class="divide-y divide-gray-100">
+                <!-- Sessions will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Panel -->
+    <div id="chat-panel" class="flex-1 h-full flex flex-col {% if not selected_session_id %}hidden md:flex{% endif %} min-h-0">
+        {% if selected_session_id %}
+            <!-- Chat Header -->
+            <header class="bg-white border-b border-gray-200 px-4 py-3 flex-shrink-0 z-10">
+                <div class="flex items-center">
+                    <!-- Back Button for Mobile -->
+                    <button id="back-to-sessions" class="md:hidden mr-3 p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path d="m15 18-6-6 6-6"/>
+                        </svg>
+                    </button>
+                    
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-semibold">
+                            {{ other_user.first_name.0|upper|default:"U" }}{{ other_user.last_name.0|upper|default:"" }}
+                        </div>
+                        <div>
+                            <h2 class="font-semibold text-gray-900">
+                                {{ other_user.first_name }} {{ other_user.last_name }}
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Messages Container -->
+            <main id="messages-container" class="flex-1 overflow-y-auto p-4 bg-gray-50 min-h-0">
+                <div id="messages-loading" class="text-center py-8 text-gray-500">
+                    Loading messages...
+                </div>
+                <div id="messages-list">
+                    <!-- Messages will be loaded here -->
+                </div>
+            </main>
+
+            <!-- Message Input -->
+            <footer class="bg-white border-t border-gray-200 p-4 flex-shrink-0 z-10">
+                <!-- Reply Context Display -->
+                <div id="reply-context" class="mb-3 bg-blue-50 border-l-4 border-primary px-3 py-2 rounded hidden">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-700">
+                            <span class="font-semibold text-primary">Replying to:</span>
+                            <span id="reply-context-text" class="ml-2 text-gray-600 italic"></span>
+                        </span>
+                        <button type="button" id="clear-reply-btn" class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path d="M18 6 6 18M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <form id="message-form" class="flex items-end space-x-3 gap-2">
+                    <div class="flex-1 flex flex-col items-center">
+                        <textarea
+                            id="message-input"
+                            placeholder="Type a message..."
+                            rows="1"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                        ></textarea>
+                    </div>
+                    <button
+                        type="submit"
+                        id="send-button"
+                        disabled
+                        class="bg-primary text-white p-3 rounded-full hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0 flex flex-col items-center justify-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path d="m22 2-7 20-4-9-9-4Z"/>
+                            <path d="M22 2 11 13"/>
+                        </svg>
+                    </button>
+                </form>
+            </footer>
+        {% else %}
+            <!-- No Chat Selected State -->
+            <div class="hidden md:flex flex-1 items-center justify-center bg-gray-50">
+                <div class="text-center">
+                    <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Welcome to MamiCoach Chat</h3>
+                    <p class="text-gray-500">Select a conversation to start messaging</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+
+// Current chat session ID (from template context)
+const selectedSessionId = {% if selected_session_id %}'{{ selected_session_id }}'{% else %}null{% endif %};
+
+// Polling and window tracking
+let pollInterval;
+let isWindowActive = true;
+let markReadTimeout;
+let pendingMarkReadSessionId = null;
+
+let currentReplyToMessageId = null;
+
+let pendingAttachments = [];
+
+// Local storage keys for tracking read status
+const MARK_READ_KEY_PREFIX = 'chat_marked_read_';
+
+/*
+ * ============================================================================
+ * INITIALIZATION & EVENT LISTENERS
+ * ============================================================================
+ */
+
+function getLastMarkedReadTime(sessionId) {
+    return localStorage.getItem(MARK_READ_KEY_PREFIX + sessionId);
+}
+
+function setLastMarkedReadTime(sessionId, timestamp) {
+    localStorage.setItem(MARK_READ_KEY_PREFIX + sessionId, timestamp);
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadSessions();
+    
+    // If we have a selected session, load its messages
+    if (selectedSessionId) {
+        await loadMessages(selectedSessionId);
+        setupMessageInput();
+        
+        // Handle pre-attachment from presend route
+        {% if pre_attachment %}
+        addPreAttachmentToPending({
+            type: '{{ pre_attachment.type }}',
+            data: {{ pre_attachment.data|safe }}
+        });
+        {% endif %}
+    }
+    
+    // Search functionality
+    setupSearch();
+    
+    // Mobile navigation
+    setupMobileNavigation();
+    
+    // Start polling for new conversations
+    startPollingConversations();
+    
+    // Track window focus
+    setupWindowFocusTracking();
+});
+
+// Track when window is active/inactive
+function setupWindowFocusTracking() {
+    window.addEventListener('focus', async function() {
+        isWindowActive = true;
+        // Refresh immediately when window regains focus
+        await loadSessions();
+        if (selectedSessionId) {
+            await loadMessages(selectedSessionId, true);
+        }
+    });
+    
+    window.addEventListener('blur', function() {
+        isWindowActive = false;
+    });
+}
+
+// Helper to get CSRF token from cookie or DOM
+function getCsrfToken() {
+    // Try to get from DOM first (from {% csrf_token %})
+    let csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    
+    // If not found, try to get from cookie
+    if (!csrftoken) {
+        csrftoken = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrftoken='))
+            ?.split('=')[1];
+    }
+    
+    return csrftoken || '';
+}
+
+// Poll for new conversations every 3 seconds (only when window is active)
+function startPollingConversations() {
+    pollInterval = setInterval(async () => {
+        if (isWindowActive) {
+            await loadSessions();
+        }
+    }, 3000);
+}
+
+// Stop polling when page unloads
+window.addEventListener('beforeunload', function() {
+    if (pollInterval) {
+        clearInterval(pollInterval);
+    }
+});
+
+// Load and display sessions
+async function loadSessions() {
+    try {
+        const response = await fetch('{% url "chat:get_chat_sessions" %}');
+        const data = await response.json();
+        
+        const container = document.getElementById('sessions-list');
+        const loading = document.getElementById('sessions-loading');
+        
+        if (loading) loading.style.display = 'none';
+        
+        if (data.sessions && data.sessions.length > 0) {
+            container.innerHTML = data.sessions.map(createSessionItem).join('');
+        } else {
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">No conversations yet</div>';
+        }
+    } catch (error) {
+        console.error('Error loading sessions:', error);
+        const loading = document.getElementById('sessions-loading');
+        if (loading) loading.textContent = 'Error loading conversations';
+    }
+}
+
+// Helper function to format timestamp with date if yesterday or older
+function formatMessageTime(timestamp) {
+    const messageDate = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    // Check if message is from today
+    if (messageDate.toDateString() === today.toDateString()) {
+        return messageDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+    
+    // Check if message is from yesterday
+    if (messageDate.toDateString() === yesterday.toDateString()) {
+        return 'Yesterday ' + messageDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+    
+    // For older messages, show date and time
+    return messageDate.toLocaleDateString([], {month: 'short', day: 'numeric'}) + ' ' + 
+           messageDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}
+
+// Helper function to format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+}
+
+// Helper function to create booking attachment HTML
+function createBookingAttachmentHtml(attachment, isOwn) {
+    // Defensive: always check for nested data
+    const data = attachment.data || {};
+    const courseId = attachment.course_id || data.course_id || '';
+    const courseUrl = `{% url 'courses_and_coach:course_details' course_id='0' %}`.replace('/0', `/${courseId}`);
+    // Normalize course title/name
+    let courseTitle = attachment.course_title || attachment.course_name || data.course_title || data.course_name || data.title || 'Unknown Course';
+    // Format booking date if present
+    let bookingDate = attachment.booking_date || data.booking_date || '';
+    if (bookingDate && bookingDate.length > 10) {
+        try {
+            const d = new Date(bookingDate);
+            bookingDate = isNaN(d.getTime()) ? bookingDate : d.toLocaleString();
+        } catch { /* ignore */ }
+    }
+    const bookingId = attachment.booking_id || attachment.id || data.booking_id || data.id || '';
+    const status = attachment.status || data.status || '';
+    return `
+        <div class="mt-2 w-full max-w-sm bg-gradient-to-br from-blue-50 to-blue-100 ${isOwn ? 'from-white/20 to-white/10' : ''} rounded-lg p-3 border border-blue-200 ${isOwn ? 'border-white/20' : ''}">
+            <div class="flex items-center gap-2 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ${isOwn ? 'text-white' : 'text-blue-600'}" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                </svg>
+                <span class="font-semibold ${isOwn ? 'text-white' : 'text-blue-900'}">Booking</span>
+            </div>
+            <div class="space-y-1 text-sm">
+                <p class="font-semibold ${isOwn ? 'text-white' : 'text-gray-800'}">Booking ID: ${DOMPurify.sanitize(String(bookingId))}</p>
+                <p class="${isOwn ? 'text-white' : 'text-gray-800'}">Course: ${DOMPurify.sanitize(courseTitle)}</p>
+                ${bookingDate ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Date: ${DOMPurify.sanitize(bookingDate)}</p>` : ''}
+                ${status ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Status: ${DOMPurify.sanitize(status)}</p>` : ''}
+                <a href="${courseUrl}" class="inline-block px-3 py-1 bg-blue-600 ${isOwn ? 'bg-white/30' : ''} text-white rounded hover:opacity-80 transition-opacity text-xs mt-2">View Booking</a>
+            </div>
+        </div>
+    `;
+}
+
+// Helper function to create course attachment HTML
+function createCourseAttachmentHtml(attachment, isOwn) {
+    const data = attachment.data || {};
+    const courseId = attachment.course_id || data.course_id || '';
+    const courseUrl = `{% url 'courses_and_coach:course_details' course_id='0' %}`.replace('/0', `/${courseId}`);
+    // Normalize course title/name
+    let courseTitle = attachment.course_title || attachment.course_name || data.title || data.course_title || data.course_name || 'Unknown Course';
+    // Coach name
+    let coachName = '';
+    if (attachment.coach && (attachment.coach.first_name || attachment.coach.last_name)) {
+        coachName = `${attachment.coach.first_name || ''} ${attachment.coach.last_name || ''}`.trim();
+    } else if (data.coach && (data.coach.first_name || data.coach.last_name)) {
+        coachName = `${data.coach.first_name || ''} ${data.coach.last_name || ''}`.trim();
+    }
+    // Location, price, duration
+    const location = attachment.location || data.location || '';
+    const price = attachment.price || data.price || '';
+    const duration = attachment.duration || data.duration || '';
+    return `
+        <div class="mt-2 w-full max-w-sm bg-gradient-to-br from-purple-50 to-purple-100 ${isOwn ? 'from-white/20 to-white/10' : ''} rounded-lg p-3 border border-purple-200 ${isOwn ? 'border-white/20' : ''}">
+            <div class="flex items-center gap-2 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ${isOwn ? 'text-white' : 'text-purple-600'}" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-13c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+                </svg>
+                <span class="font-semibold ${isOwn ? 'text-white' : 'text-purple-900'}">Course</span>
+            </div>
+            <div class="space-y-1 text-sm">
+                <p class="font-semibold ${isOwn ? 'text-white' : 'text-gray-800'}">${DOMPurify.sanitize(courseTitle)}</p>
+                ${coachName ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Coach: ${DOMPurify.sanitize(coachName)}</p>` : ''}
+                ${location ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Location: ${DOMPurify.sanitize(location)}</p>` : ''}
+                ${price ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Price: Rp${DOMPurify.sanitize(String(price))}</p>` : ''}
+                ${duration ? `<p class="${isOwn ? 'text-white/80' : 'text-gray-600'}">Duration: ${DOMPurify.sanitize(String(duration))} min</p>` : ''}
+                <a href="${courseUrl}" class="inline-block px-3 py-1 bg-purple-600 ${isOwn ? 'bg-white/30' : ''} text-white rounded hover:opacity-80 transition-opacity text-xs mt-2">View Course</a>
+            </div>
+        </div>
+    `;
+}
+
+function createSessionItem(session) {
+    const isSelected = selectedSessionId === session.id;
+    const lastMessageTime = session.last_message.timestamp ? 
+        formatMessageTime(session.last_message.timestamp) : '';
+    
+    const otherUserName = `${session.other_user.first_name} ${session.other_user.last_name}`.trim() || session.other_user.username;
+    const userInitial = session.other_user.first_name ? session.other_user.first_name.charAt(0).toUpperCase() : 
+                        session.other_user.username.charAt(0).toUpperCase();
+    
+    return `
+        <div class="session-item p-4 hover:bg-gray-50 cursor-pointer transition-colors ${isSelected ? 'bg-blue-50 border-r-4 border-primary' : ''}" 
+             data-session-id="${session.id}">
+            <div class="flex items-start space-x-3">
+                <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
+                    ${userInitial}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-semibold text-gray-900 truncate">${DOMPurify.sanitize(otherUserName)}</h3>
+                        <span class="text-xs text-gray-500 flex-shrink-0 ml-2">${lastMessageTime}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-sm text-gray-600 truncate flex-1">
+                            ${session.last_message.content ? DOMPurify.sanitize(session.last_message.content) : 'No messages yet'}
+                        </p>
+                        ${session.unread_count > 0 ? 
+                            `<span class="bg-primary text-white text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ml-2">${session.unread_count}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Handle session selection
+document.addEventListener('click', function(e) {
+    const sessionItem = e.target.closest('.session-item');
+    if (sessionItem) {
+        const sessionId = sessionItem.dataset.sessionId;
+        // Navigate to the session URL
+        window.location.href = `{% url 'chat:chat_detail' session_id='00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', sessionId);
+    }
+});
+
+// Load messages for selected session
+async function loadMessages(sessionId, skipScroll = false) {
+    const container = document.getElementById('messages-list');
+    const loading = document.getElementById('messages-loading');
+    
+    try { 
+        const response = await fetch(`{% url 'chat:get_messages' session_id='00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', sessionId));
+        const data = await response.json();
+        
+        if (loading) loading.style.display = 'none';
+        
+        if (data.messages && data.messages.length > 0) {
+            // On initial load, rebuild entire DOM
+            container.innerHTML = data.messages.map(msg => createMessageItem({
+                ...msg,
+                is_sent_by_me: msg.sender.id === data.current_user_id
+            })).join('');
+        } else {
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">No messages yet</div>';
+        }
+        
+        // Setup scroll event listener for marking as read
+        setupScrollToRead();
+        
+        // Debounced mark as read since we're viewing the messages
+        debouncedMarkMessagesAsRead(sessionId);
+    } catch (error) {
+        console.error('Error loading messages:', error);
+        if (loading) {
+            loading.textContent = 'Error loading messages';
+            loading.style.display = 'block';
+        } else {
+            container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading messages</div>';
+        }
+    }
+}
+
+function createMessageItem(message) {
+    const isOwn = message.is_sent_by_me;
+    const messageTime = formatMessageTime(message.timestamp);
+    
+    // REPLY CONTEXT
+    // Shows the original message being replied to
+    let replyHtml = '';
+    if (message.reply_to) {
+        replyHtml = `
+            <div class="bg-gray-100 ${isOwn ? 'bg-white/15' : ''} px-3 py-2 rounded-lg mb-3 border-l-4 border-secondary text-sm">
+                <p class="font-semibold ${isOwn ? 'text-white/80' : 'text-primary'}">${DOMPurify.sanitize(message.reply_to.sender_username)}</p>
+                <p class="${isOwn ? 'text-white/70' : 'text-gray-600'} truncate italic">${DOMPurify.sanitize(message.reply_to.content)}</p>
+            </div>
+        `;
+    }
+    
+    // ATTACHMENTS RENDERING
+    // Images: Show thumbnail preview (clickable for full size)
+    // Files: Show download link with file size
+    // Bookings/Courses: Show embed cards
+    let attachmentsHtml = '';
+    if (message.attachments && message.attachments.length > 0) {
+        attachmentsHtml = '<div class="mt-2 space-y-2 flex flex-wrap gap-2">';
+        message.attachments.forEach(att => {
+            if (att.type === 'image' && att.file_url) {
+                // IMAGE: Show thumbnail with click-to-expand
+                attachmentsHtml += `
+                    <div class="inline-block max-w-xs">
+                        <a href="${att.file_url}" target="_blank" rel="noopener noreferrer">
+                            <img src="${att.thumbnail_url || att.file_url}" alt="Image" class="w-full h-auto max-h-64 rounded-lg object-cover">
+                        </a>
+                    </div>
+                `;
+            } else if (att.type === 'booking' && att.booking_id) {
+                // BOOKING: Show booking embed card
+                attachmentsHtml += createBookingAttachmentHtml(att, isOwn);
+            } else if (att.type === 'course' && att.course_id) {
+                // COURSE: Show course embed card
+                attachmentsHtml += createCourseAttachmentHtml(att, isOwn);
+            } else if (att.file_url) {
+                // FILE: Show as download link with metadata
+                const fileSize = formatFileSize(att.file_size);
+                attachmentsHtml += `
+                    <div class="flex items-center gap-2 bg-gray-100 ${isOwn ? 'bg-white/20' : ''} p-2 rounded">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                            <polyline points="13 2 13 9 20 9"/>
+                        </svg>
+                        <a href="${att.file_url}" download="${att.file_name}" class="text-sm truncate ${isOwn ? 'text-white hover:underline' : 'text-primary hover:underline'}">
+                            ${DOMPurify.sanitize(att.file_name)}
+                        </a>
+                        <span class="text-xs text-gray-500 flex-shrink-0">(${fileSize})</span>
+                    </div>
+                `;
+            }
+        });
+        attachmentsHtml += '</div>';
+    }
+    
+    return `
+        <div class="mb-4 flex ${isOwn ? 'justify-end' : 'justify-start'} group" data-message-id="${message.id}">
+            <div class="relative">
+                <div class="max-w-xs lg:max-w-md ${isOwn ? 'bg-primary text-white' : 'bg-white text-gray-900'} rounded-2xl px-4 py-2 shadow-sm">
+                    ${replyHtml}
+                    <p class="break-words">${DOMPurify.sanitize(message.content)}</p>
+                    ${attachmentsHtml}
+                </div>
+                <div class="flex ${isOwn ? 'justify-end' : 'justify-start'} mt-1 gap-2">
+                    ${
+                    isOwn?`
+                        <button class="reply-btn opacity-100 md:opacity-0 md:group-hover:opacity-100 text-gray-500 hover:text-primary transition-opacity" data-message-id="${message.id}" title="Reply">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-reply-all"><path d="m12 17-5-5 5-5"/><path d="M22 18v-2a4 4 0 0 0-4-4H7"/><path d="m7 17-5-5 5-5"/></svg>
+                        </button>`:''
+                    }
+                    
+                    <span class="text-xs text-gray-500 flex items-center">
+                        ${messageTime}
+                        ${isOwn ? (message.read ? 
+                            '<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 ml-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-read-status><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>' : 
+                            '<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-read-status><path d="M20 6 9 17l-5-5"/></svg>') : ''}
+                    </span>
+
+                    ${
+                    !isOwn?`
+                        <button class="reply-btn opacity-100 md:opacity-0 md:group-hover:opacity-100 text-gray-500 hover:text-primary transition-opacity" data-message-id="${message.id}" title="Reply">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-reply-all"><path d="m12 17-5-5 5-5"/><path d="M22 18v-2a4 4 0 0 0-4-4H7"/><path d="m7 17-5-5 5-5"/></svg>
+                        </button>`:''
+                    }
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createMessageItemWithId(message) {
+    return createMessageItem(message);
+}
+
+function setupMessageInput() {
+    const messageInput = document.getElementById('message-input');
+    const messageForm = document.getElementById('message-form');
+    const sendButton = document.getElementById('send-button');
+    
+    // CREATE FILE INPUT for attachments
+    // Hidden input, triggered by attachment button
+    let fileInput = document.getElementById('chat-file-input');
+    if (!fileInput) {
+        fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.id = 'chat-file-input';
+        fileInput.style.display = 'none';
+        // Accepted file types: images, PDFs, Office documents
+        fileInput.accept = 'image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt';
+        document.body.appendChild(fileInput);
+        
+        // When file selected, add to pending queue
+        fileInput.addEventListener('change', async function(e) {
+            if (this.files[0]) {
+                await handleFileUpload(this.files[0]);
+                this.value = '';  // Reset for next selection
+            }
+        });
+    }
+    
+    // CREATE ATTACHMENT BUTTON
+    // Appears in message input area next to send button
+    // Click opens file picker
+    let attachBtn = document.getElementById('attach-btn');
+    if (!attachBtn && messageForm) {
+        attachBtn = document.createElement('button');
+        attachBtn.type = 'button';
+        attachBtn.id = 'attach-btn';
+        attachBtn.className = 'bg-gray-300 text-gray-700 p-3 rounded-full hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors flex-shrink-0 flex items-center justify-center';
+        attachBtn.title = 'Attach file';
+        attachBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`;
+        
+        // Button click opens file picker
+        attachBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            fileInput.click();
+        });
+        
+        // Insert button before send button
+        messageForm.insertBefore(attachBtn, sendButton);
+    }
+    
+    if (messageInput) {
+        // ENABLE/DISABLE send button based on content or attachments
+        messageInput.addEventListener('input', function() {
+            sendButton.disabled = this.value.trim() === '' && pendingAttachments.length === 0;
+            
+            // Auto-resize textarea
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (this.value.trim() || pendingAttachments.length > 0) {
+                    sendMessage(selectedSessionId, currentReplyToMessageId);
+                }
+            }
+        });
+        
+        sendButton.disabled = messageInput.value.trim() === '' && pendingAttachments.length === 0;
+        messageInput.focus();
+    }
+    
+    if (messageForm) {
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (messageInput.value.trim()) {
+                sendMessage(selectedSessionId, currentReplyToMessageId);
+            }
+        });
+    }
+    
+    // Setup reply button event delegation (works even for dynamically added messages)
+    const messagesContainer = document.getElementById('messages-container');
+    if (messagesContainer) {
+        messagesContainer.addEventListener('click', function(e) {
+            const replyBtn = e.target.closest('.reply-btn');
+            if (replyBtn) {
+                const messageId = replyBtn.dataset.messageId;
+                currentReplyToMessageId = messageId;
+                
+                // Show reply context above textarea
+                const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageElement) {
+                    // Get all paragraphs and find the message content (not in reply context)
+                    const messageParagraphs = messageElement.querySelectorAll('.max-w-xs p, .max-w-md p');
+                    const messageContent = messageParagraphs[0]?.textContent || 'message';
+                    
+                    // Display reply context box
+                    const replyContext = document.getElementById('reply-context');
+                    const replyContextText = document.getElementById('reply-context-text');
+                    if (replyContext && replyContextText) {
+                        replyContextText.textContent = messageContent.substring(0, 60) + (messageContent.length > 60 ? '...' : '');
+                        replyContext.classList.remove('hidden');
+                    }
+                    
+                    messageInput.focus();
+                }
+            }
+        });
+    }
+    
+    // Setup clear reply button
+    const clearReplyBtn = document.getElementById('clear-reply-btn');
+    if (clearReplyBtn) {
+        clearReplyBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            clearReplyContext();
+        });
+    }
+}
+
+function clearReplyContext() {
+    currentReplyToMessageId = null;
+    const replyContext = document.getElementById('reply-context');
+    if (replyContext) {
+        replyContext.classList.add('hidden');
+    }
+}
+
+/*
+ * ============================================================================
+ * ATTACHMENT UPLOAD FUNCTIONS
+ * ============================================================================
+ * 
+ * Multiple file attachment support allows users to:
+ * 1. Select multiple files before sending
+ * 2. See pending files in a preview list
+ * 3. Remove files from queue before sending
+ * 4. Upload all files to one message
+ * 
+ * Key Features:
+ * - Max 10MB per file
+ * - Auto-detects image vs document
+ * - Generates thumbnails for images
+ * - Shows loading state before upload
+ * 
+ * Flow:
+ * File Select -> handleFileUpload() -> pendingAttachments[] updated
+ *             -> updatePendingAttachmentsUI() displays list
+ *             -> sendMessage() triggers uploadPendingAttachments()
+ */
+
+/*
+ * Handles file selection from input element
+ * Validates and adds file to pending queue
+ * 
+ * @param {File} file - File object from file input
+ */
+async function handleFileUpload(file) {
+    const MAX_FILE_SIZE = 3 * 1024 * 1024; // 10MB
+    
+    if (file.size > MAX_FILE_SIZE) {
+        alert('File size exceeds 3MB limit');
+        return;
+    }
+    
+    if (!selectedSessionId) {
+        alert('Please select a conversation first');
+        return;
+    }
+    
+    try {
+        // Add file to pending attachments queue
+        // Type is auto-detected based on MIME type
+        pendingAttachments.push({
+            file: file,
+            type: file.type.startsWith('image/') ? 'image' : 'file'
+        });
+        
+        // Update UI to show pending attachment
+        updatePendingAttachmentsUI();
+        
+    } catch (error) {
+        console.error('Error preparing file:', error);
+        alert('Error preparing file. Please try again.');
+    }
+}
+
+// Add pre-attachment from presend route to pending attachments
+function addPreAttachmentToPending(preAttachment) {
+    if (!preAttachment || !preAttachment.type || !preAttachment.data) {
+        return;
+    }
+    
+    // Add as a special attachment object (not a file)
+    pendingAttachments.push({
+        type: preAttachment.type,
+        isEmbed: true,
+        data: preAttachment.data
+    });
+    
+    // Update UI to show pending attachment
+    updatePendingAttachmentsUI();
+}
+
+function updatePendingAttachmentsUI() {
+    let attachmentsList = document.getElementById('pending-attachments-list');
+    
+    // CREATE CONTAINER on first attachment
+    if (!attachmentsList) {
+        attachmentsList = document.createElement('div');
+        attachmentsList.id = 'pending-attachments-list';
+        attachmentsList.className = 'mt-2 mb-2 space-y-1 max-h-32 overflow-y-auto';
+        
+        const messageForm = document.getElementById('message-form');
+        messageForm.parentNode.insertBefore(attachmentsList, messageForm);
+    }
+    
+    // CLEAR if no attachments
+    if (pendingAttachments.length === 0) {
+        attachmentsList.innerHTML = '';
+        return;
+    }
+    
+    // RENDER each pending attachment with remove button
+    attachmentsList.innerHTML = pendingAttachments.map((att, idx) => {
+        if (att.isEmbed) {
+            // Show booking/course embed preview
+            if (att.type === 'booking') {
+                return `
+                    <div class="bg-blue-50 border border-blue-200 rounded p-2 flex items-center justify-between">
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                            </svg>
+                            <span class="text-sm text-gray-800 truncate">Booking: ${att.data.course_title}</span>
+                        </div>
+                        <button type="button" class="text-red-500 hover:text-red-700 font-bold flex-shrink-0 ml-2" 
+                                onclick="removePendingAttachment(${idx})">×</button>
+                    </div>
+                `;
+            } else if (att.type === 'course') {
+                return `
+                    <div class="bg-purple-50 border border-purple-200 rounded p-2 flex items-center justify-between">
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-purple-600 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                            </svg>
+                            <span class="text-sm text-gray-800 truncate">Course: ${att.data.title}</span>
+                        </div>
+                        <button type="button" class="text-red-500 hover:text-red-700 font-bold flex-shrink-0 ml-2" 
+                                onclick="removePendingAttachment(${idx})">×</button>
+                    </div>
+                `;
+            }
+        } else {
+            // Show file attachment
+            return `
+                <div class="flex items-center gap-2 bg-gray-100 p-2 rounded text-sm">
+                    <span class="flex-1 truncate">${att.file.name}</span>
+                    <button type="button" class="text-red-500 hover:text-red-700 font-bold" 
+                            onclick="removePendingAttachment(${idx})">×</button>
+                </div>
+            `;
+        }
+    }).join('');
+}
+
+/*
+ * Remove a specific file from the pending queue
+ * 
+ * @param {number} index - Index in pendingAttachments array
+ */
+function removePendingAttachment(index) {
+    pendingAttachments.splice(index, 1);
+    updatePendingAttachmentsUI();
+}
+
+async function uploadPendingAttachments(messageId) {
+    if (pendingAttachments.length === 0) {
+        return;
+    }
+    
+    try {
+        // UPLOAD each file sequentially
+        for (const attachment of pendingAttachments) {
+            // Skip embeds - they're handled differently
+            if (attachment.isEmbed) {
+                continue;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', attachment.file);
+            formData.append('type', attachment.type);  // 'image' or 'file'
+            formData.append('message_id', messageId);
+            
+            // SEND to upload endpoint
+            const uploadResponse = await fetch(
+                `{% url 'chat:upload_attachment' session_id='00000000-0000-0000-0000-000000000000' %}`
+                    .replace('00000000-0000-0000-0000-000000000000', selectedSessionId),
+                {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCsrfToken(),
+                    },
+                    body: formData
+                }
+            );
+            
+            const uploadData = await uploadResponse.json();
+            
+            // LOG errors but continue with other files
+            if (!uploadData.success) {
+                console.error('Error uploading attachment:', uploadData.error);
+            }
+        }
+        
+        // Clear pending attachments after upload
+        pendingAttachments = [];
+        const attachmentsList = document.getElementById('pending-attachments-list');
+        if (attachmentsList) {
+            attachmentsList.innerHTML = '';
+        }
+        
+        // Reload messages to show uploaded files
+        await loadMessages(selectedSessionId);
+        
+    } catch (error) {
+        console.error('Error uploading attachments:', error);
+        alert('Error uploading some files. Please try again.');
+    }
+}
+
+async function createEmbedAttachments(messageId) {
+    if (pendingAttachments.length === 0) {
+        return;
+    }
+    
+    try {
+        // CREATE embed attachments (bookings, courses, etc.)
+        for (const attachment of pendingAttachments) {
+            // Only process embeds
+            if (!attachment.isEmbed) {
+                continue;
+            }
+
+            const data = attachment.data || {};
+            const attachmentData = {
+                message_id: messageId,
+                type: attachment.type,  // 'booking' or 'course'
+            };
+
+            // Add type-specific ID - check both direct and nested properties
+            if (attachment.type === 'booking') {
+                attachmentData.booking_id = attachment.booking_id || data.id || data.booking_id;
+            } else if (attachment.type === 'course') {
+                attachmentData.course_id = attachment.course_id || data.id || data.course_id;
+            }
+
+            // SEND to create attachment endpoint
+            const createResponse = await fetch(
+                `{% url 'chat:create_attachment' session_id='00000000-0000-0000-0000-000000000000' %}`
+                    .replace('00000000-0000-0000-0000-000000000000', selectedSessionId),
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(),
+                    },
+                    body: JSON.stringify(attachmentData)
+                }
+            );
+
+            const createData = await createResponse.json();
+            console.log(attachment, attachmentData)
+            console.log(createData)
+
+            // LOG errors but continue with other embeds
+            if (!createData.success) {
+                console.error('Error creating embed attachment:', createData.error);
+            }
+        }
+
+        // Clear pending attachments after creation
+        pendingAttachments = [];
+        const attachmentsList = document.getElementById('pending-attachments-list');
+        if (attachmentsList) {
+            attachmentsList.innerHTML = '';
+        }
+
+        // Reload messages to show created embeds
+        await loadMessages(selectedSessionId);
+
+    } catch (error) {
+        console.error('Error creating embed attachments:', error);
+        alert('Error creating some attachments. Please try again.');
+    }
+}
+
+async function sendMessage(sessionId, replyToId = null) {
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const content = messageInput.value.trim();
+    
+    // VALIDATION: Allow sending if there's text OR attachments
+    if (!content && pendingAttachments.length === 0) return;
+    
+    messageInput.disabled = true;
+    sendButton.disabled = true;
+    
+    try {
+        const body = {
+            session_id: sessionId,
+            content: content || '(attachments)'  // Allow sending just attachments
+        };
+        
+        // ADD REPLY CONTEXT if replying to a message
+        if (replyToId) {
+            body.reply_to_id = replyToId;
+        }
+        
+        // SEND THE TEXT MESSAGE
+        const response = await fetch('{% url "chat:send_message" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify(body)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const messageId = data.message.id;
+
+            // UPLOAD FILE ATTACHMENTS if any are pending
+            if (pendingAttachments.some(a => !a.isEmbed)) {
+                await uploadPendingAttachments(messageId);
+            }
+
+            // CREATE EMBED ATTACHMENTS (bookings, courses) if any are pending
+            if (pendingAttachments.some(a => a.isEmbed)) {
+                await createEmbedAttachments(messageId);
+            }
+
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            clearReplyContext();
+
+            // Remove query parameters from URL
+            if (window.history.replaceState) {
+                const url = new URL(window.location);
+                url.search = '';
+                window.history.replaceState({}, '', url.toString());
+            }
+
+            // Always reload messages from server to avoid duplicates
+            await loadMessages(selectedSessionId);
+            // Refresh sessions to update last message and clear unread badges
+            await loadSessions();
+        } else {
+            alert('Error sending message: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Error sending message. Please try again.');
+    } finally {
+        messageInput.disabled = false;
+        sendButton.disabled = (messageInput.value.trim() === '' && pendingAttachments.length === 0);
+        messageInput.focus();
+    }
+}
+
+async function markMessagesAsRead(sessionId) {
+    try {
+        await fetch('{% url "chat:mark_messages_read" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({
+                session_id: sessionId
+            })
+        });
+    } catch (error) {
+        console.error('Error marking messages as read:', error);
+    }
+}
+
+// Debounced version of markMessagesAsRead to prevent spam
+function debouncedMarkMessagesAsRead(sessionId) {
+    // Clear existing timeout
+    if (markReadTimeout) {
+        clearTimeout(markReadTimeout);
+    }
+    
+    // Store the session ID
+    pendingMarkReadSessionId = sessionId;
+    
+    // Set a new timeout to mark as read after 1 second of inactivity
+    markReadTimeout = setTimeout(() => {
+        if (pendingMarkReadSessionId && isWindowActive) {
+            const lastMarked = getLastMarkedReadTime(pendingMarkReadSessionId);
+            const now = new Date().getTime();
+            
+            // Only call API if we haven't marked this session as read in the last 5 seconds
+            if (!lastMarked || (now - parseInt(lastMarked)) > 5000) {
+                markMessagesAsRead(pendingMarkReadSessionId);
+                setLastMarkedReadTime(pendingMarkReadSessionId, now);
+            }
+            pendingMarkReadSessionId = null;
+        }
+    }, 1000);
+}
+
+function setupSearch() {
+    const searchToggle = document.getElementById('search-toggle');
+    const searchContainer = document.getElementById('search-container');
+    const searchInput = document.getElementById('session-search');
+    
+    if (searchToggle) {
+        searchToggle.addEventListener('click', function() {
+            searchContainer.classList.toggle('hidden');
+            if (!searchContainer.classList.contains('hidden')) {
+                searchInput.focus();
+            }
+        });
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterSessions(this.value.toLowerCase());
+        });
+    }
+}
+
+function filterSessions(query) {
+    const sessionItems = document.querySelectorAll('.session-item');
+    sessionItems.forEach(item => {
+        const userName = item.querySelector('h3').textContent.toLowerCase();
+        const lastMessage = item.querySelector('p').textContent.toLowerCase();
+        
+        if (userName.includes(query) || lastMessage.includes(query)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function setupMobileNavigation() {
+    const backButton = document.getElementById('back-to-sessions');
+    const sessionsSidebar = document.getElementById('sessions-sidebar');
+    const chatPanel = document.getElementById('chat-panel');
+    
+    if (backButton) {
+        backButton.addEventListener('click', function() {
+            // Navigate back to main chat page
+            window.location.href = '{% url "chat:chat_index" %}';
+        });
+    }
+}
+
+
+function scrollToBottom() {
+    const container = document.getElementById('messages-container');
+    if (container) {
+        // Use setTimeout to ensure DOM has fully rendered
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 0);
+    }
+}
+
+function setupScrollToRead() {
+    const messagesContainer = document.getElementById('messages-container');
+    if (messagesContainer) {
+        messagesContainer.addEventListener('scroll', function() {
+            // Check if scrolled to bottom (within 100px)
+            const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
+            
+            if (isAtBottom && selectedSessionId) {
+                // Debounced mark messages as read
+                debouncedMarkMessagesAsRead(selectedSessionId);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

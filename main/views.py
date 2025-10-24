@@ -1,11 +1,16 @@
 from django.shortcuts import render
+from reviews.models import Review
 from courses_and_coach.models import Course, Category
 from user_profile.models import CoachProfile
 
 
 # Create your views here.
 def show_main(request):
-    # Get top 4 featured courses based on coach rating
+    # Fetch top 10 reviews by highest rating
+    top_reviews = Review.objects.select_related(
+        "user", "course", "coach", "coach__user"
+    ).order_by("-rating", "-created_at")[:10]
+
     featured_courses = (
         Course.objects.all()
         .select_related("coach", "category")
@@ -22,6 +27,7 @@ def show_main(request):
         "featured_courses": featured_courses,
         "categories": categories,
         "top_coaches": top_coaches,
+        "top_reviews": top_reviews,
     }
     return render(request, "pages/landing_page/index.html", context)
 

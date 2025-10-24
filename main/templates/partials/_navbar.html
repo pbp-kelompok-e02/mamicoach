@@ -80,6 +80,9 @@
                         
                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-gray-200 z-50">
                             {% if user.coachprofile %}
+                                <a href="{% url 'courses_and_coach:my_courses' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    Kelas Saya
+                                </a>
                                 <a href="{% url 'user_profile:dashboard_coach' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     Dashboard
                                 </a>
@@ -109,6 +112,14 @@
                     </a>
                 {% endif %}
             </div>
+
+            {% if user.is_authenticated %}
+            <div class="ml-4">
+                <a href="{% url 'chat:chat_index' %}" class="text-gray-700 hover:text-primary p-2 relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-inbox-icon lucide-inbox"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                </a>
+            </div>
+            {% endif %}
 
             <div class="md:hidden">
                 <button id="mobile-menu-button" class="text-gray-700 hover:text-primary focus:outline-none focus:text-primary p-2">
@@ -157,10 +168,10 @@
                         </div>
                         <span class="ml-3 text-base font-medium text-gray-800">{{ user.first_name|default:user.username }}</span>
                     </div>
-                    <a href="#" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
-                        Kelas Saya
-                    </a>
                     {% if user.coachprofile %}
+                        <a href="{% url 'courses_and_coach:my_courses' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
+                            Kelas Saya
+                        </a>
                         <a href="{% url 'user_profile:dashboard_coach' %}" class="block px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md text-base font-medium">
                             Dashboard
                         </a>

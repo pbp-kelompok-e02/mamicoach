@@ -7,6 +7,7 @@ from .forms import CourseForm
 from user_profile.models import CoachProfile
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from reviews.models import Review
 
 
 def show_courses(request):
@@ -25,7 +26,7 @@ def show_courses(request):
 
     # Pagination
     paginator = Paginator(courses, 12)
-    page_number = request.GET.get("page")
+    page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 
     context = {
@@ -33,6 +34,8 @@ def show_courses(request):
         "categories": categories,
         "selected_category": category_filter,
         "search_query": search_query,
+        "current_page": page_obj.number,
+        "total_pages": paginator.num_pages,
     }
     return render(request, "courses_and_coach/courses_list.html", context)
 
@@ -40,12 +43,18 @@ def show_courses(request):
 def course_details(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     related_courses = Course.objects.filter(category=course.category).exclude(
-        id=course.id
+        id=course.pk
     )[:4]
+    
+    # Fetch reviews for this course
+    reviews = Review.objects.filter(course=course).select_related(
+        'user', 'coach', 'coach__user'
+    ).order_by('-created_at')
 
     context = {
         "course": course,
         "related_courses": related_courses,
+        "reviews": reviews,
     }
     return render(request, "courses_and_coach/courses/courses_details.html", context)
 
@@ -178,6 +187,10 @@ def courses_card_ajax(request):
             "total_count": paginator.count,
             "count": len(page_obj),
             "html": html,
+            "current_page": page_obj.number,
+            "total_pages": paginator.num_pages,
+            "has_next": page_obj.has_next(),
+            "has_previous": page_obj.has_previous(),
         }
     )
 
@@ -259,9 +272,16 @@ def delete_course(request, course_id):
 
 def show_coaches(request):
     coaches = CoachProfile.objects.all()
+    
+    # Pagination
+    paginator = Paginator(coaches, 12)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        "coaches": coaches,
+        "coaches": page_obj,
+        "current_page": page_obj.number,
+        "total_pages": paginator.num_pages,
     }
     return render(request, "courses_and_coach/coaches_list.html", context)
 
