@@ -11,6 +11,7 @@ This module provides utilities for:
 from datetime import datetime, timedelta, time as dt_time, date as dt_date
 from typing import List, Tuple
 from django.db.models import Q
+from django.utils import timezone
 
 
 def merge_intervals(intervals: List[Tuple[dt_time, dt_time]]) -> List[Tuple[dt_time, dt_time]]:
@@ -219,13 +220,13 @@ def get_available_start_times(coach, course, target_date: dt_date, step_minutes:
     
     available_intervals = list(availabilities)
     
-    # Get active bookings for the coach on this date
-    start_of_day = datetime.combine(target_date, dt_time.min)
-    end_of_day = datetime.combine(target_date, dt_time.max)
+    # Get active bookings for the coach on this date (timezone-aware)
+    start_of_day = timezone.make_aware(datetime.combine(target_date, dt_time.min))
+    end_of_day = timezone.make_aware(datetime.combine(target_date, dt_time.max))
     
     active_bookings = Booking.objects.filter(
         coach=coach,
-        status__in=['pending', 'confirmed'],
+        status__in=['pending', 'paid', 'confirmed'],  # Include 'paid' status
         start_datetime__lt=end_of_day,
         end_datetime__gt=start_of_day
     ).values_list('start_datetime', 'end_datetime')

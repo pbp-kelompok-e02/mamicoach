@@ -129,10 +129,8 @@
                 {% endif %}
             </div>
 
-            <div class="hidden lg:block">
-                <div class="sticky top-24 h-fit">
-                    {% include 'booking/booking_card.html' with course=course %}
-                </div>
+            <div class="lg:col-span-1">
+                {% include 'booking/booking_card.html' with course=course %}
             </div>
             
             <!-- Mobile Booking Card -->
