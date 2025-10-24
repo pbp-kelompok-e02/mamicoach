@@ -129,20 +129,11 @@
                 {% endif %}
             </div>
 
-            <div class="hidden lg:block">
+            <!-- Booking Card - Single instance for both mobile and desktop -->
+            <div class="lg:col-span-1 mt-8 lg:mt-0">
                 <div class="sticky top-24 h-fit">
                     {% include 'booking/booking_card.html' with course=course %}
                 </div>
-            </div>
-            
-            <!-- Mobile Booking Card -->
-            <div class="lg:hidden mt-8">
-                {% include 'booking/booking_card.html' with course=course %}
-            </div>
-            
-            <!-- Mobile Booking Card -->
-            <div class="lg:hidden mt-8">
-                {% include 'booking/booking_card.html' with course=course %}
             </div>
         </div>
 
@@ -151,7 +142,7 @@
         <div class="mt-16">
             <h2 class="text-2xl font-bold text-gray-900 mb-8">Kelas Serupa</h2>
             <div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"> 
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 z-0"> 
                     {% for course in related_courses %}
                     {% include "courses_and_coach/partials/course_card.html" with course=course %}
                     {% endfor %}

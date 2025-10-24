@@ -12,7 +12,7 @@ from booking.services.availability import get_available_start_times
 from datetime import datetime, timedelta
 import calendar, pytz, json
 
-@login_required
+@login_required(login_url="/login")
 def get_available_dates(request, coach_id):
     """
     Return dates yang available untuk coach dalam 1 bulan
@@ -77,7 +77,7 @@ def get_available_dates(request, coach_id):
         }, status=500)
 
 
-@login_required
+@login_required(login_url="/login")
 def get_available_times(request, coach_id):
     """
     Return available time slots untuk coach pada date tertentu
@@ -133,7 +133,7 @@ def get_available_times(request, coach_id):
         }, status=500)
 
 
-@login_required
+@login_required(login_url="/login")
 @require_POST
 def create_booking(request, course_id):
     """
@@ -212,7 +212,7 @@ def create_booking(request, course_id):
 
 # ========== NEW API ENDPOINTS FOR AVAILABILITY SYSTEM ==========
 
-@login_required
+@login_required(login_url="/login")
 @require_http_methods(["GET"])
 def api_course_start_times(request, course_id):
     """
@@ -256,7 +256,7 @@ def api_course_start_times(request, course_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-@login_required
+@login_required(login_url="/login")
 @require_http_methods(["POST"])
 def api_booking_create(request, course_id):
     """Create new booking with overlap detection"""
@@ -318,7 +318,7 @@ def api_booking_create(request, course_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
-@login_required
+@login_required(login_url="/login")
 @require_http_methods(["GET"])
 def api_booking_list(request):
     """
@@ -379,7 +379,7 @@ def api_booking_list(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@login_required
+@login_required(login_url="/login")
 @require_POST
 def api_booking_update_status(request, booking_id):
     """
@@ -429,7 +429,7 @@ def api_booking_update_status(request, booking_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@login_required
+@login_required(login_url="/login")
 @require_POST
 def api_booking_cancel(request, booking_id):
     """
@@ -475,7 +475,7 @@ def api_booking_cancel(request, booking_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@login_required
+@login_required(login_url="/login")
 @require_POST
 def api_booking_mark_as_paid(request, booking_id):
     """
@@ -529,7 +529,7 @@ def api_booking_mark_as_paid(request, booking_id):
 
 # ========== COMPATIBILITY ENDPOINTS FOR OLD BOOKING SYSTEM ==========
 
-@login_required
+@login_required(login_url="/login")
 @require_http_methods(["GET"])
 def api_coach_available_dates_legacy(request, coach_id):
     """
@@ -579,7 +579,7 @@ def api_coach_available_dates_legacy(request, coach_id):
         }, status=500)
 
 
-@login_required
+@login_required(login_url="/login")
 @require_http_methods(["GET"])
 def api_coach_available_times_legacy(request, coach_id):
     """
@@ -640,7 +640,7 @@ def api_coach_available_times_legacy(request, coach_id):
         }, status=500)
 
 
-@login_required
+@login_required(login_url="/login")
 def booking_confirmation(request, course_id):
     """
     Halaman konfirmasi booking sebelum payment
@@ -661,7 +661,7 @@ def booking_confirmation(request, course_id):
     return render(request, 'booking/confirmation.html', context)
 
 
-@login_required
+@login_required(login_url="/login")
 def booking_success(request, booking_id):
     """
     Halaman success setelah booking berhasil dibuat
