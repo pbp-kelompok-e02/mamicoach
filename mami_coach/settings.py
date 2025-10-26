@@ -196,12 +196,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "static"
 
 if DEBUG:
     STATICFILES_DIRS = [
         BASE_DIR / "static"  # merujuk ke /static root project pada mode development
     ]
+else:
+    STATIC_ROOT = BASE_DIR / "static"
 
 # Media files (User uploads)
 # https://docs.djangoproject.com/en/5.2/howto/manage-files/
