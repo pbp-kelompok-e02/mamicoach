@@ -127,7 +127,7 @@
             <div class="flex items-start space-x-4">
                 <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
                     <img 
-                        src="{{ coach_profile.image_url|default:'https://ui-avatars.com/api/?name='|add:coach_profile.user.get_full_name|urlencode:'&background=35A753&color=ffffff' }}" 
+                        src="{{ coach_profile.image_url }}" 
                         alt="{{ coach_profile.user.get_full_name }}"
                         class="w-full h-full object-cover"
                     >

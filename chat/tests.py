@@ -744,8 +744,7 @@ class PresendCourseTest(ChatTestSetUp):
         response = self.client.get(
             reverse('chat:presend_course', kwargs={'course_id': self.course.id})
         )
-        # Might redirect instead of returning 400
-        self.assertIn(response.status_code, [400, 302])
+        self.assertEqual(response.status_code, 302)
     
     def test_presend_course_creates_session(self):
         """Test presending course creates chat session if needed"""
@@ -839,3 +838,4 @@ class ChatModelTests(ChatTestSetUp):
         str_repr = str(attachment)
         self.assertIn('Image', str_repr)
         self.assertIn(self.user.username, str_repr)
+
