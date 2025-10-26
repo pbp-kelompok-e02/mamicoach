@@ -10,6 +10,35 @@
     </div>
 
     <div class="p-6">
+        <!-- Search Section -->
+        <div class="mb-6 bg-gray-50 rounded-lg p-4">
+            <form method="GET" class="flex gap-2 flex-wrap items-end">
+                <div class="flex-1 min-w-64">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <input type="text" 
+                           name="search" 
+                           value="{{ search_query }}"
+                           placeholder="Search by Username, Email, Name..." 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Per Page</label>
+                    <select name="per_page" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                        <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+                        <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                    </select>
+                </div>
+                <input type="hidden" name="page" value="1">
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                    Search
+                </button>
+                <a href="?" class="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 font-medium">
+                    Reset
+                </a>
+            </form>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
@@ -55,6 +84,61 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination Controls -->
+        {% if paginator.num_pages > 1 %}
+        <div class="mt-6 flex items-center justify-between">
+            <div class="text-sm text-gray-600">
+                Showing page <strong>{{ users.number }}</strong> of <strong>{{ paginator.num_pages }}</strong> 
+                ({{ paginator.count }} total users)
+            </div>
+            <nav class="flex gap-2">
+                {% if users.has_previous %}
+                <a href="?page=1&search={{ search_query }}&per_page={{ per_page }}" 
+                   class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    First
+                </a>
+                <a href="?page={{ users.previous_page_number }}&search={{ search_query }}&per_page={{ per_page }}" 
+                   class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    Previous
+                </a>
+                {% endif %}
+
+                <!-- Page numbers -->
+                {% with pages=paginator.page_range %}
+                {% if pages|length > 1 %}
+                <div class="flex gap-1">
+                    {% for page_num in pages %}
+                        {% if page_num == users.number %}
+                        <span class="px-3 py-2 rounded bg-blue-600 text-white font-medium">
+                            {{ page_num }}
+                        </span>
+                        {% elif page_num == '...' %}
+                        <span class="px-3 py-2 text-gray-600">...</span>
+                        {% else %}
+                        <a href="?page={{ page_num }}&search={{ search_query }}&per_page={{ per_page }}" 
+                           class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100">
+                            {{ page_num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+
+                {% if users.has_next %}
+                <a href="?page={{ users.next_page_number }}&search={{ search_query }}&per_page={{ per_page }}" 
+                   class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    Next
+                </a>
+                <a href="?page={{ paginator.num_pages }}&search={{ search_query }}&per_page={{ per_page }}" 
+                   class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    Last
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

@@ -5,6 +5,7 @@
 
 {% block extra_head %}
 <script src="{% static 'js/toast.js' %}"></script>
+<script src="{% static 'js/payment-callback.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -172,7 +173,7 @@
             Batalkan Booking
         </button>
 
-        <button onclick="checkPaymentStatus()" class="inline-block bg-gray-200 text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors mr-2">
+        <button onclick="checkPaymentStatus('{% url 'payment:status' payment.id %}')" class="inline-block bg-gray-200 text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors mr-2">
             Refresh Status
         </button>
 
@@ -225,7 +226,7 @@
                     class="bg-gray-300 hover:bg-gray-400 text-gray-900 px-6 py-2 rounded-lg text-sm font-medium transition-colors">
                 Tidak
             </button>
-            <button onclick="confirmCancelBooking()" 
+            <button onclick="confirmCancelBooking({{ booking.id }}, '{% url 'user_profile:dashboard_user' %}')" 
                     class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">
                 Ya, Batalkan
             </button>
@@ -234,89 +235,10 @@
 </div>
 
 <script>
-function checkPaymentStatus() {
-    fetch(`{% url 'payment:status' payment.id %}?refresh=true`, {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            if (data.payment.status === 'paid') {
-                location.reload();
-            }
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
-
-function showCancelConfirmation() {
-    document.getElementById('cancel-confirmation-modal').classList.remove('hidden');
-}
-
-function closeCancelModal() {
-    document.getElementById('cancel-confirmation-modal').classList.add('hidden');
-}
-
-function confirmCancelBooking() {
-    const bookingId = {{ booking.id }};
-    fetch(`/booking/api/booking/${bookingId}/cancel/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': getCSRFToken()
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('Booking berhasil dibatalkan!', 'success');
-            setTimeout(() => {
-                window.location.href = "{% url 'user_profile:dashboard_user' %}";
-            }, 1500);
-        } else {
-            showToast('Gagal membatalkan booking: ' + (data.message || 'Unknown error'), 'error');
-            closeCancelModal();
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('Terjadi kesalahan saat membatalkan booking', 'error');
-        closeCancelModal();
-    });
-}
-
-function getCSRFToken() {
-    const name = 'csrftoken';
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-// Close modal when clicking outside
-document.addEventListener('click', function(e) {
-    const modal = document.getElementById('cancel-confirmation-modal');
-    if (e.target === modal) {
-        closeCancelModal();
-    }
-});
-
 // Auto-refresh for pending payments
 {% if is_pending %}
 setInterval(function() {
-    checkPaymentStatus();
+    checkPaymentStatus('{% url 'payment:status' payment.id %}');
 }, 5000); // Check every 5 seconds
 {% endif %}
 </script>

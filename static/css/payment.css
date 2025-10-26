@@ -1,0 +1,4 @@
+.payment-method-card:has(input:checked) {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}

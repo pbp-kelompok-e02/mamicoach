@@ -3,9 +3,10 @@ Admin panel views for managing the MamiCoach platform
 """
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from functools import wraps
 
 from booking.models import Booking
@@ -54,6 +55,30 @@ def log_admin_activity(admin_user, action, module, description, request=None):
         ip_address=ip_address,
         user_agent=user_agent
     )
+
+
+def paginate_queryset(request, queryset, per_page=10):
+    """Utility function to paginate a queryset"""
+    # Get per_page parameter, default to 10
+    per_page_param = request.GET.get('per_page', per_page)
+    try:
+        per_page_param = int(per_page_param)
+        if per_page_param not in [10, 25, 50]:
+            per_page_param = per_page
+    except (ValueError, TypeError):
+        per_page_param = per_page
+    
+    paginator = Paginator(queryset, per_page_param)
+    page = request.GET.get('page')
+    
+    try:
+        items = paginator.page(page)
+    except PageNotAnInteger:
+        items = paginator.page(1)
+    except EmptyPage:
+        items = paginator.page(paginator.num_pages)
+    
+    return items, per_page_param
 
 
 @require_http_methods(["GET", "POST"])
@@ -141,14 +166,30 @@ def dashboard(request):
 
 @admin_login_required
 def users_management(request):
-    """User management page"""
+    """User management page with search and pagination"""
     users = UserProfile.objects.select_related('user').order_by('-user__date_joined')
+    
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        users = users.filter(
+            Q(user__username__icontains=search_query) |
+            Q(user__email__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query)
+        )
+    
+    # Pagination
+    paginated_users, per_page = paginate_queryset(request, users, per_page=10)
     
     log_admin_activity(request.admin_user, 'view', 'users', 'Viewed users management', request)
     
     context = {
         'user': request.admin_user,
-        'users': users,
+        'users': paginated_users,
+        'search_query': search_query,
+        'per_page': per_page,
+        'paginator': paginated_users.paginator,
     }
     
     return render(request, 'admin_panel/users.html', context)
@@ -156,14 +197,30 @@ def users_management(request):
 
 @admin_login_required
 def coaches_management(request):
-    """Coach management page"""
+    """Coach management page with search and pagination"""
     coaches = CoachProfile.objects.select_related('user').prefetch_related('adminverification').order_by('-id')
+    
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        coaches = coaches.filter(
+            Q(user__username__icontains=search_query) |
+            Q(user__email__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query)
+        )
+    
+    # Pagination
+    paginated_coaches, per_page = paginate_queryset(request, coaches, per_page=10)
     
     log_admin_activity(request.admin_user, 'view', 'coaches', 'Viewed coaches management', request)
     
     context = {
         'user': request.admin_user,
-        'coaches': coaches,
+        'coaches': paginated_coaches,
+        'search_query': search_query,
+        'per_page': per_page,
+        'paginator': paginated_coaches.paginator,
     }
     
     return render(request, 'admin_panel/coaches.html', context)
@@ -171,14 +228,29 @@ def coaches_management(request):
 
 @admin_login_required
 def courses_management(request):
-    """Course management page"""
+    """Course management page with search and pagination"""
     courses = Course.objects.select_related('coach').order_by('-id')
+    
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        courses = courses.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(coach__user__username__icontains=search_query)
+        )
+    
+    # Pagination
+    paginated_courses, per_page = paginate_queryset(request, courses, per_page=10)
     
     log_admin_activity(request.admin_user, 'view', 'courses', 'Viewed courses management', request)
     
     context = {
         'user': request.admin_user,
-        'courses': courses,
+        'courses': paginated_courses,
+        'search_query': search_query,
+        'per_page': per_page,
+        'paginator': paginated_courses.paginator,
     }
     
     return render(request, 'admin_panel/courses.html', context)
@@ -186,14 +258,36 @@ def courses_management(request):
 
 @admin_login_required
 def bookings_management(request):
-    """Booking management page"""
+    """Booking management page with search and pagination"""
     bookings = Booking.objects.select_related('user', 'course').order_by('-created_at')
+    
+    # Status filter
+    status = request.GET.get('status', 'all')
+    if status and status != 'all':
+        bookings = bookings.filter(status=status)
+    
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        bookings = bookings.filter(
+            Q(user__username__icontains=search_query) |
+            Q(user__email__icontains=search_query) |
+            Q(course__title__icontains=search_query) |
+            Q(id__icontains=search_query)
+        )
+    
+    # Pagination
+    paginated_bookings, per_page = paginate_queryset(request, bookings, per_page=10)
     
     log_admin_activity(request.admin_user, 'view', 'bookings', 'Viewed bookings management', request)
     
     context = {
         'user': request.admin_user,
-        'bookings': bookings,
+        'bookings': paginated_bookings,
+        'search_query': search_query,
+        'status': status,
+        'per_page': per_page,
+        'paginator': paginated_bookings.paginator,
     }
     
     return render(request, 'admin_panel/bookings.html', context)
@@ -201,14 +295,37 @@ def bookings_management(request):
 
 @admin_login_required
 def payments_management(request):
-    """Payment management page"""
+    """Payment management page with search and pagination"""
+    # Base queryset
     payments = Payment.objects.select_related('booking__user', 'booking__course').order_by('-created_at')
+    
+    # Status filter
+    status = request.GET.get('status', 'all')
+    if status and status != 'all':
+        payments = payments.filter(status=status)
+    
+    # Search functionality
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        payments = payments.filter(
+            Q(order_id__icontains=search_query) |
+            Q(booking__user__username__icontains=search_query) |
+            Q(booking__user__email__icontains=search_query) |
+            Q(booking__id__icontains=search_query)
+        )
+    
+    # Pagination
+    paginated_payments, per_page = paginate_queryset(request, payments, per_page=10)
     
     log_admin_activity(request.admin_user, 'view', 'payments', 'Viewed payments management', request)
     
     context = {
         'user': request.admin_user,
-        'payments': payments,
+        'payments': paginated_payments,
+        'search_query': search_query,
+        'status': status,
+        'per_page': per_page,
+        'paginator': paginated_payments.paginator,
     }
     
     return render(request, 'admin_panel/payments.html', context)
