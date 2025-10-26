@@ -16,6 +16,48 @@ from user_profile.models import CoachProfile
 from courses_and_coach.models import Course, Category
 from .models import Payment
 from .midtrans_service import MidtransService
+from .admin import PaymentAdmin
+
+
+class PaymentAdminTest(TestCase):
+    """Test cases for Payment admin"""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='admin', password='pass', is_staff=True, is_superuser=True)
+        self.coach_user = User.objects.create_user(username='coach', password='pass')
+        self.coach = CoachProfile.objects.create(user=self.coach_user, bio='bio', expertise=['x'])
+        self.cat = Category.objects.create(name='Cat')
+        self.course = Course.objects.create(coach=self.coach, category=self.cat, title='C1', description='d', price=50000, duration=60)
+        self.booking = Booking.objects.create(user=self.user, coach=self.coach, course=self.course, status='pending')
+
+    def test_payment_admin_has_add_permission_false(self):
+        """Test that add_permission is disabled"""
+        admin_instance = PaymentAdmin(Payment, None)
+        request = MagicMock()
+        self.assertFalse(admin_instance.has_add_permission(request))
+
+    def test_payment_admin_list_display(self):
+        """Test admin list_display configuration"""
+        admin_instance = PaymentAdmin(Payment, None)
+        expected_fields = ['order_id', 'get_booking_display', 'get_user_display', 'get_amount_display', 'get_method_display', 'status', 'created_at', 'paid_at']
+        self.assertEqual(admin_instance.list_display, expected_fields)
+
+    def test_payment_admin_readonly_fields(self):
+        """Test admin readonly_fields"""
+        admin_instance = PaymentAdmin(Payment, None)
+        expected_readonly = ['order_id', 'transaction_id', 'transaction_ref', 'created_at', 'updated_at', 'paid_at', 'midtrans_response']
+        self.assertEqual(admin_instance.readonly_fields, expected_readonly)
+
+    def test_payment_admin_display_methods(self):
+        """Test admin display methods handle null values"""
+        payment = Payment.objects.create(booking=self.booking, user=self.user, amount=50000, method='credit_card', order_id='ORD-DISP')
+        admin_instance = PaymentAdmin(Payment, None)
+        
+        # Test display methods
+        self.assertIsNotNone(admin_instance.get_booking_display(payment))
+        self.assertIsNotNone(admin_instance.get_user_display(payment))
+        self.assertIsNotNone(admin_instance.get_amount_display(payment))
+        self.assertIsNotNone(admin_instance.get_method_display(payment))
 
 
 class MidtransServiceUnitTest(TestCase):
@@ -161,6 +203,14 @@ class PaymentViewsTest(TestCase):
         self.cat = Category.objects.create(name='Cat')
         self.course = Course.objects.create(coach=self.coach, category=self.cat, title='C1', description='d', price=50000, duration=60)
         self.booking = Booking.objects.create(user=self.user, coach=self.coach, course=self.course, status='pending')
+
+    def test_payment_method_selection_non_pending_booking(self):
+        """Test payment method selection with non-pending booking"""
+        self.booking.status = 'paid'
+        self.booking.save()
+        self.client.login(username='u1', password='pass')
+        resp = self.client.get(reverse('payment:method_selection', args=[self.booking.id]))
+        self.assertEqual(resp.status_code, 302)  # Redirect to dashboard_user
 
     def test_payment_method_selection_view(self):
         """Test payment method selection page"""
@@ -427,3 +477,200 @@ class PaymentViewsTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertTrue(data['success'])
+
+    def test_process_payment_requires_login(self):
+        """Test process payment requires login"""
+        resp = self.client.post(reverse('payment:process', args=[self.booking.id]), data={'payment_method': 'credit_card'})
+        self.assertEqual(resp.status_code, 302)
+
+    def test_process_payment_non_pending_booking(self):
+        """Test process payment with non-pending booking"""
+        self.booking.status = 'paid'
+        self.booking.save()
+        self.client.login(username='u1', password='pass')
+        resp = self.client.post(reverse('payment:process', args=[self.booking.id]), data={'payment_method': 'credit_card'})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_process_payment_invalid_price(self):
+        """Test process payment with zero price"""
+        self.course.price = 0
+        self.course.save()
+        self.client.login(username='u1', password='pass')
+        resp = self.client.post(reverse('payment:process', args=[self.booking.id]), data={'payment_method': 'credit_card'})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_payment_method_selection_requires_login(self):
+        """Test payment method selection requires login"""
+        resp = self.client.get(reverse('payment:method_selection', args=[self.booking.id]))
+        self.assertEqual(resp.status_code, 302)
+
+    @patch('payment.views.MidtransService.get_transaction_status')
+    def test_payment_unfinish_view(self, mock_status):
+        """Test payment unfinish view"""
+        payment = Payment.objects.create(booking=self.booking, user=self.user, amount=50000, method='credit_card', order_id='ORD-UNF', status='pending')
+        mock_status.return_value = {'success': True, 'data': {'transaction_status': 'pending'}}
+        resp = self.client.get(reverse('payment:unfinish') + f'?order_id={payment.order_id}')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('unfinish', resp.context['page_type'])
+
+    @patch('payment.views.MidtransService.get_transaction_status')
+    def test_payment_error_view(self, mock_status):
+        """Test payment error view"""
+        payment = Payment.objects.create(booking=self.booking, user=self.user, amount=50000, method='credit_card', order_id='ORD-ERR', status='pending')
+        mock_status.return_value = {'success': True, 'data': {'transaction_status': 'failure'}}
+        resp = self.client.get(reverse('payment:error') + f'?order_id={payment.order_id}')
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('error', resp.context['page_type'])
+
+    @patch('payment.views.MidtransService.get_transaction_status')
+    def test_payment_callback_with_query_params_not_settlement(self, mock_status):
+        """Test callback with non-settlement status in query params"""
+        payment = Payment.objects.create(booking=self.booking, user=self.user, amount=50000, method='credit_card', order_id='ORD-PEND2', status='pending')
+        mock_status.return_value = {'success': True, 'data': {'transaction_status': 'pending'}}
+        resp = self.client.get(reverse('payment:callback') + f'?order_id={payment.order_id}&transaction_status=pending')
+        self.assertEqual(resp.status_code, 200)
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, 'pending')
+
+    @patch('payment.views.MidtransService.verify_signature')
+    def test_midtrans_webhook_already_paid_booking(self, mock_verify):
+        """Test webhook doesn't update already paid booking"""
+        self.booking.status = 'paid'
+        self.booking.save()
+        
+        mock_verify.return_value = True
+        payment = Payment.objects.create(booking=self.booking, user=self.user, amount=50000, method='credit_card', order_id='ORD-PAID', status='pending')
+        payload = {
+            'order_id': 'ORD-PAID',
+            'transaction_status': 'settlement',
+            'fraud_status': 'accept',
+            'status_code': '200',
+            'gross_amount': '50000',
+            'signature_key': 'sig',
+            'transaction_id': 'tx444',
+        }
+        resp = self.client.post(reverse('payment:midtrans_webhook'), data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(resp.status_code, 200)
+
+    @patch('payment.views.MidtransService.get_transaction_status')
+    def test_payment_status_with_refresh_and_update(self, mock_status):
+        """Test status refresh updates payment"""
+        payment = Payment.objects.create(booking=self.booking, user=self.user, amount=50000, method='credit_card', order_id='ORD-REFR', status='pending')
+        mock_status.return_value = {'success': True, 'data': {'transaction_status': 'settlement'}}
+        
+        self.client.login(username='u1', password='pass')
+        resp = self.client.get(reverse('payment:status', args=[payment.id]) + '?refresh=true')
+        self.assertEqual(resp.status_code, 200)
+        
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, 'settlement')
+        self.assertIsNotNone(payment.paid_at)
+
+    @patch('payment.views.MidtransService.verify_signature')
+    def test_midtrans_webhook_deny_status(self, mock_verify):
+        """Test webhook deny status"""
+        mock_verify.return_value = True
+        payment = Payment.objects.create(booking=self.booking, user=self.user, amount=50000, method='credit_card', order_id='ORD-DENY', status='pending')
+        payload = {
+            'order_id': 'ORD-DENY',
+            'transaction_status': 'deny',
+            'status_code': '200',
+            'gross_amount': '50000',
+            'signature_key': 'sig',
+            'transaction_id': 'tx333',
+        }
+        resp = self.client.post(reverse('payment:midtrans_webhook'), data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(resp.status_code, 200)
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, 'deny')
+
+    def test_payment_model_with_all_statuses(self):
+        """Test Payment model with various status values"""
+        statuses = ['pending', 'settlement', 'capture', 'deny', 'cancel', 'expire', 'failure']
+        for idx, status in enumerate(statuses):
+            p = Payment.objects.create(
+                booking=self.booking,
+                user=self.user,
+                amount=1000,
+                method='credit_card',
+                order_id=f'ORD-STATUS-{idx}',
+                status=status
+            )
+            self.assertEqual(p.status, status)
+
+    @patch('payment.midtrans_service.requests.post')
+    def test_create_transaction_with_enabled_payments(self, mock_post):
+        """Test create_transaction with specific payment method"""
+        svc = MidtransService()
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status.return_value = None
+        mock_resp.json.return_value = {'token': 'tok', 'redirect_url': 'https://pay'}
+        mock_post.return_value = mock_resp
+
+        out = svc.create_transaction(
+            'ORD-1', 
+            1000, 
+            {'first_name': 'A'}, 
+            [{'id': 1, 'price': 1000, 'quantity': 1, 'name': 'X'}],
+            payment_method='gopay'
+        )
+        self.assertTrue(out['success'])
+        # Verify the call included enabled_payments
+        call_kwargs = mock_post.call_args[1]
+        self.assertIn('json', call_kwargs)
+        self.assertIn('enabled_payments', call_kwargs['json'])
+
+    @patch('payment.midtrans_service.requests.post')
+    def test_create_transaction_http_error(self, mock_post):
+        """Test create_transaction with HTTP error"""
+        svc = MidtransService()
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status.side_effect = requests.exceptions.HTTPError('400')
+        mock_post.return_value = mock_resp
+
+        out = svc.create_transaction('ORD-1', 1000, {}, [])
+        self.assertFalse(out['success'])
+
+    def test_process_payment_unauthorized_user(self):
+        """Test process payment by unauthorized user"""
+        other_user = User.objects.create_user(username='other', password='pass')
+        other_booking = Booking.objects.create(
+            user=other_user, 
+            coach=self.coach, 
+            course=self.course, 
+            status='pending'
+        )
+        self.client.login(username='u1', password='pass')
+        resp = self.client.post(
+            reverse('payment:process', args=[other_booking.id]), 
+            data={'payment_method': 'credit_card'}
+        )
+        self.assertEqual(resp.status_code, 404)
+
+    @patch('payment.views.MidtransService.get_transaction_status')
+    def test_payment_callback_with_none_transaction_status(self, mock_status):
+        """Test callback when transaction_status is None"""
+        payment = Payment.objects.create(booking=self.booking, user=self.user, amount=50000, method='credit_card', order_id='ORD-NONE', status='pending')
+        mock_status.return_value = {'success': True, 'data': {}}
+        resp = self.client.get(reverse('payment:callback') + f'?order_id={payment.order_id}')
+        self.assertEqual(resp.status_code, 200)
+
+    @patch('payment.views.MidtransService.get_transaction_status')
+    def test_payment_unfinish_with_transaction_status_query(self, mock_status):
+        """Test unfinish with transaction_status parameter"""
+        payment = Payment.objects.create(booking=self.booking, user=self.user, amount=50000, method='credit_card', order_id='ORD-UNF2', status='pending')
+        mock_status.return_value = {'success': True, 'data': {'transaction_status': 'pending'}}
+        resp = self.client.get(reverse('payment:unfinish') + f'?order_id={payment.order_id}&transaction_status=pending')
+        self.assertEqual(resp.status_code, 200)
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, 'pending')
+
+    @patch('payment.views.MidtransService.get_transaction_status')
+    def test_payment_error_with_transaction_status_query(self, mock_status):
+        """Test error callback with transaction_status parameter"""
+        payment = Payment.objects.create(booking=self.booking, user=self.user, amount=50000, method='credit_card', order_id='ORD-ERR2', status='pending')
+        mock_status.return_value = {'success': True, 'data': {'transaction_status': 'failure'}}
+        resp = self.client.get(reverse('payment:error') + f'?order_id={payment.order_id}&transaction_status=failure')
+        self.assertEqual(resp.status_code, 200)
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, 'failure')

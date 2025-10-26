@@ -98,7 +98,7 @@
                         {% for booking in recent_bookings %}
                         <tr class="border-b last:border-0">
                             <td class="py-3">{{ booking.user.username }}</td>
-                            <td class="py-3">{{ booking.course.name|truncatewords:3 }}</td>
+                            <td class="py-3">{{ booking.course.title|truncatewords:3 }}</td>
                             <td class="py-3">
                                 <span class="px-2 py-1 rounded-full text-xs font-medium
                                     {% if booking.status == 'pending' %}bg-orange-100 text-orange-700
@@ -108,7 +108,7 @@
                                     {{ booking.status }}
                                 </span>
                             </td>
-                            <td class="py-3">Rp {{ booking.total_price|floatformat:0 }}</td>
+                            <td class="py-3">Rp {{ booking.course.price|floatformat:0 }}</td>
                         </tr>
                         {% empty %}
                         <tr>

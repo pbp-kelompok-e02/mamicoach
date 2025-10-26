@@ -801,3 +801,41 @@ class ChatModelTests(ChatTestSetUp):
         
         self.assertTrue(message.is_sent_by(self.user))
         self.assertFalse(message.is_sent_by(self.coach))
+    
+    def test_chat_attachment_creation(self):
+        """Test ChatAttachment creation"""
+        from chat.models import ChatAttachment
+        message = ChatMessage.objects.create(
+            session=self.chat_session,
+            sender=self.user,
+            content='Test attachment'
+        )
+        
+        attachment = ChatAttachment.objects.create(
+            message=message,
+            attachment_type='file',
+            file_name='test.pdf',
+            file_size=1024
+        )
+        self.assertEqual(attachment.attachment_type, 'file')
+        self.assertEqual(attachment.file_name, 'test.pdf')
+    
+    def test_chat_attachment_str(self):
+        """Test ChatAttachment string representation"""
+        from chat.models import ChatAttachment
+        message = ChatMessage.objects.create(
+            session=self.chat_session,
+            sender=self.user,
+            content='Test'
+        )
+        
+        attachment = ChatAttachment.objects.create(
+            message=message,
+            attachment_type='image',
+            file_name='photo.jpg'
+        )
+        
+        str_repr = str(attachment)
+        self.assertIn('Image', str_repr)
+        self.assertIn(self.user.username, str_repr)
+

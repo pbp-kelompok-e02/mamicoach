@@ -10,21 +10,51 @@
     </div>
 
     <div class="p-6">
+        <!-- Search Section -->
+        <div class="mb-6 bg-gray-50 rounded-lg p-4">
+            <form method="GET" class="flex gap-2 flex-wrap items-end">
+                <div class="flex-1 min-w-64">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <input type="text" 
+                           name="search" 
+                           value="{{ search_query }}"
+                           placeholder="Search by Order ID, Username, Email, or Booking ID..." 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Per Page</label>
+                    <select name="per_page" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                        <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+                        <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                    </select>
+                </div>
+                <input type="hidden" name="status" value="{{ status }}">
+                <input type="hidden" name="page" value="1">
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                    Search
+                </button>
+                <a href="?status=all" class="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 font-medium">
+                    Reset
+                </a>
+            </form>
+        </div>
+
         <!-- Filter Options -->
-        <div class="mb-4 flex gap-2">
-            <a href="?status=all" class="px-4 py-2 rounded-lg text-sm font-medium {% if not request.GET.status or request.GET.status == 'all' %}bg-gray-900 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+        <div class="mb-4 flex gap-2 flex-wrap">
+            <a href="?status=all" class="px-4 py-2 rounded-lg text-sm font-medium {% if not status or status == 'all' %}bg-gray-900 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
                 All
             </a>
-            <a href="?status=pending" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.status == 'pending' %}bg-orange-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+            <a href="?status=pending" class="px-4 py-2 rounded-lg text-sm font-medium {% if status == 'pending' %}bg-orange-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
                 Pending
             </a>
-            <a href="?status=settlement" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.status == 'settlement' %}bg-green-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+            <a href="?status=settlement" class="px-4 py-2 rounded-lg text-sm font-medium {% if status == 'settlement' %}bg-green-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
                 Success
             </a>
-            <a href="?status=expire" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.status == 'expire' %}bg-red-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+            <a href="?status=expire" class="px-4 py-2 rounded-lg text-sm font-medium {% if status == 'expire' %}bg-red-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
                 Expired
             </a>
-            <a href="?status=cancel" class="px-4 py-2 rounded-lg text-sm font-medium {% if request.GET.status == 'cancel' %}bg-gray-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+            <a href="?status=cancel" class="px-4 py-2 rounded-lg text-sm font-medium {% if status == 'cancel' %}bg-gray-500 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
                 Cancelled
             </a>
         </div>
@@ -51,7 +81,11 @@
                         <td class="py-4 pr-4">{{ payment.booking.user.username }}</td>
                         <td class="py-4 pr-4">
                             <span class="px-2 py-1 bg-gray-100 rounded text-xs">
-                                {{ payment.get_payment_method_display }}
+                                {% if payment.method %}
+                                    {{ payment.get_method_display }}
+                                {% else %}
+                                    <span class="text-gray-400">—</span>
+                                {% endif %}
                             </span>
                         </td>
                         <td class="py-4 pr-4 font-semibold">Rp {{ payment.amount|floatformat:0 }}</td>
@@ -97,6 +131,61 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination Controls -->
+        {% if paginator.num_pages > 1 %}
+        <div class="mt-6 flex items-center justify-between">
+            <div class="text-sm text-gray-600">
+                Showing page <strong>{{ payments.number }}</strong> of <strong>{{ paginator.num_pages }}</strong> 
+                ({{ paginator.count }} total payments)
+            </div>
+            <nav class="flex gap-2">
+                {% if payments.has_previous %}
+                <a href="?page=1&status={{ status }}&search={{ search_query }}&per_page={{ per_page }}" 
+                   class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    First
+                </a>
+                <a href="?page={{ payments.previous_page_number }}&status={{ status }}&search={{ search_query }}&per_page={{ per_page }}" 
+                   class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    Previous
+                </a>
+                {% endif %}
+
+                <!-- Page numbers -->
+                {% with pages=paginator.page_range %}
+                {% if pages|length > 1 %}
+                <div class="flex gap-1">
+                    {% for page_num in pages %}
+                        {% if page_num == payments.number %}
+                        <span class="px-3 py-2 rounded bg-blue-600 text-white font-medium">
+                            {{ page_num }}
+                        </span>
+                        {% elif page_num == '...' %}
+                        <span class="px-3 py-2 text-gray-600">...</span>
+                        {% else %}
+                        <a href="?page={{ page_num }}&status={{ status }}&search={{ search_query }}&per_page={{ per_page }}" 
+                           class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100">
+                            {{ page_num }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+
+                {% if payments.has_next %}
+                <a href="?page={{ payments.next_page_number }}&status={{ status }}&search={{ search_query }}&per_page={{ per_page }}" 
+                   class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    Next
+                </a>
+                <a href="?page={{ paginator.num_pages }}&status={{ status }}&search={{ search_query }}&per_page={{ per_page }}" 
+                   class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    Last
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
     </div>
 </div>
 
