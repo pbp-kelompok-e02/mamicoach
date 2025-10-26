@@ -475,7 +475,7 @@ def course_delete(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     
     if request.method == 'POST':
-        course_name = course.name
+        course_name = course.title
         course.delete()
         
         log_admin_activity(request.admin_user, 'delete', 'courses', f'Deleted course {course_name}', request)
@@ -517,7 +517,7 @@ def booking_delete(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     
     if request.method == 'POST':
-        booking_info = f"#{booking.id} - {booking.user.username} - {booking.course.name}"
+        booking_info = f"#{booking.id} - {booking.user.username} - {booking.course.title}"
         booking.delete()
         
         log_admin_activity(request.admin_user, 'delete', 'bookings', f'Deleted booking {booking_info}', request)

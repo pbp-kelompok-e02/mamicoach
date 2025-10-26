@@ -19,18 +19,13 @@ echo ""
 
 # Golf
 echo "Crawling Golf courses..."
-python3 manage.py crawl_superprof \
-  --url "https://www.superprof.co.id/a/search/?type=3&adress=Indonesia&matiere=Golf&place[]=at_my_place&place[]=i_move&distance=200&webcam_from=in_pays&order_by=pertinence_DESC&price=all&first_lesson=all&response_time=all&is_mobile=2&pmin=1&pmax=3000001&isV=0&page=1" \
-  --category "Golf" \
+python3 manage.py crawl_superprof --url "https://www.superprof.co.id/a/search/?type=3&adress=Indonesia&matiere=Golf&place[]=at_my_place&place[]=i_move&distance=200&webcam_from=in_pays&order_by=pertinence_DESC&price=all&first_lesson=all&response_time=all&is_mobile=2&pmin=1&pmax=3000001&isV=0&page=1" --category "Golf" \
   --sleep 1.5
 echo ""
 
 # Yoga
 echo "Crawling Yoga courses..."
-python3 manage.py crawl_superprof \
-  --url "https://www.superprof.co.id/a/search/?type=3&adress=Indonesia&matiere=Yoga&place[]=at_my_place&place[]=i_move&distance=200&webcam_from=in_pays&order_by=pertinence_DESC&price=all&first_lesson=all&response_time=all&is_mobile=2&pmin=1&pmax=3000001&isV=0&page=1" \
-  --category "Yoga" \
-  --sleep 1.5
+python3 manage.py crawl_superprof --url "https://www.superprof.co.id/a/search/?type=3&adress=Indonesia&matiere=Yoga&place[]=at_my_place&place[]=i_move&distance=200&webcam_from=in_pays&order_by=pertinence_DESC&price=all&first_lesson=all&response_time=all&is_mobile=2&pmin=1&pmax=3000001&isV=0&page=1" --category "Yoga"  --sleep 1.5
 echo ""
 
 # Tenis Meja

@@ -30,19 +30,15 @@
                         <td class="py-4 pr-4">{{ course.id }}</td>
                         <td class="py-4 pr-4">
                             <div class="flex items-center">
-                                {% if course.image %}
-                                <img src="{{ course.image.url }}" alt="{{ course.name }}" class="w-12 h-12 rounded mr-3 object-cover">
-                                {% else %}
                                 <div class="w-12 h-12 rounded bg-gray-300 mr-3 flex items-center justify-center">
                                     <i class="fas fa-book text-gray-600"></i>
                                 </div>
-                                {% endif %}
-                                <span class="font-medium">{{ course.name }}</span>
+                                <span class="font-medium">{{ course.title }}</span>
                             </div>
                         </td>
                         <td class="py-4 pr-4">
                             {% if course.coach %}
-                                {{ course.coach.name }}
+                                {{ course.coach.user.get_full_name }}
                             {% else %}
                                 —
                             {% endif %}
@@ -50,16 +46,11 @@
                         <td class="py-4 pr-4">{{ course.category|default:"—" }}</td>
                         <td class="py-4 pr-4 font-semibold text-green-600">Rp {{ course.price|floatformat:0 }}</td>
                         <td class="py-4 pr-4">
-                            {% if course.duration_minutes %}
-                                {{ course.duration_minutes }} min
-                            {% else %}
-                                —
-                            {% endif %}
+                            {{ course.duration }} min
                         </td>
                         <td class="py-4 pr-4">
-                            <span class="px-2 py-1 rounded-full text-xs font-medium
-                                {% if course.is_active %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-700{% endif %}">
-                                {% if course.is_active %}Active{% else %}Inactive{% endif %}
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                Active
                             </span>
                         </td>
                         <td class="py-4">

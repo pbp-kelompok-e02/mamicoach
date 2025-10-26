@@ -51,16 +51,11 @@
                     <tr class="border-b border-gray-100 hover:bg-gray-50">
                         <td class="py-4 pr-4">#{{ booking.id }}</td>
                         <td class="py-4 pr-4">{{ booking.user.username }}</td>
-                        <td class="py-4 pr-4">{{ booking.course.name|truncatewords:4 }}</td>
+                        <td class="py-4 pr-4">{{ booking.course.title|truncatewords:4 }}</td>
                         <td class="py-4 pr-4 text-sm">
-                            {% if booking.schedule %}
-                                {{ booking.schedule.date|date:"Y-m-d" }}<br>
-                                <span class="text-gray-500">{{ booking.schedule.time_slot }}</span>
-                            {% else %}
-                                —
-                            {% endif %}
+                            {{ booking.start_datetime|date:"Y-m-d H:i" }}
                         </td>
-                        <td class="py-4 pr-4 font-semibold">Rp {{ booking.total_price|floatformat:0 }}</td>
+                        <td class="py-4 pr-4 font-semibold">Rp {{ booking.course.price|floatformat:0 }}</td>
                         <td class="py-4 pr-4">
                             <span class="px-2 py-1 rounded-full text-xs font-medium
                                 {% if booking.status == 'pending' %}bg-orange-100 text-orange-700

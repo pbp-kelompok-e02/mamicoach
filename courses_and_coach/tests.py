@@ -428,3 +428,366 @@ class AjaxViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["courses"]), 1)
+
+    def test_course_duration_formatted_hours_only(self):
+        """Test duration_formatted with hours only (no minutes)"""
+        course = Course.objects.create(
+            coach=self.coach,
+            title="Test Course",
+            description="Test",
+            price=100000,
+            duration=120  # 2 hours
+        )
+        self.assertEqual(course.duration_formatted, "2h")
+    
+    def test_course_duration_formatted_hours_and_minutes(self):
+        """Test duration_formatted with hours and minutes"""
+        course = Course.objects.create(
+            coach=self.coach,
+            title="Test Course",
+            description="Test",
+            price=100000,
+            duration=90  # 1 hour 30 minutes
+        )
+        self.assertEqual(course.duration_formatted, "1h 30m")
+
+
+class MyCourseViewTest(TestCase):
+    """Test cases for my_courses view"""
+    
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='testcoach',
+            password='testpass123'
+        )
+        self.coach = CoachProfile.objects.create(user=self.user, bio='Test')
+        self.category = Category.objects.create(name='Test')
+        self.course = Course.objects.create(
+            coach=self.coach,
+            category=self.category,
+            title='My Course',
+            description='Test',
+            price=100000,
+            duration=60
+        )
+    
+    def test_my_courses_requires_login(self):
+        """Test my courses requires authentication"""
+        response = self.client.get(reverse('courses_and_coach:my_courses'))
+        self.assertEqual(response.status_code, 302)
+    
+    def test_my_courses_requires_coach_profile(self):
+        """Test my courses requires coach profile"""
+        regular_user = User.objects.create_user(
+            username='regularuser',
+            password='testpass123'
+        )
+        self.client.login(username='regularuser', password='testpass123')
+        response = self.client.get(reverse('courses_and_coach:my_courses'))
+        self.assertEqual(response.status_code, 302)
+    
+    def test_my_courses_coach_view(self):
+        """Test my courses view for coach"""
+        self.client.login(username='testcoach', password='testpass123')
+        response = self.client.get(reverse('courses_and_coach:my_courses'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'My Course')
+    
+    def test_my_courses_empty(self):
+        """Test my courses with no courses"""
+        self.course.delete()
+        self.client.login(username='testcoach', password='testpass123')
+        response = self.client.get(reverse('courses_and_coach:my_courses'))
+        self.assertEqual(response.status_code, 200)
+
+
+class EditCourseViewTest(TestCase):
+    """Test cases for edit_course view"""
+    
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='testcoach',
+            password='testpass123'
+        )
+        self.coach = CoachProfile.objects.create(user=self.user, bio='Test')
+        self.category = Category.objects.create(name='Test')
+        self.course = Course.objects.create(
+            coach=self.coach,
+            category=self.category,
+            title='Test Course',
+            description='Test',
+            price=100000,
+            duration=60
+        )
+    
+    def test_edit_course_requires_login(self):
+        """Test edit course requires authentication"""
+        response = self.client.get(
+            reverse('courses_and_coach:edit_course', args=[self.course.id])
+        )
+        self.assertEqual(response.status_code, 302)
+    
+    def test_edit_course_requires_coach_profile(self):
+        """Test edit course requires coach profile"""
+        regular_user = User.objects.create_user(
+            username='regularuser',
+            password='testpass123'
+        )
+        self.client.login(username='regularuser', password='testpass123')
+        response = self.client.get(
+            reverse('courses_and_coach:edit_course', args=[self.course.id])
+        )
+        self.assertEqual(response.status_code, 302)
+    
+    def test_edit_course_owner_only(self):
+        """Test edit course only by owner"""
+        other_coach_user = User.objects.create_user(
+            username='othercoach',
+            password='testpass123'
+        )
+        CoachProfile.objects.create(user=other_coach_user)
+        self.client.login(username='othercoach', password='testpass123')
+        response = self.client.get(
+            reverse('courses_and_coach:edit_course', args=[self.course.id])
+        )
+        self.assertEqual(response.status_code, 302)
+    
+    def test_edit_course_get(self):
+        """Test edit course GET request"""
+        self.client.login(username='testcoach', password='testpass123')
+        response = self.client.get(
+            reverse('courses_and_coach:edit_course', args=[self.course.id])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'courses_and_coach/courses/edit_course.html')
+    
+    def test_edit_course_post_success(self):
+        """Test edit course POST success"""
+        self.client.login(username='testcoach', password='testpass123')
+        response = self.client.post(
+            reverse('courses_and_coach:edit_course', args=[self.course.id]),
+            {
+                'category': self.category.id,
+                'title': 'Updated Course',
+                'description': 'Updated description',
+                'location': 'Online',
+                'price': 150000,
+                'duration': 90
+            }
+        )
+        self.assertEqual(response.status_code, 302)
+        self.course.refresh_from_db()
+        self.assertEqual(self.course.title, 'Updated Course')
+
+
+class DeleteCourseViewTest(TestCase):
+    """Test cases for delete_course view"""
+    
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='testcoach',
+            password='testpass123'
+        )
+        self.coach = CoachProfile.objects.create(user=self.user, bio='Test')
+        self.category = Category.objects.create(name='Test')
+        self.course = Course.objects.create(
+            coach=self.coach,
+            category=self.category,
+            title='Test Course',
+            description='Test',
+            price=100000,
+            duration=60
+        )
+    
+    def test_delete_course_requires_login(self):
+        """Test delete course requires authentication"""
+        response = self.client.get(
+            reverse('courses_and_coach:delete_course', args=[self.course.id])
+        )
+        self.assertEqual(response.status_code, 302)
+    
+    def test_delete_course_owner_only(self):
+        """Test delete course only by owner"""
+        other_coach_user = User.objects.create_user(
+            username='othercoach',
+            password='testpass123'
+        )
+        CoachProfile.objects.create(user=other_coach_user)
+        self.client.login(username='othercoach', password='testpass123')
+        response = self.client.post(
+            reverse('courses_and_coach:delete_course', args=[self.course.id])
+        )
+        self.assertEqual(response.status_code, 302)
+        # Course should still exist
+        self.assertTrue(Course.objects.filter(id=self.course.id).exists())
+    
+    def test_delete_course_get(self):
+        """Test delete course confirmation page"""
+        self.client.login(username='testcoach', password='testpass123')
+        response = self.client.get(
+            reverse('courses_and_coach:delete_course', args=[self.course.id])
+        )
+        self.assertEqual(response.status_code, 200)
+    
+    def test_delete_course_post(self):
+        """Test delete course POST"""
+        course_id = self.course.id
+        self.client.login(username='testcoach', password='testpass123')
+        response = self.client.post(
+            reverse('courses_and_coach:delete_course', args=[self.course.id])
+        )
+        self.assertEqual(response.status_code, 302)
+        # Course should be deleted
+        self.assertFalse(Course.objects.filter(id=course_id).exists())
+
+
+class CategoryDetailViewTest(TestCase):
+    """Test cases for category_detail view"""
+    
+    def setUp(self):
+        self.client = Client()
+        self.category = Category.objects.create(name='Yoga')
+        
+        self.user = User.objects.create_user(username='coach', password='pass')
+        self.coach = CoachProfile.objects.create(
+            user=self.user,
+            bio='Test',
+            expertise=['Yoga']
+        )
+        
+        self.course = Course.objects.create(
+            coach=self.coach,
+            category=self.category,
+            title='Yoga Course',
+            description='Test',
+            price=100000,
+            duration=60
+        )
+    
+    def test_category_detail_view(self):
+        """Test category detail view"""
+        response = self.client.get(
+            reverse('courses_and_coach:category_detail', args=['Yoga'])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Yoga Course')
+    
+    def test_category_detail_not_found(self):
+        """Test category detail with invalid category"""
+        response = self.client.get(
+            reverse('courses_and_coach:category_detail', args=['NonExistent'])
+        )
+        self.assertEqual(response.status_code, 404)
+    
+    def test_category_detail_with_search(self):
+        """Test category detail with search"""
+        response = self.client.get(
+            reverse('courses_and_coach:category_detail', args=['Yoga']) + '?search=Yoga'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Yoga Course')
+    
+    def test_category_detail_coaches_count(self):
+        """Test category detail shows coach count"""
+        response = self.client.get(
+            reverse('courses_and_coach:category_detail', args=['Yoga'])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('coaches_count', response.context)
+
+
+class ShowCoachesViewTest(TestCase):
+    """Test cases for show_coaches view"""
+    
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='coach1',
+            first_name='John',
+            last_name='Doe',
+            password='pass'
+        )
+        self.coach = CoachProfile.objects.create(
+            user=self.user,
+            bio='Expert coach',
+            rating=4.5,
+            verified=True
+        )
+    
+    def test_show_coaches_view(self):
+        """Test show coaches view"""
+        response = self.client.get(reverse('courses_and_coach:show_coaches'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'John')
+    
+    def test_show_coaches_search_by_name(self):
+        """Test coaches search by name"""
+        response = self.client.get(
+            reverse('courses_and_coach:show_coaches') + '?search=John'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'John')
+    
+    def test_show_coaches_pagination(self):
+        """Test coaches pagination"""
+        response = self.client.get(
+            reverse('courses_and_coach:show_coaches') + '?page=1'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('coaches', response.context)
+
+
+class CoachDetailViewTest(TestCase):
+    """Test cases for coach_details view"""
+    
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username='coach1',
+            first_name='Jane',
+            last_name='Smith',
+            password='pass'
+        )
+        self.coach = CoachProfile.objects.create(
+            user=self.user,
+            bio='Professional coach',
+            rating=4.8,
+            verified=True
+        )
+    
+    def test_coach_details_view(self):
+        """Test coach details view"""
+        response = self.client.get(
+            reverse('courses_and_coach:coach_details', args=[self.coach.id])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Jane')
+        self.assertContains(response, 'Professional coach')
+    
+    def test_coach_details_not_found(self):
+        """Test coach details with invalid ID"""
+        response = self.client.get(
+            reverse('courses_and_coach:coach_details', args=[99999])
+        )
+        self.assertEqual(response.status_code, 404)
+    
+    def test_coach_details_shows_courses(self):
+        """Test coach details shows their courses"""
+        category = Category.objects.create(name='Test')
+        course = Course.objects.create(
+            coach=self.coach,
+            category=category,
+            title='Coach Course',
+            description='Test',
+            price=100000,
+            duration=60
+        )
+        
+        response = self.client.get(
+            reverse('courses_and_coach:coach_details', args=[self.coach.id])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('courses', response.context)

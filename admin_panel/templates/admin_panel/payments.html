@@ -51,7 +51,11 @@
                         <td class="py-4 pr-4">{{ payment.booking.user.username }}</td>
                         <td class="py-4 pr-4">
                             <span class="px-2 py-1 bg-gray-100 rounded text-xs">
-                                {{ payment.get_payment_method_display }}
+                                {% if payment.method %}
+                                    {{ payment.get_method_display }}
+                                {% else %}
+                                    <span class="text-gray-400">—</span>
+                                {% endif %}
                             </span>
                         </td>
                         <td class="py-4 pr-4 font-semibold">Rp {{ payment.amount|floatformat:0 }}</td>
