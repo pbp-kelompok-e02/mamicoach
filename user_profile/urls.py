@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     register_user, register_coach, login_user, logout_user, 
     dashboard_coach, coach_profile, get_coach_profile,
-    dashboard_user, user_profile, get_user_profile, api_login, api_register_user, api_register_coach
+    dashboard_user, user_profile, get_user_profile
 )
 
 app_name = "user_profile"
@@ -18,7 +18,4 @@ urlpatterns = [
     path("edit-profile/user/", user_profile, name="user_profile"),
     path("api/coach-profile/", get_coach_profile, name="get_coach_profile"),
     path("api/user-profile/", get_user_profile, name="get_user_profile"),
-    path("login/api/", api_login, name="api_login"),
-    path("register/api/", api_register_user, name="api_register_user"),
-    path("register/coach/api/", api_register_coach, name="api_register_coach"),
 ]
