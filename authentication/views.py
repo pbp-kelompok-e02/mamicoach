@@ -3,7 +3,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login as auth_login
 from user_profile.models import CoachProfile, UserProfile, Certification
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
 import json
+import base64
+import uuid
 
 # Create your views here.
 @csrf_exempt
@@ -75,6 +78,18 @@ def api_register_user(request):
                 "message": "Username is required."
             }, status=400)
         
+        if not first_name:
+            return JsonResponse({
+                "status": False,
+                "message": "First name is required."
+            }, status=400)
+        
+        if not last_name:
+            return JsonResponse({
+                "status": False,
+                "message": "Last name is required."
+            }, status=400)
+        
         if not password1 or not password2:
             return JsonResponse({
                 "status": False,
@@ -141,12 +156,25 @@ def api_register_coach(request):
         bio = data.get('bio', '').strip()
         expertise = data.get('expertise', [])  # List of expertise areas
         certifications = data.get('certifications', [])
+        profile_image_base64 = data.get('profile_image', '')  # Base64 string
         
         # Validate required fields
         if not username:
             return JsonResponse({
                 "status": False,
                 "message": "Username is required."
+            }, status=400)
+        
+        if not first_name:
+            return JsonResponse({
+                "status": False,
+                "message": "First name is required."
+            }, status=400)
+        
+        if not last_name:
+            return JsonResponse({
+                "status": False,
+                "message": "Last name is required."
             }, status=400)
         
         if not password1 or not password2:
@@ -205,6 +233,52 @@ def api_register_coach(request):
             bio=bio,
             expertise=expertise
         )
+        
+        # Handle profile image if provided (base64)
+        if profile_image_base64:
+            try:
+                # Remove header if present (e.g., "data:image/png;base64,")
+                if ',' in profile_image_base64:
+                    format, imgstr = profile_image_base64.split(';base64,')
+                    ext = format.split('/')[-1].lower()
+                else:
+                    imgstr = profile_image_base64
+                    ext = 'jpg'
+                
+                # Validate image format (only allow common image formats)
+                allowed_formats = ['jpg', 'jpeg', 'png', 'gif', 'webp']
+                if ext not in allowed_formats:
+                    return JsonResponse({
+                        "status": False,
+                        "message": f"Invalid image format. Allowed formats: {', '.join(allowed_formats)}"
+                    }, status=400)
+                
+                # Decode base64 string
+                data = base64.b64decode(imgstr)
+                
+                # Validate file size (max 5MB)
+                max_size = 5 * 1024 * 1024  # 5MB in bytes
+                if len(data) > max_size:
+                    return JsonResponse({
+                        "status": False,
+                        "message": "Image size too large. Maximum size is 5MB."
+                    }, status=400)
+                
+                # Generate unique filename
+                filename = f'coach_profile_{user.username}_{uuid.uuid4().hex[:8]}.{ext}'
+                
+                # Save image to profile
+                coach_profile.profile_image.save(filename, ContentFile(data), save=True)
+            except base64.binascii.Error:
+                return JsonResponse({
+                    "status": False,
+                    "message": "Invalid base64 image data."
+                }, status=400)
+            except Exception as e:
+                return JsonResponse({
+                    "status": False,
+                    "message": f"Failed to upload image: {str(e)}"
+                }, status=400)
         
         if certifications and isinstance(certifications, list):
             for cert in certifications:
