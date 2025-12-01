@@ -32,6 +32,7 @@ urlpatterns = [
     path("schedule/", include("schedule.urls")),
     path("payment/", include("payment.urls")),
     path("admin/", include("admin_panel.urls")),  # New admin panel
+    path("authentication/", include("authentication.urls")), 
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
