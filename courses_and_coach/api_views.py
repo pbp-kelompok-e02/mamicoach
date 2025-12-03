@@ -341,3 +341,30 @@ def api_course_detail(request, course_id):
     }
 
     return JsonResponse({"success": True, "data": course_data})
+
+
+def api_categories_list(request):
+    categories = Category.objects.all()
+
+    categories_data = []
+    for category in categories:
+        # Count courses in this category
+        course_count = Course.objects.filter(category=category).count()
+
+        categories_data.append(
+            {
+                "id": category.id,
+                "name": category.name,
+                "description": category.description,
+                "thumbnail_url": category.thumbnail_url,
+                "course_count": course_count,
+            }
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "data": categories_data,
+            "total_count": len(categories_data),
+        }
+    )

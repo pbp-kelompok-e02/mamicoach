@@ -19,6 +19,7 @@ from courses_and_coach.api_views import (
     api_coach_detail,
     api_courses_list,
     api_course_detail,
+    api_categories_list,
 )
 
 app_name = "courses_and_coach"
@@ -44,4 +45,5 @@ urlpatterns = [
     path("api/coach/<int:coach_id>/", api_coach_detail, name="api_coach_detail"),
     path("api/courses/", api_courses_list, name="api_courses_list"),
     path("api/courses/<int:course_id>/", api_course_detail, name="api_course_detail"),
+    path("api/categories/", api_categories_list, name="api_categories_list"),
 ]
