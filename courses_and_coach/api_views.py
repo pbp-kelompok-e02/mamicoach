@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
+from django.utils.html import strip_tags
 import json
 from .models import Course, Category
 from user_profile.models import CoachProfile
@@ -377,108 +378,58 @@ def api_categories_list(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def api_create_course(request):
-    # Check authentication
-    if not request.user.is_authenticated:
-        return JsonResponse(
-            {"success": False, "error": "Authentication required"}, status=401
-        )
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return JsonResponse(
+                {"status": "error", "message": "Authentication required"}, status=401
+            )
 
-    # Check if user has coach profile
-    try:
-        coach_profile = request.user.coachprofile
-    except CoachProfile.DoesNotExist:
-        return JsonResponse(
-            {
-                "success": False,
-                "error": "Only coaches can create courses. Please create a coach account.",
-            },
-            status=403,
-        )
+        try:
+            data = json.loads(request.body)
 
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse(
-            {"success": False, "error": "Invalid JSON data"}, status=400
-        )
+            try:
+                coach_profile = request.user.coachprofile
+            except CoachProfile.DoesNotExist:
+                return JsonResponse(
+                    {"status": "error", "message": "User is not a coach"}, status=403
+                )
 
-    # Validate required fields
-    required_fields = [
-        "category_id",
-        "title",
-        "description",
-        "location",
-        "price",
-        "duration",
-    ]
-    missing_fields = [field for field in required_fields if field not in data]
-    if missing_fields:
-        return JsonResponse(
-            {
-                "success": False,
-                "error": f"Missing required fields: {', '.join(missing_fields)}",
-            },
-            status=400,
-        )
+            try:
+                category = Category.objects.get(id=int(data["category_id"]))
+            except (Category.DoesNotExist, ValueError, KeyError):
+                return JsonResponse(
+                    {"status": "error", "message": "Invalid category"}, status=404
+                )
 
-    # Validate category
-    try:
-        category = Category.objects.get(id=data["category_id"])
-    except Category.DoesNotExist:
-        return JsonResponse(
-            {"success": False, "error": "Category not found"}, status=404
-        )
+            new_course = Course.objects.create(
+                coach=coach_profile,
+                title=strip_tags(data["title"]),
+                description=strip_tags(data["description"]),
+                price=float(data["price"]),
+                duration=int(data["duration"]),
+                category=category,
+                location=strip_tags(data["location"]),
+                thumbnail_url=strip_tags(data.get("thumbnail_url", "")),
+            )
 
-    # Validate price and duration
-    try:
-        price = int(data["price"])
-        duration = int(data["duration"])
-        if price < 0 or duration < 0:
-            raise ValueError("Price and duration must be positive")
-    except (ValueError, TypeError):
-        return JsonResponse(
-            {"success": False, "error": "Invalid price or duration"}, status=400
-        )
+            new_course.save()
 
-    # Create course
-    course = Course.objects.create(
-        coach=coach_profile,
-        category=category,
-        title=data["title"],
-        description=data["description"],
-        location=data["location"],
-        price=price,
-        duration=duration,
-        thumbnail_url=data.get("thumbnail_url", ""),
-    )
-
-    return JsonResponse(
-        {
-            "success": True,
-            "message": "Course created successfully",
-            "data": {
-                "id": course.id,
-                "title": course.title,
-                "description": course.description,
-                "location": course.location,
-                "price": course.price,
-                "price_formatted": course.price_formatted,
-                "duration": course.duration,
-                "duration_formatted": course.duration_formatted,
-                "thumbnail_url": course.thumbnail_url,
-                "category": {
-                    "id": course.category.id,
-                    "name": course.category.name,
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "message": "Course created successfully",
+                    "course_id": new_course.id,
                 },
-                "created_at": course.created_at.isoformat(),
-            },
-        },
-        status=201,
-    )
+                status=200,
+            )
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+    return JsonResponse({"status": "error", "message": "Invalid method"}, status=401)
 
 
 @csrf_exempt
-@require_http_methods(["PATCH"])
+@require_http_methods(["POST"])
 def api_edit_course(request, course_id):
     # Check authentication
     if not request.user.is_authenticated:
@@ -589,7 +540,7 @@ def api_edit_course(request, course_id):
 
 
 @csrf_exempt
-@require_http_methods(["DELETE"])
+@require_http_methods(["POST"])
 def api_delete_course(request, course_id):
     # Check authentication
     if not request.user.is_authenticated:
@@ -633,9 +584,9 @@ def api_delete_course(request, course_id):
     )
 
 
-@login_required
 def api_my_courses(request):
     # Check if user has coach profile
+    print(request.user.coachprofile)
     try:
         coach_profile = request.user.coachprofile
     except CoachProfile.DoesNotExist:
