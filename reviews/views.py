@@ -137,10 +137,13 @@ def delete_review(request, review_id):
 
 # AJAX Endpoints with JSON responses
 
-@login_required(login_url='/login')
+@csrf_exempt
 @require_http_methods(["POST"])
 def ajax_create_review(request, booking_id):
     """AJAX endpoint to create a review and return JSON response"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Authentication required'}, status=401)
+    
     try:
         booking = Booking.objects.get(pk=booking_id)
     except Booking.DoesNotExist:
@@ -182,10 +185,13 @@ def ajax_create_review(request, booking_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
-@login_required(login_url='/login')
+@csrf_exempt
 @require_http_methods(["PUT", "POST"])
 def ajax_edit_review(request, review_id):
     """AJAX endpoint to edit a review and return JSON response"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Authentication required'}, status=401)
+    
     try:
         review = Review.objects.get(pk=review_id)
     except Review.DoesNotExist:
@@ -217,10 +223,13 @@ def ajax_edit_review(request, review_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
-@login_required(login_url='/login')
+@csrf_exempt
 @require_http_methods(["DELETE", "POST"])
 def ajax_delete_review(request, review_id):
     """AJAX endpoint to delete a review and return JSON response"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Authentication required'}, status=401)
+    
     try:
         review = Review.objects.get(pk=review_id)
     except Review.DoesNotExist:
@@ -244,10 +253,13 @@ def ajax_delete_review(request, review_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
-@login_required(login_url='/login')
+@csrf_exempt
 @require_http_methods(["GET"])
 def ajax_get_review(request, review_id):
     """AJAX endpoint to fetch review details and return JSON response"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Authentication required'}, status=401)
+    
     try:
         review = Review.objects.get(pk=review_id)
     except Review.DoesNotExist:

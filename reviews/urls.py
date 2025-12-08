@@ -9,8 +9,8 @@ urlpatterns = [
     path("review/delete/<int:review_id>", delete_review, name="delete_review"),
     
     # AJAX endpoints
-    path("api/review/create/<int:booking_id>", ajax_create_review, name="ajax_create_review"),
-    path("api/review/edit/<int:review_id>", ajax_edit_review, name="ajax_edit_review"),
-    path("api/review/delete/<int:review_id>", ajax_delete_review, name="ajax_delete_review"),
-    path("api/review/get/<int:review_id>", ajax_get_review, name="ajax_get_review"),
+    path("review/ajax/create/<int:booking_id>", ajax_create_review, name="ajax_create_review"),
+    path("review/ajax/edit/<int:review_id>", ajax_edit_review, name="ajax_edit_review"),
+    path("review/ajax/delete/<int:review_id>", ajax_delete_review, name="ajax_delete_review"),
+    path("review/ajax/get/<int:review_id>", ajax_get_review, name="ajax_get_review"),
 ]
