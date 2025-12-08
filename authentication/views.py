@@ -11,6 +11,7 @@ import uuid
 # Create your views here.
 @csrf_exempt
 def api_login(request):
+    print(request.POST)
     username = request.POST.get('username')
     password = request.POST.get('password')
     
@@ -40,6 +41,7 @@ def api_login(request):
                 "user_type": user_type,
                 "is_coach": is_coach,
                 "status": True,
+                ""
                 "message": "Login successful!"
             }, status=200)
         else:
@@ -269,11 +271,6 @@ def api_register_coach(request):
                 
                 # Save image to profile
                 coach_profile.profile_image.save(filename, ContentFile(data), save=True)
-            except base64.binascii.Error:
-                return JsonResponse({
-                    "status": False,
-                    "message": "Invalid base64 image data."
-                }, status=400)
             except Exception as e:
                 return JsonResponse({
                     "status": False,
