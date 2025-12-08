@@ -1,6 +1,10 @@
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
+import json
 from .models import Course, Category
 from user_profile.models import CoachProfile
 
@@ -366,5 +370,331 @@ def api_categories_list(request):
             "success": True,
             "data": categories_data,
             "total_count": len(categories_data),
+        }
+    )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_create_course(request):
+    # Check authentication
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"success": False, "error": "Authentication required"}, status=401
+        )
+
+    # Check if user has coach profile
+    try:
+        coach_profile = request.user.coachprofile
+    except CoachProfile.DoesNotExist:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Only coaches can create courses. Please create a coach account.",
+            },
+            status=403,
+        )
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"success": False, "error": "Invalid JSON data"}, status=400
+        )
+
+    # Validate required fields
+    required_fields = [
+        "category_id",
+        "title",
+        "description",
+        "location",
+        "price",
+        "duration",
+    ]
+    missing_fields = [field for field in required_fields if field not in data]
+    if missing_fields:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": f"Missing required fields: {', '.join(missing_fields)}",
+            },
+            status=400,
+        )
+
+    # Validate category
+    try:
+        category = Category.objects.get(id=data["category_id"])
+    except Category.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "error": "Category not found"}, status=404
+        )
+
+    # Validate price and duration
+    try:
+        price = int(data["price"])
+        duration = int(data["duration"])
+        if price < 0 or duration < 0:
+            raise ValueError("Price and duration must be positive")
+    except (ValueError, TypeError):
+        return JsonResponse(
+            {"success": False, "error": "Invalid price or duration"}, status=400
+        )
+
+    # Create course
+    course = Course.objects.create(
+        coach=coach_profile,
+        category=category,
+        title=data["title"],
+        description=data["description"],
+        location=data["location"],
+        price=price,
+        duration=duration,
+        thumbnail_url=data.get("thumbnail_url", ""),
+    )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "Course created successfully",
+            "data": {
+                "id": course.id,
+                "title": course.title,
+                "description": course.description,
+                "location": course.location,
+                "price": course.price,
+                "price_formatted": course.price_formatted,
+                "duration": course.duration,
+                "duration_formatted": course.duration_formatted,
+                "thumbnail_url": course.thumbnail_url,
+                "category": {
+                    "id": course.category.id,
+                    "name": course.category.name,
+                },
+                "created_at": course.created_at.isoformat(),
+            },
+        },
+        status=201,
+    )
+
+
+@csrf_exempt
+@require_http_methods(["PATCH"])
+def api_edit_course(request, course_id):
+    # Check authentication
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"success": False, "error": "Authentication required"}, status=401
+        )
+
+    # Check if user has coach profile
+    try:
+        coach_profile = request.user.coachprofile
+    except CoachProfile.DoesNotExist:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Access denied. Only coaches can edit courses.",
+            },
+            status=403,
+        )
+
+    # Get course
+    try:
+        course = Course.objects.get(id=course_id)
+    except Course.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Course not found"}, status=404)
+
+    # Check ownership
+    if course.coach != coach_profile:
+        return JsonResponse(
+            {"success": False, "error": "You are not authorized to edit this course"},
+            status=403,
+        )
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"success": False, "error": "Invalid JSON data"}, status=400
+        )
+
+    # Update category if provided
+    if "category_id" in data:
+        try:
+            category = Category.objects.get(id=data["category_id"])
+            course.category = category
+        except Category.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "error": "Category not found"}, status=404
+            )
+
+    # Update other fields if provided
+    if "title" in data:
+        course.title = data["title"]
+    if "description" in data:
+        course.description = data["description"]
+    if "location" in data:
+        course.location = data["location"]
+    if "thumbnail_url" in data:
+        course.thumbnail_url = data["thumbnail_url"]
+
+    # Validate and update price
+    if "price" in data:
+        try:
+            price = int(data["price"])
+            if price < 0:
+                raise ValueError("Price must be positive")
+            course.price = price
+        except (ValueError, TypeError):
+            return JsonResponse(
+                {"success": False, "error": "Invalid price"}, status=400
+            )
+
+    # Validate and update duration
+    if "duration" in data:
+        try:
+            duration = int(data["duration"])
+            if duration < 0:
+                raise ValueError("Duration must be positive")
+            course.duration = duration
+        except (ValueError, TypeError):
+            return JsonResponse(
+                {"success": False, "error": "Invalid duration"}, status=400
+            )
+
+    course.save()
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "Course updated successfully",
+            "data": {
+                "id": course.id,
+                "title": course.title,
+                "description": course.description,
+                "location": course.location,
+                "price": course.price,
+                "price_formatted": course.price_formatted,
+                "duration": course.duration,
+                "duration_formatted": course.duration_formatted,
+                "thumbnail_url": course.thumbnail_url,
+                "category": {
+                    "id": course.category.id if course.category else None,
+                    "name": course.category.name if course.category else None,
+                },
+                "updated_at": course.updated_at.isoformat(),
+            },
+        }
+    )
+
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def api_delete_course(request, course_id):
+    # Check authentication
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"success": False, "error": "Authentication required"}, status=401
+        )
+
+    # Check if user has coach profile
+    try:
+        coach_profile = request.user.coachprofile
+    except CoachProfile.DoesNotExist:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Access denied. Only coaches can delete courses.",
+            },
+            status=403,
+        )
+
+    # Get course
+    try:
+        course = Course.objects.get(id=course_id)
+    except Course.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Course not found"}, status=404)
+
+    # Check ownership
+    if course.coach != coach_profile:
+        return JsonResponse(
+            {"success": False, "error": "You are not authorized to delete this course"},
+            status=403,
+        )
+
+    course_title = course.title
+    course.delete()
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": f"Course '{course_title}' deleted successfully",
+        }
+    )
+
+
+@login_required
+def api_my_courses(request):
+    # Check if user has coach profile
+    try:
+        coach_profile = request.user.coachprofile
+    except CoachProfile.DoesNotExist:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Access denied. Only coaches can view this page.",
+            },
+            status=403,
+        )
+
+    courses = (
+        Course.objects.filter(coach=coach_profile)
+        .select_related("category")
+        .order_by("-created_at")
+    )
+
+    # Pagination
+    page = request.GET.get("page", 1)
+    page_size = min(int(request.GET.get("page_size", 12)), 100)
+
+    paginator = Paginator(courses, page_size)
+    page_obj = paginator.get_page(page)
+
+    courses_data = []
+    for course in page_obj:
+        courses_data.append(
+            {
+                "id": course.id,
+                "title": course.title,
+                "description": course.description,
+                "location": course.location,
+                "price": course.price,
+                "price_formatted": course.price_formatted,
+                "duration": course.duration,
+                "duration_formatted": course.duration_formatted,
+                "rating": course.rating,
+                "rating_count": course.rating_count,
+                "thumbnail_url": course.thumbnail_url,
+                "created_at": course.created_at.isoformat(),
+                "updated_at": course.updated_at.isoformat(),
+                "category": {
+                    "id": course.category.id if course.category else None,
+                    "name": course.category.name if course.category else None,
+                },
+            }
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "data": courses_data,
+            "pagination": {
+                "current_page": page_obj.number,
+                "total_pages": paginator.num_pages,
+                "total_count": paginator.count,
+                "page_size": page_size,
+                "has_next": page_obj.has_next(),
+                "has_previous": page_obj.has_previous(),
+            },
         }
     )

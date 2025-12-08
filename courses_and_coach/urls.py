@@ -20,6 +20,10 @@ from courses_and_coach.api_views import (
     api_courses_list,
     api_course_detail,
     api_categories_list,
+    api_create_course,
+    api_edit_course,
+    api_delete_course,
+    api_my_courses,
 )
 
 app_name = "courses_and_coach"
@@ -44,6 +48,14 @@ urlpatterns = [
     path("api/coaches/", api_coaches_list, name="api_coaches_list"),
     path("api/coach/<int:coach_id>/", api_coach_detail, name="api_coach_detail"),
     path("api/courses/", api_courses_list, name="api_courses_list"),
+    path("api/courses/create/", api_create_course, name="api_create_course"),
     path("api/courses/<int:course_id>/", api_course_detail, name="api_course_detail"),
+    path("api/courses/<int:course_id>/edit/", api_edit_course, name="api_edit_course"),
+    path(
+        "api/courses/<int:course_id>/delete/",
+        api_delete_course,
+        name="api_delete_course",
+    ),
+    path("api/my-courses/", api_my_courses, name="api_my_courses"),
     path("api/categories/", api_categories_list, name="api_categories_list"),
 ]
