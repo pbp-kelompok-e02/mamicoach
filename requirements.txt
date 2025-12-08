@@ -12,3 +12,4 @@ pytz
 coverage
 django-storages
 boto3
+django-cors-headers

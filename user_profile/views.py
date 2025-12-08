@@ -11,7 +11,6 @@ from .models import CoachProfile, Certification, UserProfile
 from django.utils import timezone
 import pytz
 
-
 MONTH_NAMES_SHORT_ID = [
     'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
     'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'

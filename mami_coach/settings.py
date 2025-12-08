@@ -14,6 +14,13 @@ from pathlib import Path
 
 import os
 
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+
 try:
     import dj_database_url  # type: ignore
 except Exception:  # pragma: no cover - optional dependency during dev
@@ -39,7 +46,7 @@ SCHEMA = os.getenv("SCHEMA", "public")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = not PRODUCTION
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "kevin-cornellius-mamicoach.pbp.cs.ui.ac.id"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "kevin-cornellius-mamicoach.pbp.cs.ui.ac.id", "10.0.2.2"]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost",
     "https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id",
@@ -64,10 +71,13 @@ INSTALLED_APPS = [
     "booking",
     "payment",
     "admin_panel",
+    "authentication",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",

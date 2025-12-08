@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.views.decorators.http import require_POST
@@ -62,9 +63,13 @@ def chat_detail(request, session_id):
     
     return render(request, "pages/chat_interface.html", context)
 
-@login_required(login_url="/login")
+@csrf_exempt
 def get_chat_sessions(request):
+    print(request.user)
     """AJAX endpoint to get all chat sessions for current user"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
     # Check if the current user is a coach by checking their coach profile
     is_coach = CoachProfile.objects.filter(user=request.user).exists()
     
@@ -125,9 +130,12 @@ def get_chat_sessions(request):
     
     return JsonResponse({'sessions': sessions_data})
 
-@login_required(login_url="/login")
+@csrf_exempt
 def get_messages(request, session_id):
     """AJAX endpoint to get messages for a specific chat session"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
     session = get_object_or_404(ChatSession, id=session_id)
     
     # Check if user is part of this chat session
@@ -152,10 +160,13 @@ def get_messages(request, session_id):
         'current_user_id': request.user.id
     })
 
+@csrf_exempt
 @require_POST
-@login_required(login_url="/login")
 def send_message(request):
     """AJAX endpoint to send a new message (text only)"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
     try:
         data = json.loads(request.body)
         session_id = data.get('session_id')
@@ -211,10 +222,13 @@ def send_message(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+@csrf_exempt
 @require_POST
-@login_required(login_url="/login")
 def mark_messages_read(request):
     """AJAX endpoint to mark messages as read"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
     try:
         data = json.loads(request.body)
         session_id = data.get('session_id')
@@ -246,10 +260,13 @@ def mark_messages_read(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
 @require_POST
-@login_required(login_url="/login")
 def create_chat_with_coach(request, coach_id):
     """AJAX endpoint to create a chat session with a coach"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
     try:
         from django.contrib.auth.models import User
         
@@ -412,10 +429,13 @@ def _serialize_user(user):
     }
 
 
+@csrf_exempt
 @require_POST
-@login_required(login_url="/login")
 def upload_attachment(request, session_id):
     """AJAX endpoint to upload attachment to a message"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
     try:
         session = get_object_or_404(ChatSession, id=session_id)
         
@@ -479,10 +499,13 @@ def upload_attachment(request, session_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
 @require_POST
-@login_required(login_url="/login")
 def create_attachment(request, session_id):
     """AJAX endpoint to create an embed attachment (booking or course) to a message"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
     try:
         session = get_object_or_404(ChatSession, id=session_id)
         
