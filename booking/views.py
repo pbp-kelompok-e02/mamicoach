@@ -349,7 +349,7 @@ def api_booking_create(request, course_id):
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
-@login_required(login_url="/login")
+@csrf_exempt
 @require_http_methods(["GET"])
 def api_booking_list(request):
     """
@@ -360,6 +360,13 @@ def api_booking_list(request):
         - role: 'user' or 'coach' (default: 'user')
         - status: filter by status (optional)
     """
+    # Check authentication
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'message': 'Authentication required'
+        }, status=401)
+    
     try:
         role = request.GET.get('role', 'user')
         status_filter = request.GET.get('status')
@@ -370,7 +377,10 @@ def api_booking_list(request):
                 coach = CoachProfile.objects.get(user=request.user)
                 bookings_qs = Booking.objects.filter(coach=coach)
             except CoachProfile.DoesNotExist:
-                return JsonResponse({'error': 'You are not a coach'}, status=403)
+                return JsonResponse({
+                    'success': False,
+                    'message': 'You are not a coach'
+                }, status=403)
         else:
             # Get user bookings
             bookings_qs = Booking.objects.filter(user=request.user)
@@ -399,6 +409,9 @@ def api_booking_list(request):
 
             bookings_data.append({
                 'id': booking.id,
+                'user_id': booking.user.id,
+                'coach_id': booking.coach.id,
+                'course_id': booking.course.id,
                 'user_name': booking.user.get_full_name() or booking.user.username,
                 'coach_name': booking.coach.user.get_full_name(),
                 'course_title': booking.course.title,
@@ -408,20 +421,28 @@ def api_booking_list(request):
                 'start_time': start_local.strftime('%H:%M') if start_local else None,
                 'end_time': end_local.strftime('%H:%M') if end_local else None,
                 'status': booking.status,
+                'price': float(booking.course.price) if booking.course.price else 0.0,
                 'created_at': created_local.isoformat() if created_local else booking.created_at.isoformat()
             })
         
         return JsonResponse({
+            'success': True,
             'bookings': bookings_data,
             'count': len(bookings_data)
         })
         
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        import traceback
+        print("Error fetching bookings:")
+        print(traceback.format_exc())
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
 
 
-@login_required(login_url="/login")
-@require_POST
+@csrf_exempt
+@require_http_methods(["POST"])
 def api_booking_update_status(request, booking_id):
     """
     Update booking status (coach only).
@@ -431,6 +452,13 @@ def api_booking_update_status(request, booking_id):
         "status": "confirmed" | "done" | "canceled"
     }
     """
+    # Check authentication
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'message': 'Authentication required'
+        }, status=401)
+    
     try:
         booking = get_object_or_404(Booking, id=booking_id)
         
@@ -439,18 +467,27 @@ def api_booking_update_status(request, booking_id):
             coach = CoachProfile.objects.get(user=request.user)
             if booking.coach != coach:
                 return JsonResponse({
-                    'error': 'You are not authorized to update this booking'
+                    'success': False,
+                    'message': 'You are not authorized to update this booking'
                 }, status=403)
         except CoachProfile.DoesNotExist:
-            return JsonResponse({'error': 'You are not a coach'}, status=403)
+            return JsonResponse({
+                'success': False,
+                'message': 'You are not a coach'
+            }, status=403)
         
-        # Parse request body
-        data = json.loads(request.body)
+        # Parse request body - handle both JSON and form data
+        try:
+            data = json.loads(request.body) if request.body else {}
+        except json.JSONDecodeError:
+            data = request.POST.dict()
+        
         new_status = data.get('status')
         
         if new_status not in ['paid', 'confirmed', 'done', 'canceled']:
             return JsonResponse({
-                'error': 'Invalid status. Must be: paid, confirmed, done, or canceled'
+                'success': False,
+                'message': 'Invalid status. Must be: paid, confirmed, done, or canceled'
             }, status=400)
         
         # Update status
@@ -464,20 +501,31 @@ def api_booking_update_status(request, booking_id):
             'status': booking.status
         })
         
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        import traceback
+        print("Error updating booking status:")
+        print(traceback.format_exc())
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
 
 
-@login_required(login_url="/login")
-@require_POST
+@csrf_exempt
+@require_http_methods(["POST"])
 def api_booking_cancel(request, booking_id):
     """
     Cancel a booking (user can cancel own pending booking, coach can cancel any).
     
     POST /booking/api/booking/<booking_id>/cancel/
     """
+    # Check authentication
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'message': 'Authentication required'
+        }, status=401)
+    
     try:
         booking = get_object_or_404(Booking, id=booking_id)
         
@@ -493,13 +541,15 @@ def api_booking_cancel(request, booking_id):
         
         if not (is_owner or is_coach):
             return JsonResponse({
-                'error': 'You are not authorized to cancel this booking'
+                'success': False,
+                'message': 'You are not authorized to cancel this booking'
             }, status=403)
         
         # User can only cancel pending bookings
         if is_owner and not is_coach and booking.status != 'pending':
             return JsonResponse({
-                'error': 'You can only cancel pending bookings'
+                'success': False,
+                'message': 'You can only cancel pending bookings'
             }, status=400)
         
         # Cancel the booking
@@ -513,7 +563,13 @@ def api_booking_cancel(request, booking_id):
         })
         
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        import traceback
+        print("Error canceling booking:")
+        print(traceback.format_exc())
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
 
 
 @login_required(login_url="/login")
