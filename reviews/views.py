@@ -12,6 +12,45 @@ from .forms import ReviewForm
 # Create your views here.
 
 
+@csrf_exempt
+@require_http_methods(["GET"])
+def ajax_list_my_reviews(request):
+    """AJAX endpoint to list the current user's reviews"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Authentication required'}, status=401)
+
+    try:
+        course_id = request.GET.get('course_id')
+        booking_id = request.GET.get('booking_id')
+
+        qs = Review.objects.filter(user=request.user).select_related('booking', 'course')
+        if course_id:
+            qs = qs.filter(course_id=course_id)
+        if booking_id:
+            qs = qs.filter(booking_id=booking_id)
+
+        qs = qs.order_by('-created_at')
+
+        reviews = [
+            {
+                'id': review.pk,
+                'rating': review.rating,
+                'content': review.content,
+                'is_anonymous': review.is_anonymous,
+                'booking_id': review.booking.pk,
+                'course_id': review.course.pk,
+                'user_id': review.user_id,
+                'created_at': review.created_at.isoformat(),
+                'updated_at': review.updated_at.isoformat(),
+            }
+            for review in qs
+        ]
+
+        return JsonResponse({'success': True, 'reviews': reviews}, status=200)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
 @login_required(login_url='/login')
 def create_review(request, booking_id):
     try:
@@ -279,6 +318,7 @@ def ajax_get_review(request, review_id):
                 'is_anonymous': review.is_anonymous,
                 'booking_id': review.booking.pk,
                 'course_id': review.course.pk,
+                'user_id': review.user_id,
                 'created_at': review.created_at.isoformat(),
                 'updated_at': review.updated_at.isoformat()
             }

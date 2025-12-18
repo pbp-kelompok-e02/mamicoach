@@ -11,7 +11,6 @@ import uuid
 # Create your views here.
 @csrf_exempt
 def api_login(request):
-    print(request.POST)
     username = request.POST.get('username')
     password = request.POST.get('password')
     
@@ -35,13 +34,13 @@ def api_login(request):
                 is_coach = False
             
             return JsonResponse({
+                "user_id": user.id,
                 "username": user.username,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "user_type": user_type,
                 "is_coach": is_coach,
                 "status": True,
-                ""
                 "message": "Login successful!"
             }, status=200)
         else:
