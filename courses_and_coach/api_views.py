@@ -586,14 +586,13 @@ def api_delete_course(request, course_id):
 
 def api_my_courses(request):
     # Check if user has coach profile
-    print(request.user.coachprofile)
     try:
         coach_profile = request.user.coachprofile
-    except CoachProfile.DoesNotExist:
+    except (CoachProfile.DoesNotExist, AttributeError):
         return JsonResponse(
             {
                 "success": False,
-                "error": "Access denied. Only coaches can view this page.",
+                "message": "Access denied. Only coaches can view this page.",
             },
             status=403,
         )
