@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db import transaction
 from .models import Booking
@@ -258,17 +259,38 @@ def api_course_start_times(request, course_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-@login_required(login_url="/login")
+@csrf_exempt
 @require_http_methods(["POST"])
 def api_booking_create(request, course_id):
     """Create new booking with overlap detection"""
     try:
-        data = json.loads(request.body)
-        date_str = data.get('date')  # "2025-10-24"
-        start_time_str = data.get('start_time')  # "13:27"
+        # Get user from session (pbp_django_auth compatibility)
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': False,
+                'message': 'Authentication required'
+            }, status=401)
+        
+        # Parse request data - handle both JSON body and form data
+        try:
+            if request.body:
+                data = json.loads(request.body)
+            else:
+                data = request.POST
+        except json.JSONDecodeError:
+            # If JSON decode fails, try POST data
+            data = request.POST
+        
+        date_str = data.get('date')  # "2025-12-19"
+        start_time_str = data.get('start_time')  # "11:57"
+        
+        print(f"Received booking request - date: {date_str}, start_time: {start_time_str}")
         
         if not date_str or not start_time_str:
-            return JsonResponse({'success': False, 'error': 'Date and start time required'}, status=400)
+            return JsonResponse({
+                'success': False,
+                'message': 'Date and start time required'
+            }, status=400)
         
         course = get_object_or_404(Course, id=course_id)
         coach = course.coach
@@ -284,6 +306,8 @@ def api_booking_create(request, course_id):
         # Calculate end datetime
         end_datetime = start_datetime + timedelta(minutes=course.duration)
         
+        print(f"Creating booking: {start_datetime} to {end_datetime}")
+        
         # Check overlap with transaction
         with transaction.atomic():
             # Lock existing bookings
@@ -297,7 +321,7 @@ def api_booking_create(request, course_id):
             if overlapping.exists():
                 return JsonResponse({
                     'success': False,
-                    'error': 'Time slot not available. Please choose another time.'
+                    'message': 'Time slot not available. Please choose another time.'
                 }, status=409)
             
             # Create booking
@@ -309,6 +333,8 @@ def api_booking_create(request, course_id):
                 end_datetime=end_datetime,
                 status='pending'
             )
+            
+            print(f"Booking created successfully: ID {booking.id}")
         
         return JsonResponse({
             'success': True,
@@ -317,7 +343,10 @@ def api_booking_create(request, course_id):
         })
         
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        print(f"Error in api_booking_create: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
 @login_required(login_url="/login")

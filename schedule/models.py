@@ -9,6 +9,11 @@ class CoachAvailability(models.Model):
     Coach availability model - represents time ranges when coach is available on a specific date.
     Multiple ranges can exist for the same coach+date combination.
     """
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+    ]
+    
     coach = models.ForeignKey(
         'user_profile.CoachProfile', 
         on_delete=models.CASCADE, 
@@ -17,6 +22,12 @@ class CoachAvailability(models.Model):
     date = models.DateField(help_text="Specific date for this availability")
     start_time = models.TimeField(help_text="Start time of availability range")
     end_time = models.TimeField(help_text="End time of availability range")
+    status = models.CharField(
+        max_length=10, 
+        choices=STATUS_CHOICES, 
+        default='active',
+        help_text="Availability status - active or inactive"
+    )
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

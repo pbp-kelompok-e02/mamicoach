@@ -47,8 +47,39 @@ SCHEMA = os.getenv("SCHEMA", "public")
 DEBUG = not PRODUCTION
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "kevin-cornellius-mamicoach.pbp.cs.ui.ac.id", "10.0.2.2"]
+
+# Add all common Flutter web development ports
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost",
+    "http://localhost:8000",
+    "http://localhost:8080",
+    "http://localhost:3000",
+    "http://localhost:5000",
+    "http://localhost:50000",
+    "http://localhost:50001",
+    "http://localhost:50002",
+    "http://localhost:50003",
+    "http://localhost:50004",
+    "http://localhost:50005",
+    "http://localhost:60000",
+    "http://localhost:60001",
+    "http://localhost:60002",
+    "http://localhost:60003",
+    "http://127.0.0.1",
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5000",
+    "http://127.0.0.1:50000",
+    "http://127.0.0.1:50001",
+    "http://127.0.0.1:50002",
+    "http://127.0.0.1:50003",
+    "http://127.0.0.1:50004",
+    "http://127.0.0.1:50005",
+    "http://127.0.0.1:60000",
+    "http://127.0.0.1:60001",
+    "http://127.0.0.1:60002",
+    "http://127.0.0.1:60003",
     "https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id",
 ]
 
