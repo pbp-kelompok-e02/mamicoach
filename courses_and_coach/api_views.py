@@ -778,3 +778,47 @@ def api_my_courses(request):
             },
         }
     )
+
+
+def api_categories_list(request):
+    """
+    API endpoint to get all categories
+    """
+    categories = Category.objects.all().order_by('name')
+    
+    categories_data = [
+        {
+            "id": cat.id,
+            "name": cat.name,
+            "description": cat.description,
+            "thumbnail_url": cat.thumbnail_url,
+        }
+        for cat in categories
+    ]
+    
+    return JsonResponse({
+        "success": True,
+        "data": categories_data
+    })
+
+
+def api_categories_list(request):
+    """
+    API endpoint to get all categories
+    """
+    categories = Category.objects.all().order_by('name')
+    
+    categories_data = [
+        {
+            "id": cat.id,
+            "name": cat.name,
+            "description": cat.description,
+            "thumbnail_url": cat.thumbnail_url,
+        }
+        for cat in categories
+    ]
+    
+    return JsonResponse({
+        "success": True,
+        "data": categories_data
+    })
