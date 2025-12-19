@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from user_profile.models import CoachProfile, UserProfile, Certification
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
@@ -29,9 +29,16 @@ def api_login(request):
                 coach_profile = CoachProfile.objects.get(user=user)
                 user_type = "coach"
                 is_coach = True
+                profile_image = coach_profile.image_url
             except CoachProfile.DoesNotExist:
                 user_type = "trainee"
                 is_coach = False
+                try:
+                    user_profile = UserProfile.objects.get(user=user)
+                    profile_image = user_profile.image_url
+                except UserProfile.DoesNotExist:
+                     # Fallback if UserProfile doesn't exist (though it should)
+                    profile_image = f'https://ui-avatars.com/api/?name={user.get_full_name() or user.username}&background=35A753&color=ffffff'
             
             return JsonResponse({
                 "user_id": user.id,
@@ -40,6 +47,7 @@ def api_login(request):
                 "last_name": user.last_name,
                 "user_type": user_type,
                 "is_coach": is_coach,
+                "profile_image": profile_image,
                 "status": True,
                 "message": "Login successful!"
             }, status=200)
@@ -300,3 +308,18 @@ def api_register_coach(request):
             "status": False,
             "message": "Invalid request method."
         }, status=400)
+
+
+@csrf_exempt
+def api_logout(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "status": False,
+            "message": "Not logged in."
+        }, status=401)
+    
+    auth_logout(request)
+    return JsonResponse({
+        "status": True,
+        "message": "Logout successful!"
+    }, status=200)
