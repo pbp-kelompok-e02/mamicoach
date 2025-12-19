@@ -59,6 +59,7 @@ _default_allowed_hosts = [
     "127.0.0.1",
     "10.0.2.2",
     "kevin-cornellius-mamicoach.pbp.cs.ui.ac.id",
+    "pbpe02.nimby.fun",
 ]
 
 # Deployment (Coolify/Traefik/etc): set ALLOWED_HOSTS="your.domain.com,other.domain.com"
@@ -73,6 +74,7 @@ if os.getenv("USE_SECURE_PROXY_SSL_HEADER", "true").lower() == "true":
 # Deployment: set CSRF_TRUSTED_ORIGINS="https://your.domain.com,https://other.domain.com"
 CSRF_TRUSTED_ORIGINS = _split_env_list("CSRF_TRUSTED_ORIGINS") or [
     "https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id",
+    "https://pbpe02.nimby.fun",
 ]
 
 # Development: allow common localhost ports (avoid generating tens of thousands of entries)
@@ -281,6 +283,32 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Base URL for external callbacks (Midtrans)
 BASE_URL = os.getenv('BASE_URL', 'https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id')
+
+# Logging (helps diagnose 400s behind proxies in Coolify)
+LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO").upper()
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": LOG_LEVEL,
+    },
+    "loggers": {
+        "django.security.DisallowedHost": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "django.security.csrf": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
+}
 
 # Set PostgreSQL search_path after each new connection (avoid startup 'options' not supported by Neon pooler)
 if PRODUCTION:

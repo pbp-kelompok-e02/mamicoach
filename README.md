@@ -135,6 +135,14 @@ Aplikasi akan tersedia di `http://localhost:8000/`
 
 ### 5. Fitur Utama
 
+## Docker / Coolify
+
+This backend reads configuration from environment variables (see `.env.example`).
+
+- Local Docker: create a `.env` file based on `.env.example`, then run the container with an env file.
+- Coolify: copy the keys/values from `.env.example` into Coolify's environment variables (do not commit secrets).
+
+
 **Booking & Schedule:**
 - Pilih kelas dan tanggal yang sesuai
 - Lihat ketersediaan real-time dari coach
