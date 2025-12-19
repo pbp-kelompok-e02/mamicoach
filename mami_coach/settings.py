@@ -46,17 +46,38 @@ SCHEMA = os.getenv("SCHEMA", "public")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = not PRODUCTION
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "kevin-cornellius-mamicoach.pbp.cs.ui.ac.id", "10.0.2.2"]
 
-# CSRF Trusted Origins - accepts all localhost/127.0.0.1 ports in development
-# Note: Django doesn't support wildcards, so we generate a range programmatically
-if True:
-    # Development: Allow any port on localhost (1000-65535)
-    CSRF_TRUSTED_ORIGINS = [
-        "https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id",
-    ]
-    # Add common development ports
-    for port in list(range(3000, 65535)):
+def _split_env_list(name: str) -> list[str]:
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return []
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+_default_allowed_hosts = [
+    "localhost",
+    "127.0.0.1",
+    "10.0.2.2",
+    "kevin-cornellius-mamicoach.pbp.cs.ui.ac.id",
+]
+
+# Deployment (Coolify/Traefik/etc): set ALLOWED_HOSTS="your.domain.com,other.domain.com"
+ALLOWED_HOSTS = _split_env_list("ALLOWED_HOSTS") or _default_allowed_hosts
+
+# Common reverse-proxy headers (Coolify typically terminates TLS at the proxy)
+USE_X_FORWARDED_HOST = os.getenv("USE_X_FORWARDED_HOST", "true").lower() == "true"
+if os.getenv("USE_SECURE_PROXY_SSL_HEADER", "true").lower() == "true":
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# CSRF Trusted Origins
+# Deployment: set CSRF_TRUSTED_ORIGINS="https://your.domain.com,https://other.domain.com"
+CSRF_TRUSTED_ORIGINS = _split_env_list("CSRF_TRUSTED_ORIGINS") or [
+    "https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id",
+]
+
+# Development: allow common localhost ports (avoid generating tens of thousands of entries)
+if not PRODUCTION:
+    for port in (3000, 5173, 8000, 8080):
         CSRF_TRUSTED_ORIGINS.append(f"http://localhost:{port}")
         CSRF_TRUSTED_ORIGINS.append(f"http://127.0.0.1:{port}")
 
