@@ -381,7 +381,8 @@ def coach_profile(request):
                 
                 return JsonResponse({
                     'success': True,
-                    'message': 'Profile updated successfully!'
+                    'message': 'Profile updated successfully!',
+                    'new_profile_image_url': coach_profile.profile_image.url if coach_profile.profile_image else None
                 })
             except Exception as e:
                 return JsonResponse({
@@ -557,6 +558,12 @@ def get_user_profile(request):
         profile_data = {
             'success': True,
             'profile': {
+                'user': {
+                    'username': request.user.username,
+                    'first_name': request.user.first_name,
+                    'last_name': request.user.last_name,
+                    'email': request.user.email,
+                },
                 'full_name': request.user.get_full_name(),
                 'initials': f"{request.user.first_name[0]}{request.user.last_name[0]}" if request.user.first_name and request.user.last_name else "??",
                 'profile_image': user_profile.profile_image.url if user_profile.profile_image else None,
@@ -626,7 +633,8 @@ def user_profile(request):
                 
                 return JsonResponse({
                     'success': True,
-                    'message': 'Profile updated successfully!'
+                    'message': 'Profile updated successfully!',
+                    'new_profile_image_url': user_profile.profile_image.url if user_profile.profile_image else None
                 })
             except Exception as e:
                 return JsonResponse({
