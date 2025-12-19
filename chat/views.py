@@ -323,6 +323,62 @@ def create_chat_with_coach(request, coach_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
+@require_POST
+def create_chat_with_user(request, user_id):
+    """AJAX endpoint to create a chat session with a user (coach-initiated)"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    # Only coaches can initiate a chat with a user via this endpoint
+    if not CoachProfile.objects.filter(user=request.user).exists():
+        return JsonResponse({'error': 'Only coaches can create chat with user'}, status=403)
+
+    try:
+        from django.contrib.auth.models import User
+        from django.db import IntegrityError
+
+        target_user = User.objects.filter(id=user_id).first()
+        if target_user is None:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+        # Prevent coach from creating chat with themselves
+        if request.user == target_user:
+            return JsonResponse({'error': 'Cannot create chat with yourself'}, status=400)
+
+        existing_session = ChatSession.objects.filter(
+            user=target_user,
+            coach=request.user,
+        ).first()
+
+        if existing_session:
+            return JsonResponse({
+                'success': True,
+                'session_id': str(existing_session.id),
+                'other_user': _serialize_user(target_user),
+                'message': 'Chat session already exists'
+            })
+
+        try:
+            session = ChatSession.objects.create(
+                user=target_user,
+                coach=request.user,
+            )
+        except IntegrityError:
+            # Race condition: session was created concurrently
+            session = ChatSession.objects.get(user=target_user, coach=request.user)
+
+        return JsonResponse({
+            'success': True,
+            'session_id': str(session.id),
+            'other_user': _serialize_user(target_user),
+            'message': 'Chat session created successfully'
+        })
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 # Helper functions
 def _user_in_session(user, session):
     """Check if user is authorized to access this chat session"""
