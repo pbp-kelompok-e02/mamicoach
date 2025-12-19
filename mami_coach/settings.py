@@ -46,7 +46,7 @@ SCHEMA = os.getenv("SCHEMA", "public")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = not PRODUCTION
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "kevin-cornellius-mamicoach.pbp.cs.ui.ac.id", "10.0.2.2"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "kevin-cornellius-mamicoach.pbp.cs.ui.ac.id", "10.0.2.2", "pbpe02.nimby.fun"]
 
 # CSRF Trusted Origins - accepts all localhost/127.0.0.1 ports in development
 # Note: Django doesn't support wildcards, so we generate a range programmatically
@@ -54,6 +54,7 @@ if True:
     # Development: Allow any port on localhost (1000-65535)
     CSRF_TRUSTED_ORIGINS = [
         "https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id",
+        "https://pbpe02.nimby.fun"
     ]
     # Add common development ports
     for port in list(range(3000, 65535)):

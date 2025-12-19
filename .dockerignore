@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtualenv
+env/
+venv/
+.venv/
+
+# Django / local artifacts
+*.sqlite3
+media/
+
+# Environment files (keep .env.example if you want)
+.env
+.env.*
+!.env.example
+
+# Tooling
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
