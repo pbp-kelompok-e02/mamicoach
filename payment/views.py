@@ -15,6 +15,7 @@ from .models import Payment
 from .midtrans_service import MidtransService
 
 
+@csrf_exempt
 @login_required
 @require_http_methods(["GET"])
 def payment_method_selection(request, booking_id):
@@ -47,6 +48,7 @@ def payment_method_selection(request, booking_id):
     return render(request, 'payment/method_selection.html', context)
 
 
+@csrf_exempt
 @login_required
 @require_POST
 def process_payment(request, booking_id):
@@ -265,6 +267,7 @@ def mark_booking_as_paid(booking_id: int, payment_id: int, payment_method: str):
     return False
 
 
+@csrf_exempt
 def payment_callback(request):
     """
     Finish Redirect URL - Customer sent here if payment is successful
@@ -339,6 +342,7 @@ def payment_callback(request):
     return render(request, 'payment/callback.html', context)
 
 
+@csrf_exempt
 def payment_unfinish(request):
     """
     Unfinish Redirect URL - Customer sent here if they click 'Back to Order Website' 
@@ -390,6 +394,7 @@ def payment_unfinish(request):
     return render(request, 'payment/callback.html', context)
 
 
+@csrf_exempt
 def payment_error(request):
     """
     Error Redirect URL - Customer sent here if payment encounters an error
@@ -440,6 +445,7 @@ def payment_error(request):
     return render(request, 'payment/callback.html', context)
 
 
+@csrf_exempt
 @login_required
 def payment_status(request, payment_id):
     """
