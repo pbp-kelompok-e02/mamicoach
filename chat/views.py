@@ -264,27 +264,39 @@ def mark_messages_read(request):
 @require_POST
 def create_chat_with_coach(request, coach_id):
     """AJAX endpoint to create a chat session with a coach"""
+    print(request.user)
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Authentication required'}, status=401)
     
     try:
         from django.contrib.auth.models import User
-        
-        # Get the coach user
-        coach = get_object_or_404(User, id=coach_id)
-        
-        # Verify that the coach has a coach profile
-        if not CoachProfile.objects.filter(user=coach).exists():
-            return JsonResponse({'error': 'User is not a coach'}, status=400)
+
+        # `coach_id` may be either:
+        # - CoachProfile.id (mobile apps use this)
+        # - User.id (legacy web/tests)
+        coach_user = None
+
+        coach_profile = CoachProfile.objects.select_related('user').filter(id=coach_id).first()
+        if coach_profile is not None:
+            coach_user = coach_profile.user
+        else:
+            # Fallback: treat coach_id as a User.id
+            coach_user = User.objects.filter(id=coach_id).first()
+            if coach_user is None:
+                return JsonResponse({'error': 'Coach not found'}, status=404)
+
+            # Verify that the user has a coach profile
+            if not CoachProfile.objects.filter(user=coach_user).exists():
+                return JsonResponse({'error': 'User is not a coach'}, status=400)
         
         # Prevent user from creating chat with themselves
-        if request.user == coach:
+        if request.user == coach_user:
             return JsonResponse({'error': 'Cannot create chat with yourself'}, status=400)
         
         # Check if chat session already exists
         existing_session = ChatSession.objects.filter(
             user=request.user,
-            coach=coach
+            coach=coach_user
         ).first()
         
         if existing_session:
@@ -298,7 +310,7 @@ def create_chat_with_coach(request, coach_id):
         # Create new chat session
         session = ChatSession.objects.create(
             user=request.user,
-            coach=coach
+            coach=coach_user
         )
         
         return JsonResponse({
