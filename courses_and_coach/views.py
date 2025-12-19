@@ -290,7 +290,7 @@ def delete_course(request, course_id):
 
 
 def show_coaches(request):
-    coaches = CoachProfile.objects.all()
+    coaches = CoachProfile.objects.all().order_by('-rating', 'user__first_name')
 
     search_query = request.GET.get("search")
     if search_query:
