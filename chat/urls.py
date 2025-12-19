@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     chat_index, chat_detail, get_chat_sessions, 
     get_messages, send_message, mark_messages_read, create_chat_with_coach,
+    create_chat_with_user,
     upload_attachment, create_attachment, presend_booking, presend_course
 )
 
@@ -18,6 +19,7 @@ urlpatterns = [
     path("chat/api/send/", send_message, name="send_message"),
     path("chat/api/mark-read/", mark_messages_read, name="mark_messages_read"),
     path("chat/api/create-chat-with-coach/<int:coach_id>/", create_chat_with_coach, name="create_chat_with_coach"),
+    path("chat/api/create-chat-with-user/<int:user_id>/", create_chat_with_user, name="create_chat_with_user"),
     path("chat/api/<uuid:session_id>/upload/", upload_attachment, name="upload_attachment"),
     path("chat/api/<uuid:session_id>/create-attachment/", create_attachment, name="create_attachment"),
     
