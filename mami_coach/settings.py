@@ -56,7 +56,7 @@ if True:
         "https://kevin-cornellius-mamicoach.pbp.cs.ui.ac.id",
     ]
     # Add common development ports
-    for port in list(range(3000, 3800)) + list(range(5000, 5100)) + list(range(8000, 8100)) + list(range(50000, 50100)) + list(range(60000, 60100)):
+    for port in list(range(3000, 65535)):
         CSRF_TRUSTED_ORIGINS.append(f"http://localhost:{port}")
         CSRF_TRUSTED_ORIGINS.append(f"http://127.0.0.1:{port}")
 
