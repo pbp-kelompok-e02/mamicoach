@@ -10,6 +10,7 @@ from django.contrib import messages
 from io import BytesIO
 import json
 import os
+import logging
 
 try:
     from PIL import Image
@@ -21,6 +22,10 @@ from .models import ChatSession, ChatMessage, ChatAttachment
 from user_profile.models import CoachProfile
 from booking.models import Booking
 from courses_and_coach.models import Course
+
+from authentication.models import FcmDeviceToken
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 @login_required(login_url="/login")
@@ -211,6 +216,53 @@ def send_message(request):
         # Update session's last activity timestamp
         session.last_message_at = timezone.now()
         session.save(update_fields=['last_message_at'])
+
+        # Best-effort push notification to the other user (Android only).
+        try:
+            other_user = session.get_other_user(request.user)
+            tokens = list(
+                FcmDeviceToken.objects.filter(user=other_user, platform="android")
+                .values_list("token", flat=True)
+                .distinct()
+            )
+            if tokens:
+                from mami_coach.fcm import send_push_to_tokens
+
+                sender_name = (request.user.get_full_name() or request.user.username).strip()
+                body_preview = content
+                if len(body_preview) > 160:
+                    body_preview = body_preview[:157] + "..."
+
+                logger.info(
+                    "chat push attempt session_id=%s sender_id=%s recipient_id=%s token_count=%s",
+                    session.id,
+                    request.user.id,
+                    other_user.id,
+                    len(tokens),
+                )
+
+                result = send_push_to_tokens(
+                    tokens,
+                    title=f"New message from {sender_name}",
+                    body=body_preview,
+                    data={
+                        "type": "chat",
+                        "session_id": str(session.id),
+                        "sender_id": str(request.user.id),
+                    },
+                )
+                logger.info(
+                    "chat push result session_id=%s success=%s failure=%s",
+                    session.id,
+                    result.get("success"),
+                    result.get("failure"),
+                )
+        except Exception:
+            logger.exception(
+                "chat push failed session_id=%s sender_id=%s",
+                session.id,
+                request.user.id,
+            )
         
         return JsonResponse({
             'success': True,
