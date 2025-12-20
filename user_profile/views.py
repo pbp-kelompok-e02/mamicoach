@@ -276,6 +276,7 @@ def get_coach_profile(request):
                 'expertise': coach_profile.expertise if coach_profile.expertise else [],
                 'rating': coach_profile.rating,
                 'bio': coach_profile.bio,
+                'balance': coach_profile.balance,
                 'verified': coach_profile.verified,
                 'certifications': [
                     {
@@ -551,7 +552,7 @@ def get_user_profile(request):
             formatted['has_review'] = review is not None
             if review:
                 formatted['review_id'] = review.id
-            
+            # Return
             return formatted
         
         # Build profile data

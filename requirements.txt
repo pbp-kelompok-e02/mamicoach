@@ -14,3 +14,4 @@ django-storages
 boto3
 django-cors-headers
 PyJWT
+firebase-admin
