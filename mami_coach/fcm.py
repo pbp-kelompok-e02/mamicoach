@@ -1,5 +1,5 @@
 import os
-import json
+import base64
 from typing import Any
 
 import firebase_admin
@@ -14,33 +14,31 @@ def _get_app():
     if _default_app is not None:
         return _default_app
 
-    service_account_json = (
-        os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
-        or os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-    )
-    if service_account_json:
-        try:
-            info = json.loads(service_account_json)
-        except json.JSONDecodeError as e:
-            raise RuntimeError(
-                "Firebase service account env var is not valid JSON. "
-                "Set FIREBASE_SERVICE_ACCOUNT_JSON (or GOOGLE_APPLICATION_CREDENTIALS_JSON) "
-                "to the full service account JSON content."
-            ) from e
+    service_account_json_b64 = os.getenv(
+        "FIREBASE_SERVICE_ACCOUNT_JSON_B64"
+    ) or os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON_B64")
 
-        cred = credentials.Certificate(info)
-        _default_app = firebase_admin.initialize_app(cred)
-        return _default_app
-
-    service_account_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH")
-    if not service_account_path:
+    if not service_account_json_b64:
         raise RuntimeError(
-            "Firebase credentials not configured. Set either "
-            "FIREBASE_SERVICE_ACCOUNT_JSON (recommended for CI/containers) "
-            "or FIREBASE_SERVICE_ACCOUNT_PATH (path to service account JSON file)."
+            "Firebase credentials not configured. Set "
+            "FIREBASE_SERVICE_ACCOUNT_JSON_B64 (or GOOGLE_APPLICATION_CREDENTIALS_JSON_B64) "
+            "to base64(JSON)."
         )
 
-    cred = credentials.Certificate(service_account_path)
+    try:
+        decoded = base64.b64decode(service_account_json_b64).decode("utf-8")
+    except Exception as e:
+        raise RuntimeError(
+            "Firebase service account base64 env var could not be decoded. "
+            "Set FIREBASE_SERVICE_ACCOUNT_JSON_B64 (or GOOGLE_APPLICATION_CREDENTIALS_JSON_B64) "
+            "to base64(JSON)."
+        ) from e
+
+    import json
+
+    info = json.loads(decoded)
+
+    cred = credentials.Certificate(info)
     _default_app = firebase_admin.initialize_app(cred)
     return _default_app
 
