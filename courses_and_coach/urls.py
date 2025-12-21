@@ -17,8 +17,10 @@ from courses_and_coach.views import (
 from courses_and_coach.api_views import (
     api_coaches_list,
     api_coach_detail,
+    api_coach_reviews,
     api_courses_list,
     api_course_detail,
+    api_course_reviews,
     api_categories_list,
     api_create_course,
     api_edit_course,
@@ -47,9 +49,11 @@ urlpatterns = [
     # API Endpoints
     path("api/coaches/", api_coaches_list, name="api_coaches_list"),
     path("api/coach/<int:coach_id>/", api_coach_detail, name="api_coach_detail"),
+    path("api/coach/<int:coach_id>/reviews/", api_coach_reviews, name="api_coach_reviews"),
     path("api/courses/", api_courses_list, name="api_courses_list"),
     path("api/courses/create/", api_create_course, name="api_create_course"),
     path("api/courses/<int:course_id>/", api_course_detail, name="api_course_detail"),
+    path("api/courses/<int:course_id>/reviews/", api_course_reviews, name="api_course_reviews"),
     path("api/courses/<int:course_id>/edit/", api_edit_course, name="api_edit_course"),
     path(
         "api/courses/<int:course_id>/delete/",

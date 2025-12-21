@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.messages import get_messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .forms import TraineeRegistrationForm, CoachRegistrationForm
@@ -275,6 +276,7 @@ def get_coach_profile(request):
                 'expertise': coach_profile.expertise if coach_profile.expertise else [],
                 'rating': coach_profile.rating,
                 'bio': coach_profile.bio,
+                'balance': coach_profile.balance,
                 'verified': coach_profile.verified,
                 'certifications': [
                     {
@@ -307,6 +309,7 @@ def get_coach_profile(request):
 
 
 @login_required
+@csrf_exempt
 def coach_profile(request):
     from courses_and_coach.models import Category
     
@@ -317,7 +320,78 @@ def coach_profile(request):
         return redirect('main:show_main')
     
     if request.method == "POST":
-        # Update user data
+        # Check if it's a JSON request (from mobile)
+        if request.content_type == 'application/json':
+            try:
+                import json
+                import base64
+                from django.core.files.base import ContentFile
+                
+                data = json.loads(request.body)
+                
+                # Update user data
+                request.user.first_name = data.get('first_name', '').strip()
+                request.user.last_name = data.get('last_name', '').strip()
+                request.user.save()
+                
+                # Update bio
+                coach_profile.bio = data.get('bio', '').strip()
+                
+                # Update expertise
+                expertise_list = data.get('expertise', [])
+                if expertise_list:
+                    coach_profile.expertise = expertise_list
+                
+                # Handle base64 profile image
+                profile_image_base64 = data.get('profile_image', '')
+                if profile_image_base64:
+                    try:
+                        # Remove header if present
+                        if ',' in profile_image_base64:
+                            header, profile_image_base64 = profile_image_base64.split(',', 1)
+                        
+                        # Decode base64
+                        image_data = base64.b64decode(profile_image_base64)
+                        image_file = ContentFile(image_data, name=f'{request.user.username}_coach_profile.jpg')
+                        coach_profile.profile_image = image_file
+                    except Exception as e:
+                        return JsonResponse({
+                            'success': False,
+                            'message': f'Error processing image: {str(e)}'
+                        }, status=400)
+                
+                coach_profile.save()
+                
+                # Handle deleted certifications
+                deleted_cert_ids = data.get('deleted_certifications', [])
+                if deleted_cert_ids:
+                    Certification.objects.filter(id__in=deleted_cert_ids, coach=coach_profile).delete()
+                
+                # Handle new certifications
+                new_cert_names = data.get('new_cert_names', [])
+                new_cert_urls = data.get('new_cert_urls', [])
+                
+                for name, url in zip(new_cert_names, new_cert_urls):
+                    if name.strip() and url.strip():
+                        Certification.objects.create(
+                            coach=coach_profile,
+                            certificate_name=name.strip(),
+                            file_url=url.strip(),
+                            status='pending'
+                        )
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Profile updated successfully!',
+                    'new_profile_image_url': coach_profile.profile_image.url if coach_profile.profile_image else None
+                })
+            except Exception as e:
+                return JsonResponse({
+                    'success': False,
+                    'message': str(e)
+                }, status=500)
+        
+        # Regular form request
         request.user.first_name = request.POST.get('first_name', '').strip()
         request.user.last_name = request.POST.get('last_name', '').strip()
         request.user.save()
@@ -478,13 +552,19 @@ def get_user_profile(request):
             formatted['has_review'] = review is not None
             if review:
                 formatted['review_id'] = review.id
-            
+            # Return
             return formatted
         
         # Build profile data
         profile_data = {
             'success': True,
             'profile': {
+                'user': {
+                    'username': request.user.username,
+                    'first_name': request.user.first_name,
+                    'last_name': request.user.last_name,
+                    'email': request.user.email,
+                },
                 'full_name': request.user.get_full_name(),
                 'initials': f"{request.user.first_name[0]}{request.user.last_name[0]}" if request.user.first_name and request.user.last_name else "??",
                 'profile_image': user_profile.profile_image.url if user_profile.profile_image else None,
@@ -506,6 +586,7 @@ def get_user_profile(request):
 
 
 @login_required
+@csrf_exempt
 def user_profile(request):
     # Check if user is a coach
     try:
@@ -518,7 +599,51 @@ def user_profile(request):
     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
     
     if request.method == "POST":
-        # Update user data
+        # Check if it's a JSON request (from mobile)
+        if request.content_type == 'application/json':
+            try:
+                import json
+                import base64
+                from django.core.files.base import ContentFile
+                
+                data = json.loads(request.body)
+                
+                # Update user data
+                request.user.first_name = data.get('first_name', '').strip()
+                request.user.last_name = data.get('last_name', '').strip()
+                request.user.save()
+                
+                # Handle base64 profile image
+                profile_image_base64 = data.get('profile_image', '')
+                if profile_image_base64:
+                    try:
+                        # Remove header if present
+                        if ',' in profile_image_base64:
+                            header, profile_image_base64 = profile_image_base64.split(',', 1)
+                        
+                        # Decode base64
+                        image_data = base64.b64decode(profile_image_base64)
+                        image_file = ContentFile(image_data, name=f'{request.user.username}_profile.jpg')
+                        user_profile.profile_image = image_file
+                        user_profile.save()
+                    except Exception as e:
+                        return JsonResponse({
+                            'success': False,
+                            'message': f'Error processing image: {str(e)}'
+                        }, status=400)
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Profile updated successfully!',
+                    'new_profile_image_url': user_profile.profile_image.url if user_profile.profile_image else None
+                })
+            except Exception as e:
+                return JsonResponse({
+                    'success': False,
+                    'message': str(e)
+                }, status=500)
+        
+        # Regular form request
         request.user.first_name = request.POST.get('first_name', '').strip()
         request.user.last_name = request.POST.get('last_name', '').strip()
         request.user.save()

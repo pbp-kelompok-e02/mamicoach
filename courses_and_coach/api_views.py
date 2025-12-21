@@ -8,6 +8,7 @@ from django.utils.html import strip_tags
 import json
 from .models import Course, Category
 from user_profile.models import CoachProfile
+from reviews.models import Review
 
 
 def api_coaches_list(request):
@@ -348,6 +349,135 @@ def api_course_detail(request, course_id):
     return JsonResponse({"success": True, "data": course_data})
 
 
+def api_course_reviews(request, course_id):
+    """Public list of reviews for a course.
+
+    Returns a paginated list. Reviewer identity is hidden when is_anonymous=True.
+    """
+    try:
+        Course.objects.only("id").get(id=course_id)
+    except Course.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Course not found"}, status=404)
+
+    qs = (
+        Review.objects.filter(course_id=course_id)
+        .select_related("user", "coach")
+        .order_by("-created_at")
+    )
+
+    page = request.GET.get("page", 1)
+    page_size = min(int(request.GET.get("page_size", 10)), 50)
+    paginator = Paginator(qs, page_size)
+    page_obj = paginator.get_page(page)
+
+    reviews_data = []
+    for r in page_obj:
+        author = None
+        if not r.is_anonymous:
+            author = {
+                "id": r.user_id,
+                "username": r.user.username,
+                "full_name": r.user.get_full_name(),
+            }
+
+        reviews_data.append(
+            {
+                "id": r.id,
+                "rating": r.rating,
+                "content": r.content,
+                "is_anonymous": r.is_anonymous,
+                "booking_id": r.booking_id,
+                "course_id": r.course_id,
+                "coach_id": r.coach_id,
+                "user_id": None if r.is_anonymous else r.user_id,
+                "author": author,
+                "created_at": r.created_at.isoformat(),
+                "updated_at": r.updated_at.isoformat(),
+            }
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "reviews": reviews_data,
+            "pagination": {
+                "current_page": page_obj.number,
+                "total_pages": paginator.num_pages,
+                "total_count": paginator.count,
+                "page_size": page_size,
+                "has_next": page_obj.has_next(),
+                "has_previous": page_obj.has_previous(),
+            },
+        }
+    )
+
+
+def api_coach_reviews(request, coach_id):
+    """Public list of reviews for a coach (CoachProfile.id)."""
+    try:
+        CoachProfile.objects.only("id").get(id=coach_id)
+    except CoachProfile.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Coach not found"}, status=404)
+
+    qs = (
+        Review.objects.filter(coach_id=coach_id)
+        .select_related("user", "course")
+        .order_by("-created_at")
+    )
+
+    page = request.GET.get("page", 1)
+    page_size = min(int(request.GET.get("page_size", 10)), 50)
+    paginator = Paginator(qs, page_size)
+    page_obj = paginator.get_page(page)
+
+    reviews_data = []
+    for r in page_obj:
+        author = None
+        if not r.is_anonymous:
+            author = {
+                "id": r.user_id,
+                "username": r.user.username,
+                "full_name": r.user.get_full_name(),
+            }
+
+        reviews_data.append(
+            {
+                "id": r.id,
+                "rating": r.rating,
+                "content": r.content,
+                "is_anonymous": r.is_anonymous,
+                "booking_id": r.booking_id,
+                "course_id": r.course_id,
+                "coach_id": r.coach_id,
+                "user_id": None if r.is_anonymous else r.user_id,
+                "author": author,
+                "course": {
+                    "id": r.course_id,
+                    "title": r.course.title,
+                }
+                if r.course_id
+                else None,
+                "created_at": r.created_at.isoformat(),
+                "updated_at": r.updated_at.isoformat(),
+            }
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "reviews": reviews_data,
+            "pagination": {
+                "current_page": page_obj.number,
+                "total_pages": paginator.num_pages,
+                "total_count": paginator.count,
+                "page_size": page_size,
+                "has_next": page_obj.has_next(),
+                "has_previous": page_obj.has_previous(),
+            },
+        }
+    )
+
+
 def api_categories_list(request):
     categories = Category.objects.all()
 
@@ -648,3 +778,47 @@ def api_my_courses(request):
             },
         }
     )
+
+
+def api_categories_list(request):
+    """
+    API endpoint to get all categories
+    """
+    categories = Category.objects.all().order_by('name')
+    
+    categories_data = [
+        {
+            "id": cat.id,
+            "name": cat.name,
+            "description": cat.description,
+            "thumbnail_url": cat.thumbnail_url,
+        }
+        for cat in categories
+    ]
+    
+    return JsonResponse({
+        "success": True,
+        "data": categories_data
+    })
+
+
+def api_categories_list(request):
+    """
+    API endpoint to get all categories
+    """
+    categories = Category.objects.all().order_by('name')
+    
+    categories_data = [
+        {
+            "id": cat.id,
+            "name": cat.name,
+            "description": cat.description,
+            "thumbnail_url": cat.thumbnail_url,
+        }
+        for cat in categories
+    ]
+    
+    return JsonResponse({
+        "success": True,
+        "data": categories_data
+    })

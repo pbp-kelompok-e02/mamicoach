@@ -10,6 +10,7 @@ from django.contrib import messages
 from io import BytesIO
 import json
 import os
+import logging
 
 try:
     from PIL import Image
@@ -21,6 +22,10 @@ from .models import ChatSession, ChatMessage, ChatAttachment
 from user_profile.models import CoachProfile
 from booking.models import Booking
 from courses_and_coach.models import Course
+
+from authentication.models import FcmDeviceToken
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 @login_required(login_url="/login")
@@ -211,6 +216,53 @@ def send_message(request):
         # Update session's last activity timestamp
         session.last_message_at = timezone.now()
         session.save(update_fields=['last_message_at'])
+
+        # Best-effort push notification to the other user (Android only).
+        try:
+            other_user = session.get_other_user(request.user)
+            tokens = list(
+                FcmDeviceToken.objects.filter(user=other_user, platform="android")
+                .values_list("token", flat=True)
+                .distinct()
+            )
+            if tokens:
+                from mami_coach.fcm import send_push_to_tokens
+
+                sender_name = (request.user.get_full_name() or request.user.username).strip()
+                body_preview = content
+                if len(body_preview) > 160:
+                    body_preview = body_preview[:157] + "..."
+
+                logger.info(
+                    "chat push attempt session_id=%s sender_id=%s recipient_id=%s token_count=%s",
+                    session.id,
+                    request.user.id,
+                    other_user.id,
+                    len(tokens),
+                )
+
+                result = send_push_to_tokens(
+                    tokens,
+                    title=f"New message from {sender_name}",
+                    body=body_preview,
+                    data={
+                        "type": "chat",
+                        "session_id": str(session.id),
+                        "sender_id": str(request.user.id),
+                    },
+                )
+                logger.info(
+                    "chat push result session_id=%s success=%s failure=%s",
+                    session.id,
+                    result.get("success"),
+                    result.get("failure"),
+                )
+        except Exception:
+            logger.exception(
+                "chat push failed session_id=%s sender_id=%s",
+                session.id,
+                request.user.id,
+            )
         
         return JsonResponse({
             'success': True,
@@ -264,27 +316,39 @@ def mark_messages_read(request):
 @require_POST
 def create_chat_with_coach(request, coach_id):
     """AJAX endpoint to create a chat session with a coach"""
+    print(request.user)
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Authentication required'}, status=401)
     
     try:
         from django.contrib.auth.models import User
-        
-        # Get the coach user
-        coach = get_object_or_404(User, id=coach_id)
-        
-        # Verify that the coach has a coach profile
-        if not CoachProfile.objects.filter(user=coach).exists():
-            return JsonResponse({'error': 'User is not a coach'}, status=400)
+
+        # `coach_id` may be either:
+        # - CoachProfile.id (mobile apps use this)
+        # - User.id (legacy web/tests)
+        coach_user = None
+
+        coach_profile = CoachProfile.objects.select_related('user').filter(id=coach_id).first()
+        if coach_profile is not None:
+            coach_user = coach_profile.user
+        else:
+            # Fallback: treat coach_id as a User.id
+            coach_user = User.objects.filter(id=coach_id).first()
+            if coach_user is None:
+                return JsonResponse({'error': 'Coach not found'}, status=404)
+
+            # Verify that the user has a coach profile
+            if not CoachProfile.objects.filter(user=coach_user).exists():
+                return JsonResponse({'error': 'User is not a coach'}, status=400)
         
         # Prevent user from creating chat with themselves
-        if request.user == coach:
+        if request.user == coach_user:
             return JsonResponse({'error': 'Cannot create chat with yourself'}, status=400)
         
         # Check if chat session already exists
         existing_session = ChatSession.objects.filter(
             user=request.user,
-            coach=coach
+            coach=coach_user
         ).first()
         
         if existing_session:
@@ -298,7 +362,7 @@ def create_chat_with_coach(request, coach_id):
         # Create new chat session
         session = ChatSession.objects.create(
             user=request.user,
-            coach=coach
+            coach=coach_user
         )
         
         return JsonResponse({
@@ -307,6 +371,62 @@ def create_chat_with_coach(request, coach_id):
             'message': 'Chat session created successfully'
         })
     
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+def create_chat_with_user(request, user_id):
+    """AJAX endpoint to create a chat session with a user (coach-initiated)"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    # Only coaches can initiate a chat with a user via this endpoint
+    if not CoachProfile.objects.filter(user=request.user).exists():
+        return JsonResponse({'error': 'Only coaches can create chat with user'}, status=403)
+
+    try:
+        from django.contrib.auth.models import User
+        from django.db import IntegrityError
+
+        target_user = User.objects.filter(id=user_id).first()
+        if target_user is None:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+        # Prevent coach from creating chat with themselves
+        if request.user == target_user:
+            return JsonResponse({'error': 'Cannot create chat with yourself'}, status=400)
+
+        existing_session = ChatSession.objects.filter(
+            user=target_user,
+            coach=request.user,
+        ).first()
+
+        if existing_session:
+            return JsonResponse({
+                'success': True,
+                'session_id': str(existing_session.id),
+                'other_user': _serialize_user(target_user),
+                'message': 'Chat session already exists'
+            })
+
+        try:
+            session = ChatSession.objects.create(
+                user=target_user,
+                coach=request.user,
+            )
+        except IntegrityError:
+            # Race condition: session was created concurrently
+            session = ChatSession.objects.get(user=target_user, coach=request.user)
+
+        return JsonResponse({
+            'success': True,
+            'session_id': str(session.id),
+            'other_user': _serialize_user(target_user),
+            'message': 'Chat session created successfully'
+        })
+
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
