@@ -908,8 +908,7 @@ def api_users_list(request):
             'last_login': user.last_login.isoformat() if user.last_login else None,
             'profile': {
                 'id': profile.id if profile else None,
-                'phone': profile.phone if profile else None,
-                'profile_picture': profile.profile_picture.url if profile and profile.profile_picture else None,
+                'profile_picture': profile.profile_image.url if profile and profile.profile_image else None,
             } if profile else None,
         })
     
@@ -962,9 +961,7 @@ def api_user_detail(request, user_id):
             'last_login': user.last_login.isoformat() if user.last_login else None,
             'profile': {
                 'id': profile.id if profile else None,
-                'phone': profile.phone if profile else None,
-                'bio': profile.bio if profile else None,
-                'profile_picture': profile.profile_picture.url if profile and profile.profile_picture else None,
+                'profile_picture': profile.profile_image.url if profile and profile.profile_image else None,
             } if profile else None,
             'stats': {
                 'bookings_count': bookings_count,
