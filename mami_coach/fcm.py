@@ -62,10 +62,6 @@ def send_push_to_tokens(
         data=data or {},
     )
 
-    # firebase-admin API differs across versions.
-    # - Newer versions provide send_each_for_multicast
-    # - Some versions provide send_multicast
-    # - Fallback: send one-by-one
     if hasattr(messaging, "send_each_for_multicast"):
         batch_response = messaging.send_each_for_multicast(message)
         responses = batch_response.responses

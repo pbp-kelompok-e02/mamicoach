@@ -70,7 +70,6 @@ def chat_detail(request, session_id):
 
 @csrf_exempt
 def get_chat_sessions(request):
-    print(request.user)
     """AJAX endpoint to get all chat sessions for current user"""
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Authentication required'}, status=401)
@@ -316,7 +315,6 @@ def mark_messages_read(request):
 @require_POST
 def create_chat_with_coach(request, coach_id):
     """AJAX endpoint to create a chat session with a coach"""
-    print(request.user)
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Authentication required'}, status=401)
     
