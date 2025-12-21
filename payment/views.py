@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib import messages
 from django.urls import reverse
+from django.utils import timezone
 import requests
 
 from booking.models import Booking
@@ -235,12 +236,12 @@ def midtrans_webhook(request):
         if transaction_status == 'capture':
             if fraud_status == 'accept':
                 payment.status = 'capture'
-                payment.paid_at = datetime.now()
+                payment.paid_at = timezone.now()
             else:
                 payment.status = 'pending'
         elif transaction_status == 'settlement':
             payment.status = 'settlement'
-            payment.paid_at = datetime.now()
+            payment.paid_at = timezone.now()
         elif transaction_status == 'pending':
             payment.status = 'pending'
         elif transaction_status in ['deny', 'cancel', 'expire']:
@@ -363,7 +364,7 @@ def payment_callback(request):
     if transaction_status:
         if transaction_status in ['settlement', 'capture']:
             payment.status = transaction_status
-            payment.paid_at = datetime.now()
+            payment.paid_at = timezone.now()
             payment.save()
             
             # Mark booking as paid
@@ -385,7 +386,7 @@ def payment_callback(request):
         # Update with API result if available
         if api_transaction_status in ['settlement', 'capture']:
             payment.status = api_transaction_status
-            payment.paid_at = datetime.now()
+            payment.paid_at = timezone.now()
             payment.save()
             
             # Mark booking as paid
@@ -527,7 +528,7 @@ def payment_status(request, payment_id):
             
             if transaction_status in ['settlement', 'capture']:
                 payment.status = transaction_status
-                payment.paid_at = datetime.now()
+                payment.paid_at = timezone.now()
                 payment.save()
                 
                 # Update booking
