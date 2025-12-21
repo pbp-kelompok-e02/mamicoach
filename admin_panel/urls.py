@@ -48,6 +48,7 @@ urlpatterns = [
     path('api/users/', views.api_users_list, name='api_users_list'),
     path('api/users/<int:user_id>/', views.api_user_detail, name='api_user_detail'),
     path('api/users/<int:user_id>/delete/', views.api_user_delete, name='api_user_delete'),
+    path('api/users/<int:user_id>/update-status/', views.api_user_update_status, name='api_user_update_status'),
     
     # Coaches APIs
     path('api/coaches/', views.api_coaches_list, name='api_coaches_list'),

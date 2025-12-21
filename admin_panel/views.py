@@ -165,6 +165,7 @@ def api_admin_login(request):
                             'id': admin_user.id,
                             'username': admin_user.username,
                             'email': admin_user.email,
+                            'is_superuser': True,
                         }
                     }
                 })
@@ -750,6 +751,69 @@ def api_dashboard_stats(request):
         'created_at': p.created_at.isoformat(),
     } for p in recent_payments]
     
+    # New users this month
+    from django.contrib.auth.models import User
+    now = timezone.now()
+    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    new_users_this_month = User.objects.filter(date_joined__gte=start_of_month).count()
+    
+    # Bookings trend - last 7 days
+    from datetime import timedelta
+    bookings_trend = []
+    day_labels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
+    for i in range(6, -1, -1):
+        day = now - timedelta(days=i)
+        day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
+        day_end = day_start + timedelta(days=1)
+        count = Booking.objects.filter(created_at__gte=day_start, created_at__lt=day_end).count()
+        day_index = (day.weekday() + 1) % 7  # Convert Monday=0 to Sunday=0
+        bookings_trend.append({
+            'label': day_labels[day_index],
+            'value': count
+        })
+    
+    # Revenue trend - last 6 months
+    from dateutil.relativedelta import relativedelta
+    revenue_trend = []
+    month_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+    for i in range(5, -1, -1):
+        month_date = now - relativedelta(months=i)
+        month_start = month_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        if i == 0:
+            month_end = now
+        else:
+            next_month = month_start + relativedelta(months=1)
+            month_end = next_month
+        
+        revenue = Payment.objects.filter(
+            status__in=['settlement', 'capture'],
+            paid_at__gte=month_start,
+            paid_at__lt=month_end
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
+        revenue_trend.append({
+            'label': month_labels[month_date.month - 1],
+            'value': revenue
+        })
+    
+    # Top categories - top 5 course categories by booking count
+    from django.db.models import Count
+    category_bookings = Booking.objects.values('course__category__name').annotate(
+        count=Count('id')
+    ).order_by('-count')[:5]
+    
+    total_categorized_bookings = sum(item['count'] for item in category_bookings)
+    top_categories = []
+    for item in category_bookings:
+        category_name = item['course__category__name'] or 'Uncategorized'
+        count = item['count']
+        percentage = (count / total_categorized_bookings * 100) if total_categorized_bookings > 0 else 0
+        top_categories.append({
+            'name': category_name,
+            'count': count,
+            'percentage': round(percentage, 1)
+        })
+    
     log_admin_activity(request.admin_user, 'view', 'dashboard', 'Viewed dashboard via API', request)
     
     return JsonResponse({
@@ -761,9 +825,13 @@ def api_dashboard_stats(request):
                 'total_coaches': total_coaches,
                 'total_courses': total_courses,
                 'total_bookings': total_bookings,
+                'pending_bookings': pending_bookings,
+                'completed_bookings': done_bookings,
                 'total_revenue': total_revenue,
+                'new_users_this_month': new_users_this_month,
             },
             'bookings': {
+                'total': total_bookings,
                 'pending': pending_bookings,
                 'paid': paid_bookings,
                 'confirmed': confirmed_bookings,
@@ -771,10 +839,13 @@ def api_dashboard_stats(request):
                 'canceled': canceled_bookings,
             },
             'payments': {
-                'pending': pending_payments,
-                'successful': successful_payments,
-                'failed': failed_payments,
+                'total_revenue': total_revenue,
+                'pending_amount': Payment.objects.filter(status='pending').aggregate(total=Sum('amount'))['total'] or 0,
+                'successful_amount': total_revenue,
             },
+            'bookings_trend': bookings_trend,
+            'revenue_trend': revenue_trend,
+            'top_categories': top_categories,
             'recent_bookings': recent_bookings_data,
             'recent_payments': recent_payments_data,
         }
@@ -837,8 +908,7 @@ def api_users_list(request):
             'last_login': user.last_login.isoformat() if user.last_login else None,
             'profile': {
                 'id': profile.id if profile else None,
-                'phone': profile.phone if profile else None,
-                'profile_picture': profile.profile_picture.url if profile and profile.profile_picture else None,
+                'profile_picture': profile.profile_image.url if profile and profile.profile_image else None,
             } if profile else None,
         })
     
@@ -891,9 +961,7 @@ def api_user_detail(request, user_id):
             'last_login': user.last_login.isoformat() if user.last_login else None,
             'profile': {
                 'id': profile.id if profile else None,
-                'phone': profile.phone if profile else None,
-                'bio': profile.bio if profile else None,
-                'profile_picture': profile.profile_picture.url if profile and profile.profile_picture else None,
+                'profile_picture': profile.profile_image.url if profile and profile.profile_image else None,
             } if profile else None,
             'stats': {
                 'bookings_count': bookings_count,
@@ -911,6 +979,65 @@ def api_user_detail(request, user_id):
             'status': False,
             'message': 'User not found'
         }, status=404)
+
+
+@csrf_exempt
+@api_admin_login_required
+@require_http_methods(["POST", "PUT", "PATCH"])
+def api_user_update_status(request, user_id):
+    """
+    Update user status (JSON API)
+    POST/PUT/PATCH /admin/api/users/<user_id>/update-status/
+    Request: { "is_active": true/false }
+    """
+    from django.contrib.auth.models import User
+    
+    try:
+        user = User.objects.get(id=user_id)
+        data = json.loads(request.body)
+        
+        if 'is_active' not in data:
+            return JsonResponse({
+                'status': False,
+                'message': 'is_active field is required'
+            }, status=400)
+        
+        new_status = data.get('is_active')
+        if not isinstance(new_status, bool):
+            return JsonResponse({
+                'status': False,
+                'message': 'is_active must be a boolean value'
+            }, status=400)
+        
+        old_status = user.is_active
+        user.is_active = new_status
+        user.save()
+        
+        log_admin_activity(
+            request.admin_user, 'update', 'users',
+            f'Updated user {user.username} active status from {old_status} to {new_status} via API',
+            request
+        )
+        
+        return JsonResponse({
+            'status': True,
+            'message': 'User status updated successfully',
+            'data': {
+                'id': user.id,
+                'is_active': new_status,
+                'updated_at': timezone.now().isoformat(),
+            }
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'status': False,
+            'message': 'User not found'
+        }, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'status': False,
+            'message': 'Invalid JSON data'
+        }, status=400)
 
 
 @csrf_exempt
@@ -1006,12 +1133,12 @@ def api_coaches_list(request):
             },
             'verified': coach.verified,
             'bio': coach.bio,
-            'specialization': coach.specialization,
-            'experience_years': coach.experience_years,
-            'hourly_rate': float(coach.hourly_rate) if coach.hourly_rate else None,
+            'expertise': coach.expertise,
+            'rating': coach.rating,
+            'rating_count': coach.rating_count,
             'total_minutes_coached': coach.total_minutes_coached,
             'balance': coach.balance,
-            'profile_picture': coach.profile_picture.url if coach.profile_picture else None,
+            'profile_picture': coach.profile_image.url if coach.profile_image else None,
             'verification_status': verification.status if verification else 'pending',
             'created_at': coach.user.date_joined.isoformat(),
         })
@@ -1064,12 +1191,12 @@ def api_coach_detail(request, coach_id):
             },
             'verified': coach.verified,
             'bio': coach.bio,
-            'specialization': coach.specialization,
-            'experience_years': coach.experience_years,
-            'hourly_rate': float(coach.hourly_rate) if coach.hourly_rate else None,
+            'expertise': coach.expertise,
+            'rating': coach.rating,
+            'rating_count': coach.rating_count,
             'total_minutes_coached': coach.total_minutes_coached,
             'balance': coach.balance,
-            'profile_picture': coach.profile_picture.url if coach.profile_picture else None,
+            'profile_picture': coach.profile_image.url if coach.profile_image else None,
             'verification': {
                 'status': verification.status if verification else 'pending',
                 'certificate_url': verification.certificate_url if verification else None,

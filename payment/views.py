@@ -8,11 +8,35 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib import messages
 from django.urls import reverse
+from django.utils import timezone
 import requests
 
 from booking.models import Booking
 from .models import Payment
 from .midtrans_service import MidtransService
+
+
+def get_payment_method_display_name(method: str) -> str:
+    """Get Indonesian display name for payment method"""
+    method_names = {
+        'credit_card': 'Kartu Kredit',
+        'bca_va': 'BCA Virtual Account',
+        'mandiri_va': 'Mandiri Virtual Account',
+        'bni_va': 'BNI Virtual Account',
+        'bri_va': 'BRI Virtual Account',
+        'permata_va': 'Permata Virtual Account',
+        'cimb_va': 'CIMB Virtual Account',
+        'other_va': 'Virtual Account',
+        'gopay': 'GO-PAY',
+        'shopeepay': 'ShopeePay',
+        'dana': 'Dana',
+        'qris': 'QRIS',
+        'indomaret': 'Indomaret',
+        'alfamart': 'Alfamart',
+        'akulaku': 'Akulaku',
+        'kredivo': 'Kredivo',
+    }
+    return method_names.get(method, method or 'Metode Pembayaran')
 
 
 @csrf_exempt
@@ -212,12 +236,12 @@ def midtrans_webhook(request):
         if transaction_status == 'capture':
             if fraud_status == 'accept':
                 payment.status = 'capture'
-                payment.paid_at = datetime.now()
+                payment.paid_at = timezone.now()
             else:
                 payment.status = 'pending'
         elif transaction_status == 'settlement':
             payment.status = 'settlement'
-            payment.paid_at = datetime.now()
+            payment.paid_at = timezone.now()
         elif transaction_status == 'pending':
             payment.status = 'pending'
         elif transaction_status in ['deny', 'cancel', 'expire']:
@@ -233,6 +257,46 @@ def midtrans_webhook(request):
             if booking.status == 'pending':
                 # Call the booking API to mark as paid
                 mark_booking_as_paid(booking.id, payment.id, payment.method)
+                
+                # Send payment success notification
+                try:
+                    from authentication.models import FcmDeviceToken
+                    from mami_coach.fcm import send_push_to_tokens
+                    
+                    # Get user's FCM tokens
+                    tokens = list(FcmDeviceToken.objects.filter(
+                        user=booking.user
+                    ).values_list('token', flat=True))
+                    
+                    if tokens:
+                        # Format amount with Indonesian thousand separators
+                        amount_formatted = f"Rp. {payment.amount:,}".replace(',', '.')
+                        
+                        # Get payment method display name
+                        method_display = get_payment_method_display_name(payment.method or '')
+                        
+                        # Create notification message
+                        title = "Pembayaran Berhasil ✅"
+                        body = (
+                            f"Pembayaran untuk {booking.course.title} melalui "
+                            f"{method_display} sebesar {amount_formatted} telah diterima! "
+                            f"Ketuk untuk cek pemesanan anda."
+                        )
+                        
+                        # Send notification with deep link data
+                        send_push_to_tokens(
+                            tokens,
+                            title=title,
+                            body=body,
+                            data={
+                                "type": "payment_success",
+                                "booking_id": str(booking.id),
+                                "payment_id": str(payment.id)
+                            }
+                        )
+                except Exception as e:
+                    # Log error but don't fail the webhook
+                    print(f"Failed to send payment notification: {e}")
         
         # Return 200 OK with plain response (no redirect)
         response = HttpResponse(
@@ -300,7 +364,7 @@ def payment_callback(request):
     if transaction_status:
         if transaction_status in ['settlement', 'capture']:
             payment.status = transaction_status
-            payment.paid_at = datetime.now()
+            payment.paid_at = timezone.now()
             payment.save()
             
             # Mark booking as paid
@@ -322,7 +386,7 @@ def payment_callback(request):
         # Update with API result if available
         if api_transaction_status in ['settlement', 'capture']:
             payment.status = api_transaction_status
-            payment.paid_at = datetime.now()
+            payment.paid_at = timezone.now()
             payment.save()
             
             # Mark booking as paid
@@ -464,7 +528,7 @@ def payment_status(request, payment_id):
             
             if transaction_status in ['settlement', 'capture']:
                 payment.status = transaction_status
-                payment.paid_at = datetime.now()
+                payment.paid_at = timezone.now()
                 payment.save()
                 
                 # Update booking
