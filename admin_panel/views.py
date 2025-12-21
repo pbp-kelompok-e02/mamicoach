@@ -1138,7 +1138,7 @@ def api_coaches_list(request):
             'rating_count': coach.rating_count,
             'total_minutes_coached': coach.total_minutes_coached,
             'balance': coach.balance,
-            'profile_picture': coach.profile_picture.url if coach.profile_picture else None,
+            'profile_picture': coach.profile_image.url if coach.profile_image else None,
             'verification_status': verification.status if verification else 'pending',
             'created_at': coach.user.date_joined.isoformat(),
         })
@@ -1196,7 +1196,7 @@ def api_coach_detail(request, coach_id):
             'rating_count': coach.rating_count,
             'total_minutes_coached': coach.total_minutes_coached,
             'balance': coach.balance,
-            'profile_picture': coach.profile_picture.url if coach.profile_picture else None,
+            'profile_picture': coach.profile_image.url if coach.profile_image else None,
             'verification': {
                 'status': verification.status if verification else 'pending',
                 'certificate_url': verification.certificate_url if verification else None,
