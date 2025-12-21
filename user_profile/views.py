@@ -351,8 +351,10 @@ def coach_profile(request):
                             header, profile_image_base64 = profile_image_base64.split(',', 1)
                         
                         # Decode base64
+                        import time
                         image_data = base64.b64decode(profile_image_base64)
-                        image_file = ContentFile(image_data, name=f'{request.user.username}_coach_profile.jpg')
+                        timestamp = int(time.time())
+                        image_file = ContentFile(image_data, name=f'{request.user.username}_coach_profile_{timestamp}.jpg')
                         coach_profile.profile_image = image_file
                     except Exception as e:
                         return JsonResponse({
@@ -622,10 +624,12 @@ def user_profile(request):
                             header, profile_image_base64 = profile_image_base64.split(',', 1)
                         
                         # Decode base64
+                        import time
                         image_data = base64.b64decode(profile_image_base64)
-                        image_file = ContentFile(image_data, name=f'{request.user.username}_profile.jpg')
+                        timestamp = int(time.time())
+                        image_file = ContentFile(image_data, name=f'{request.user.username}_profile_{timestamp}.jpg')
                         user_profile.profile_image = image_file
-                        user_profile.save()
+                        user_profile.save() 
                     except Exception as e:
                         return JsonResponse({
                             'success': False,

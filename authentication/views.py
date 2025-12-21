@@ -377,10 +377,6 @@ def api_fcm_token(request):
         # Keeping scope Android-only per your request.
         platform = "android"
 
-    print(
-        f"[FCM] register user_id={request.user.id} platform={platform} token_prefix={token[:12]}"
-    )
-
     logger.info(
         "api_fcm_token register user_id=%s platform=%s token_prefix=%s",
         request.user.id,
@@ -498,8 +494,6 @@ def api_fcm_tokens_me(request):
         .distinct()
     )
 
-    print(f"[FCM] tokens_me user_id={request.user.id} token_count={len(tokens)}")
-
     return JsonResponse({
         "status": True,
         "tokens": [t[:12] for t in tokens],
@@ -550,8 +544,6 @@ def api_test_push(request):
         len(tokens),
     )
 
-    print(f"[FCM] test_push user_id={request.user.id} token_count={len(tokens)}")
-
     if not tokens:
         return JsonResponse({
             "status": False,
@@ -568,9 +560,6 @@ def api_test_push(request):
             data={"type": "test"},
         )
 
-        print(
-            f"[FCM] test_push result user_id={request.user.id} success={result.get('success')} failure={result.get('failure')}"
-        )
         logger.info(
             "api_test_push result user_id=%s success=%s failure=%s",
             request.user.id,
